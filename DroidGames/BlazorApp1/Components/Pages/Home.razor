@@ -5,70 +5,84 @@
 
 <PageTitle>DROID GAMES 2026</PageTitle>
 
-<div style="padding: 40px; background: #1a1a1a; min-height: 100vh; color: white;">
-    <h1 style="color: #00d4ff; margin-bottom: 20px;">🤖 DROID GAMES 2026</h1>
+<div class="home-container">
+    <h1 class="page-title">
+        <span class="material-symbols-outlined">emoji_events</span>
+        DROID GAMES 2026
+    </h1>
     
     @if (_isLoading)
     {
-        <div style="padding: 20px; background: #333; border-radius: 10px; margin: 20px 0;">
-            <h2 style="color: yellow;">⏳ Načítání dat...</h2>
+        <div class="status-card loading">
+            <h2>
+                <span class="material-symbols-outlined">hourglass_empty</span>
+                Načítání dat...
+            </h2>
             <p>@_status</p>
         </div>
     }
     else if (_error != null)
     {
-        <div style="padding: 20px; background: #cc0000; border-radius: 10px; margin: 20px 0;">
-            <h2 style="color: white;">❌ Chyba</h2>
-            <p style="font-family: monospace; white-space: pre-wrap;">@_error</p>
-            <button style="background: white; color: #cc0000; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;" 
-                    @onclick="ReloadData">
+        <div class="status-card error">
+            <h2>
+                <span class="material-symbols-outlined">error</span>
+                Chyba
+            </h2>
+            <pre class="error-message">@_error</pre>
+            <button class="btn-retry" @onclick="ReloadData">
+                <span class="material-symbols-outlined">refresh</span>
                 Zkusit znovu
             </button>
         </div>
     }
     else
     {
-        <div style="padding: 20px; background: #004400; border-radius: 10px; margin: 20px 0;">
-            <h2 style="color: lime;">✅ Aplikace načtena úspěšně!</h2>
-            <p style="color: #aaffaa;">Načteno týmů: @_teamCount</p>
+        <div class="status-card success">
+            <h2>
+                <span class="material-symbols-outlined">check_circle</span>
+                Aplikace načtena úspěšně!
+            </h2>
+            <p>Načteno týmů: @_teamCount</p>
         </div>
         
-        <div style="margin: 20px 0;">
-            <h3 style="color: #00d4ff; margin-bottom: 15px;">Žebříček týmů:</h3>
+        <div class="leaderboard-section">
+            <h3 class="section-title">
+                <span class="material-symbols-outlined">leaderboard</span>
+                Žebříček týmů
+            </h3>
             @if (_teams != null && _teams.Any())
             {
-                <div style="display: grid; gap: 10px;">
+                <div class="teams-grid">
                     @foreach (var team in _teams)
                     {
-                        <div style="background: #2a2a2a; padding: 15px; border-radius: 8px; border-left: 4px solid #00d4ff;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <div>
-                                    <strong style="color: #00d4ff; font-size: 1.2em;">@team.Name</strong>
-                                    <span style="color: #888; margin-left: 15px;">PIN: @team.PinCode</span>
-                                </div>
-                                <div style="font-size: 1.5em; color: lime; font-weight: bold;">
-                                    @team.TotalScore bodů
-                                </div>
+                        <div class="team-card">
+                            <div class="team-info">
+                                <div class="team-name">@team.Name</div>
+                                <div class="team-pin">PIN: @team.PinCode</div>
                             </div>
+                            <div class="team-score">@team.TotalScore bodů</div>
                         </div>
                     }
                 </div>
             }
             else
             {
-                <p style="color: #888;">Žádné týmy zatím nebyly přidány.</p>
+                <p class="empty-message">Žádné týmy zatím nebyly přidány.</p>
             }
         </div>
         
-        <button style="background: #ff6600; color: white; padding: 15px 30px; border: none; border-radius: 8px; margin: 20px 0; cursor: pointer; font-size: 1.1em;" 
-                @onclick="ReloadData">
-            🔄 Znovu načíst data
+        <button class="btn-reload" @onclick="ReloadData">
+            <span class="material-symbols-outlined">refresh</span>
+            Znovu načíst data
         </button>
     }
     
-    <div style="margin-top: 40px; padding: 20px; background: #2a2a2a; border-radius: 10px;">
-        <h3 style="color: #00d4ff;">Debug Log:</h3>
-        <pre style="color: #aaa; font-size: 0.9em; overflow-x: auto;">@_debugLog</pre>
+    <div class="debug-section">
+        <h3>
+            <span class="material-symbols-outlined">bug_report</span>
+            Debug Log
+        </h3>
+        <pre class="debug-log">@_debugLog</pre>
     </div>
 </div>
 
