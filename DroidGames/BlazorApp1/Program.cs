@@ -9,6 +9,11 @@ using Microsoft.AspNetCore.ResponseCompression;
 Console.WriteLine("[DEBUG] Program.cs START");
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Enable detailed logging for SignalR debugging
+builder.Logging.AddFilter("Microsoft.AspNetCore.SignalR", LogLevel.Debug);
+builder.Logging.AddFilter("Microsoft.AspNetCore.Http.Connections", LogLevel.Debug);
+
 Console.WriteLine("[DEBUG] Builder created");
 
 // Add services to the container
@@ -17,8 +22,12 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 Console.WriteLine("[DEBUG] Razor components added");
 
-// SignalR
-builder.Services.AddSignalR();
+// SignalR with detailed logging
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = true;
+    options.MaximumReceiveMessageSize = null;
+});
 builder.Services.AddResponseCompression(opts =>
 {
     opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
@@ -147,11 +156,11 @@ app.UseCors("ESP32Policy");
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-// SignalR Hubs
-app.MapHub<ScoreboardHub>("/hubs/scoreboard");
-app.MapHub<TimerHub>("/hubs/timer");
-app.MapHub<NotificationHub>("/hubs/notifications");
-app.MapHub<ProductionHub>("/hubs/production");
+// SignalR Hubs - TEMPORARILY DISABLED for debugging
+// app.MapHub<ScoreboardHub>("/hubs/scoreboard");
+// app.MapHub<TimerHub>("/hubs/timer");
+// app.MapHub<NotificationHub>("/hubs/notifications");
+// app.MapHub<ProductionHub>("/hubs/production");
 
 // API Controllers
 app.MapControllers();

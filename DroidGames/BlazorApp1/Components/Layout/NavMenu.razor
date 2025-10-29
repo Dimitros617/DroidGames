@@ -2,160 +2,98 @@
 @inject NavigationManager NavigationManager
 @inject BlazorApp1.Services.UserSession UserSession
 
-<nav class="nav-menu">
-    @if (UserSession.IsAuthenticated)
-    {
-        <div class="nav-user-info">
-            <span class="material-symbols-outlined">account_circle</span>
-            <div>
-                <div class="nav-user-name">@UserSession.Username</div>
-                <div class="nav-user-role">@GetRoleName(UserSession.Role)</div>
-            </div>
-        </div>
-    }
+<nav class="horizontal-nav">
+    <ul class="nav-items">
+        <!-- Public Links -->
+        <li>
+            <NavLink href="" Match="NavLinkMatch.All">
+                Žebříček
+            </NavLink>
+        </li>
+        <li>
+            <NavLink href="maps">
+                Mapy
+            </NavLink>
+        </li>
 
-    <div class="nav-section">
-        <div class="nav-section-title">Veřejné</div>
-        
-        <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-            <span class="material-symbols-outlined">leaderboard</span>
-            <span>Žebříček</span>
-        </NavLink>
+        @if (UserSession.HasRole(BlazorApp1.Models.UserRole.Team))
+        {
+            <li>
+                <NavLink href="team/dashboard">
+                    Dashboard
+                </NavLink>
+            </li>
+            <li>
+                <NavLink href="team/statistics">
+                    Statistiky
+                </NavLink>
+            </li>
+            <li>
+                <NavLink href="team/achievements">
+                    Achievementy
+                </NavLink>
+            </li>
+        }
 
-        <NavLink class="nav-link" href="maps">
-            <span class="material-symbols-outlined">map</span>
-            <span>Mapy</span>
-        </NavLink>
-    </div>
+        @if (UserSession.HasRole(BlazorApp1.Models.UserRole.Referee))
+        {
+            <li>
+                <NavLink href="referee/scoring">
+                    Bodování
+                </NavLink>
+            </li>
+        }
 
-    @if (UserSession.HasRole(BlazorApp1.Models.UserRole.Team))
-    {
-        <div class="nav-section">
-            <div class="nav-section-title">Tým</div>
-            
-            <NavLink class="nav-link" href="team/dashboard">
-                <span class="material-symbols-outlined">dashboard</span>
-                <span>Dashboard</span>
-            </NavLink>
-            <NavLink class="nav-link" href="team/statistics">
-                <span class="material-symbols-outlined">bar_chart</span>
-                <span>Statistiky</span>
-            </NavLink>
-            <NavLink class="nav-link" href="team/achievements">
-                <span class="material-symbols-outlined">emoji_events</span>
-                <span>Achievementy</span>
-            </NavLink>
-            <NavLink class="nav-link" href="team/quiz">
-                <span class="material-symbols-outlined">quiz</span>
-                <span>Kvíz</span>
-            </NavLink>
-        </div>
-    }
+        @if (UserSession.HasRole(BlazorApp1.Models.UserRole.HeadReferee))
+        {
+            <li>
+                <NavLink href="headref/control">
+                    Ovládání
+                </NavLink>
+            </li>
+            <li>
+                <NavLink href="headref/approval">
+                    Schvalování
+                </NavLink>
+            </li>
+        }
 
-    @if (UserSession.HasRole(BlazorApp1.Models.UserRole.Referee))
-    {
-        <div class="nav-section">
-            <div class="nav-section-title">Rozhodčí</div>
-            
-            <NavLink class="nav-link" href="referee/scoring">
-                <span class="material-symbols-outlined">edit_note</span>
-                <span>Bodování</span>
-            </NavLink>
-            <NavLink class="nav-link" href="referee/map">
-                <span class="material-symbols-outlined">map</span>
-                <span>Mapa</span>
-            </NavLink>
-        </div>
-    }
+        @if (UserSession.HasRole(BlazorApp1.Models.UserRole.Admin))
+        {
+            <li>
+                <NavLink href="admin/teams">
+                    Admin
+                </NavLink>
+            </li>
+        }
 
-    @if (UserSession.HasRole(BlazorApp1.Models.UserRole.HeadReferee))
-    {
-        <div class="nav-section">
-            <div class="nav-section-title">Hlavní rozhodčí</div>
-            
-            <NavLink class="nav-link" href="headref/control">
-                <span class="material-symbols-outlined">settings</span>
-                <span>Ovládání</span>
-            </NavLink>
-            <NavLink class="nav-link" href="headref/approval">
-                <span class="material-symbols-outlined">check_circle</span>
-                <span>Schvalování</span>
-            </NavLink>
-            <NavLink class="nav-link" href="headref/timer">
-                <span class="material-symbols-outlined">timer</span>
-                <span>Časomíra</span>
-            </NavLink>
-            <NavLink class="nav-link" href="headref/funfacts">
-                <span class="material-symbols-outlined">lightbulb</span>
-                <span>Fun Facts</span>
-            </NavLink>
-            <NavLink class="nav-link" href="headref/reminders">
-                <span class="material-symbols-outlined">notifications</span>
-                <span>Připomínky</span>
-            </NavLink>
-            <NavLink class="nav-link" href="headref/production">
-                <span class="material-symbols-outlined">videocam</span>
-                <span>Režie</span>
-            </NavLink>
-        </div>
-    }
-
-    @if (UserSession.HasRole(BlazorApp1.Models.UserRole.Production))
-    {
-        <div class="nav-section">
-            <div class="nav-section-title">Produkce</div>
-            
-            <NavLink class="nav-link" href="production/director">
-                <span class="material-symbols-outlined">movie</span>
-                <span>Režisér</span>
-            </NavLink>
-        </div>
-    }
-
-    @if (UserSession.HasRole(BlazorApp1.Models.UserRole.Admin))
-    {
-        <div class="nav-section">
-            <div class="nav-section-title">Administrace</div>
-            
-            <NavLink class="nav-link" href="admin/teams">
-                <span class="material-symbols-outlined">groups</span>
-                <span>Týmy</span>
-            </NavLink>
-            <NavLink class="nav-link" href="admin/rounds">
-                <span class="material-symbols-outlined">sync</span>
-                <span>Kola</span>
-            </NavLink>
-            <NavLink class="nav-link" href="admin/maps">
-                <span class="material-symbols-outlined">terrain</span>
-                <span>Mapy</span>
-            </NavLink>
-            <NavLink class="nav-link" href="admin/settings">
-                <span class="material-symbols-outlined">tune</span>
-                <span>Nastavení</span>
-            </NavLink>
-            <NavLink class="nav-link" href="admin/diplomas">
-                <span class="material-symbols-outlined">workspace_premium</span>
-                <span>Diplomy</span>
-            </NavLink>
-        </div>
-    }
-
-    <div class="nav-section nav-bottom">
+        <!-- Login / Logout -->
         @if (UserSession.IsAuthenticated)
         {
-            <a href="/logout" class="nav-link nav-logout">
-                <span class="material-symbols-outlined">logout</span>
-                <span>Odhlásit se</span>
-            </a>
+            <li class="nav-user">
+                <span class="material-symbols-outlined user-icon">account_circle</span>
+                <div class="user-info">
+                    <span class="user-name">@UserSession.Username</span>
+                    <span class="user-role">@GetRoleName(UserSession.Role)</span>
+                </div>
+            </li>
+            <li>
+                <a href="/logout" class="nav-logout">
+                    <span class="material-symbols-outlined">logout</span>
+                    <span>Odhlásit</span>
+                </a>
+            </li>
         }
         else
         {
-            <NavLink class="nav-link" href="login">
-                <span class="material-symbols-outlined">login</span>
-                <span>Přihlásit se</span>
-            </NavLink>
+            <li>
+                <NavLink href="login">
+                    <span class="material-symbols-outlined">login</span>
+                    <span>Přihlásit se</span>
+                </NavLink>
+            </li>
         }
-    </div>
+    </ul>
 </nav>
 
 @code {
@@ -163,6 +101,15 @@
     {
         NavigationManager.LocationChanged += OnLocationChanged;
         UserSession.OnChange += StateHasChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await UserSession.InitializeAsync();
+            StateHasChanged();
+        }
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)

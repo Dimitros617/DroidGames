@@ -1,24 +1,31 @@
 ﻿@page "/"
 @inject BlazorApp1.Services.ITeamService TeamService
+@inject BlazorApp1.Services.UserSession UserSession
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 
 <PageTitle>DROID GAMES 2026</PageTitle>
 
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="hero-content">
+        <img src="/graphic/DroidGames_logo_barva_v1.png" alt="Droid Games 2026" class="hero-logo" />
+        <h1 class="hero-title">DROID GAMES 2026</h1>
+        <p class="hero-subtitle">Soutěž v robotice | Centrum Robotiky Plzeň</p>
+    </div>
+</div>
+
 <div class="home-container">
-    <h1 class="page-title">
-        <span class="material-symbols-outlined">emoji_events</span>
-        DROID GAMES 2026
-    </h1>
-    
     @if (_isLoading)
     {
-        <div class="status-card loading">
-            <h2>
-                <span class="material-symbols-outlined">hourglass_empty</span>
-                Načítání dat...
-            </h2>
-            <p>@_status</p>
+        <!-- Loading skeleton -->
+        <div class="loading-skeleton">
+            <div class="skeleton-header"></div>
+            <div class="skeleton-cards">
+                <div class="skeleton-card"></div>
+                <div class="skeleton-card"></div>
+                <div class="skeleton-card"></div>
+            </div>
         </div>
     }
     else if (_error != null)
@@ -26,7 +33,7 @@
         <div class="status-card error">
             <h2>
                 <span class="material-symbols-outlined">error</span>
-                Chyba
+                Chyba při načítání
             </h2>
             <pre class="error-message">@_error</pre>
             <button class="btn-retry" @onclick="ReloadData">
@@ -37,59 +44,57 @@
     }
     else
     {
-        <div class="status-card success">
-            <h2>
-                <span class="material-symbols-outlined">check_circle</span>
-                Aplikace načtena úspěšně!
-            </h2>
-            <p>Načteno týmů: @_teamCount</p>
-        </div>
-        
+        <!-- Leaderboard -->
         <div class="leaderboard-section">
-            <h3 class="section-title">
+            <h2 class="section-title">
                 <span class="material-symbols-outlined">leaderboard</span>
                 Žebříček týmů
-            </h3>
+            </h2>
             @if (_teams != null && _teams.Any())
             {
                 <div class="teams-grid">
-                    @foreach (var team in _teams)
+                    @foreach (var (team, index) in _teams.Select((t, i) => (t, i)))
                     {
-                        <div class="team-card">
+                        <div class="team-card" style="animation-delay: @(index * 0.1)s">
+                            <div class="team-rank">@(index + 1)</div>
                             <div class="team-info">
                                 <div class="team-name">@team.Name</div>
-                                <div class="team-pin">PIN: @team.PinCode</div>
+                                <div class="team-school">@team.School</div>
                             </div>
-                            <div class="team-score">@team.TotalScore bodů</div>
+                            <div class="team-score">
+                                <div class="score-value">@team.TotalScore</div>
+                                <div class="score-label">bodů</div>
+                            </div>
                         </div>
                     }
                 </div>
             }
             else
             {
-                <p class="empty-message">Žádné týmy zatím nebyly přidány.</p>
+                <div class="empty-state">
+                    <span class="material-symbols-outlined">emoji_events</span>
+                    <p>Žebříček bude zveřejněn po začátku soutěže</p>
+                </div>
             }
         </div>
-        
-        <button class="btn-reload" @onclick="ReloadData">
-            <span class="material-symbols-outlined">refresh</span>
-            Znovu načíst data
-        </button>
     }
     
-    <div class="debug-section">
-        <h3>
-            <span class="material-symbols-outlined">bug_report</span>
-            Debug Log
-        </h3>
-        <pre class="debug-log">@_debugLog</pre>
-    </div>
+    <!-- Debug Log - Only for Admins -->
+    @if (UserSession.HasRole(BlazorApp1.Models.UserRole.Admin) && !string.IsNullOrEmpty(_debugLog))
+    {
+        <div class="debug-section">
+            <h3>
+                <span class="material-symbols-outlined">bug_report</span>
+                Admin Debug Log
+            </h3>
+            <pre class="debug-log">@_debugLog</pre>
+        </div>
+    }
 </div>
 
 @code {
     private bool _isLoading = true;
     private string? _error = null;
-    private string _status = "Inicializace...";
     private int _teamCount = 0;
     private List<BlazorApp1.Models.Team>? _teams = null;
     private string _debugLog = "";
@@ -104,13 +109,11 @@
         _isLoading = true;
         _error = null;
         _debugLog = "";
-        _status = "Připojování k TeamService...";
         StateHasChanged();
         
         try
         {
             AddDebugLog("OnInitializedAsync začíná");
-            _status = "Načítání žebříčku...";
             StateHasChanged();
             
             AddDebugLog("Volám TeamService.GetLeaderboardAsync()");
@@ -119,7 +122,6 @@
             _teamCount = _teams?.Count ?? 0;
             AddDebugLog($"Načteno {_teamCount} týmů");
             
-            _status = "Hotovo!";
             _isLoading = false;
             AddDebugLog("Načítání úspěšně dokončeno");
         }

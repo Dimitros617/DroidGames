@@ -1,0 +1,115 @@
+@page "/team/dashboard"
+@inject BlazorApp1.Services.UserSession UserSession
+@inject BlazorApp1.Services.ITeamService TeamService
+@rendermode InteractiveServer
+
+<PageTitle>Dashboard - @UserSession.Username</PageTitle>
+
+<BlazorApp1.Components.Shared.AuthGuard RequiredRole="BlazorApp1.Models.UserRole.Team">
+    <div class="team-dashboard">
+        <div class="dashboard-header">
+            <h1>
+                <span class="material-symbols-outlined">dashboard</span>
+                Dashboard týmu
+            </h1>
+            <p class="team-welcome">Vítejte, <strong>@UserSession.Username</strong>!</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Current Score Card -->
+            <div class="dashboard-card">
+                <div class="card-icon">
+                    <span class="material-symbols-outlined">emoji_events</span>
+                </div>
+                <div class="card-content">
+                    <h3>Celkové skóre</h3>
+                    <div class="score-big">@_totalScore</div>
+                    <p class="score-label">bodů</p>
+                </div>
+            </div>
+
+            <!-- Current Position Card -->
+            <div class="dashboard-card">
+                <div class="card-icon">
+                    <span class="material-symbols-outlined">leaderboard</span>
+                </div>
+                <div class="card-content">
+                    <h3>Aktuální pozice</h3>
+                    <div class="score-big">@_position.</div>
+                    <p class="score-label">místo</p>
+                </div>
+            </div>
+
+            <!-- Completed Rounds Card -->
+            <div class="dashboard-card">
+                <div class="card-icon">
+                    <span class="material-symbols-outlined">check_circle</span>
+                </div>
+                <div class="card-content">
+                    <h3>Dokončená kola</h3>
+                    <div class="score-big">@_completedRounds</div>
+                    <p class="score-label">kol</p>
+                </div>
+            </div>
+
+            <!-- Achievements Card -->
+            <div class="dashboard-card">
+                <div class="card-icon">
+                    <span class="material-symbols-outlined">workspace_premium</span>
+                </div>
+                <div class="card-content">
+                    <h3>Achievementy</h3>
+                    <div class="score-big">@_achievementCount</div>
+                    <p class="score-label">odemčeno</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h2>Rychlé akce</h2>
+            <div class="action-buttons">
+                <a href="/team/statistics" class="action-btn">
+                    <span class="material-symbols-outlined">bar_chart</span>
+                    <span>Statistiky</span>
+                </a>
+                <a href="/team/achievements" class="action-btn">
+                    <span class="material-symbols-outlined">emoji_events</span>
+                    <span>Achievementy</span>
+                </a>
+                <a href="/team/quiz" class="action-btn">
+                    <span class="material-symbols-outlined">quiz</span>
+                    <span>Kvíz</span>
+                </a>
+                <a href="/" class="action-btn">
+                    <span class="material-symbols-outlined">leaderboard</span>
+                    <span>Žebříček</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</BlazorApp1.Components.Shared.AuthGuard>
+
+@code {
+    private int _totalScore = 0;
+    private int _position = 0;
+    private int _completedRounds = 0;
+    private int _achievementCount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (UserSession.IsAuthenticated && UserSession.CurrentUser?.TeamId != null)
+        {
+            var teams = await TeamService.GetLeaderboardAsync();
+            var currentTeam = teams.FirstOrDefault(t => t.Id == UserSession.CurrentUser.TeamId);
+            
+            if (currentTeam != null)
+            {
+                _totalScore = currentTeam.TotalScore;
+                _position = currentTeam.CurrentPosition;
+                _completedRounds = currentTeam.Rounds.Count;
+                _achievementCount = currentTeam.UnlockedAchievements.Count;
+            }
+        }
+    }
+}

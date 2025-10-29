@@ -2,7 +2,6 @@
 @inject BlazorApp1.Services.IAuthService AuthService
 @inject BlazorApp1.Services.UserSession UserSession
 @inject NavigationManager Navigation
-@rendermode InteractiveServer
 
 <PageTitle>Přihlášení - DROID GAMES 2026</PageTitle>
 
@@ -34,12 +33,14 @@
         {
             <!-- Tab Navigation -->
             <div class="login-tabs">
-                <button @onclick="() => _activeTab = LoginTab.Team" 
+                <button type="button"
+                        @onclick="() => _activeTab = LoginTab.Team" 
                         class="login-tab @(_activeTab == LoginTab.Team ? "active" : "")">
                     <span class="material-symbols-outlined">groups</span>
                     <span>TÝM (PIN)</span>
                 </button>
-                <button @onclick="() => _activeTab = LoginTab.Staff" 
+                <button type="button"
+                        @onclick="() => _activeTab = LoginTab.Staff" 
                         class="login-tab @(_activeTab == LoginTab.Staff ? "active" : "")">
                     <span class="material-symbols-outlined">badge</span>
                     <span>STAFF</span>
@@ -63,7 +64,8 @@
                                class="pin-input" />
                     </div>
                     
-                    <button @onclick="LoginWithPin" 
+                    <button type="button"
+                            @onclick="LoginWithPin" 
                             disabled="@(_pinCode.Length != 4)"
                             class="btn btn-primary btn-large">
                         <span class="material-symbols-outlined">login</span>
@@ -104,7 +106,8 @@
                                class="form-input" />
                     </div>
                     
-                    <button @onclick="LoginWithCredentials" 
+                    <button type="button"
+                            @onclick="LoginWithCredentials" 
                             disabled="@(string.IsNullOrWhiteSpace(_username) || string.IsNullOrWhiteSpace(_password))"
                             class="btn btn-primary btn-large">
                         <span class="material-symbols-outlined">key</span>
@@ -148,12 +151,21 @@
     private string _errorMessage = "";
     private bool _isLoading = false;
 
-    protected override void OnInitialized()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // Pokud už je uživatel přihlášen, přesměruj ho
-        if (UserSession.IsAuthenticated)
+        if (firstRender)
         {
-            RedirectToRoleHome();
+            await UserSession.InitializeAsync();
+            
+            // Pokud už je uživatel přihlášen, přesměruj ho
+            if (UserSession.IsAuthenticated)
+            {
+                RedirectToRoleHome();
+            }
+            else
+            {
+                StateHasChanged();
+            }
         }
     }
 
@@ -171,7 +183,7 @@
             
             if (user != null)
             {
-                UserSession.SetUser(user);
+                await UserSession.SetUserAsync(user);
                 Console.WriteLine($"[LOGIN] Team logged in: {user.Username} (ID: {user.Id})");
                 RedirectToRoleHome();
             }
@@ -207,7 +219,7 @@
             
             if (user != null)
             {
-                UserSession.SetUser(user);
+                await UserSession.SetUserAsync(user);
                 Console.WriteLine($"[LOGIN] User logged in: {user.Username} (Role: {user.Role})");
                 RedirectToRoleHome();
             }
@@ -258,6 +270,6 @@
             _ => "/"
         };
         
-        Navigation.NavigateTo(redirectUrl, forceLoad: true);
+        Navigation.NavigateTo(redirectUrl);
     }
 }

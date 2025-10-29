@@ -1,0 +1,109 @@
+/* Maps Page */
+
+.maps-page {
+    padding: 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.page-header h1 {
+    display: inline-flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 2.5em;
+    color: #000;
+    margin-bottom: 10px;
+}
+
+.page-header h1 .material-symbols-outlined {
+    color: #fdc71d;
+    font-size: 1.2em;
+}
+
+.subtitle {
+    font-size: 1.2em;
+    color: #666;
+}
+
+.maps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.map-card {
+    background: white;
+    border-radius: 16px;
+    padding: 40px 30px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    border-top: 5px solid #fdc71d;
+}
+
+.map-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 24px rgba(253, 199, 29, 0.2);
+}
+
+.map-icon {
+    margin-bottom: 20px;
+}
+
+.map-icon .material-symbols-outlined {
+    font-size: 80px;
+    color: #fdc71d;
+}
+
+.map-card h3 {
+    font-size: 1.8em;
+    color: #000;
+    margin-bottom: 10px;
+}
+
+.map-card p {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.map-difficulty {
+    display: inline-block;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
+.easy {
+    background: #d4edda;
+    color: #155724;
+}
+
+.medium {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.hard {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+@media (max-width: 768px) {
+    .maps-page {
+        padding: 20px;
+    }
+
+    .page-header h1 {
+        font-size: 2em;
+    }
+
+    .maps-grid {
+        grid-template-columns: 1fr;
+    }
+}

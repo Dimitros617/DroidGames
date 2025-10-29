@@ -1,31 +1,29 @@
 ﻿@inherits LayoutComponentBase
 
 <div class="page-wrapper">
-    <!-- Header -->
-    <header class="main-header">
-        <div class="header-container">
-            <div class="header-logo">
+    <!-- Top Navigation Header -->
+    <header class="top-header">
+        <div class="header-content">
+            <!-- Logo area with white background -->
+            <div class="logo-area">
                 <a href="/">
-                    <img src="/graphic/DroidGames_logo_barva_v1.png" alt="Droid Games 2026" height="50" />
+                    <img src="/graphic/DroidGames_logo_barva_v1.png" alt="Droid Games 2026" />
                 </a>
             </div>
-            <h1 class="header-title">Droid Games 2026</h1>
-            <div class="header-actions">
-                <!-- User info bude přidáno později -->
-            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="top-nav">
+                <NavMenu />
+            </nav>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <aside class="sidebar">
-            <NavMenu />
-        </aside>
-        
-        <main class="content-area">
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <div class="content-wrapper">
             @Body
-        </main>
-    </div>
+        </div>
+    </main>
 
     <!-- Footer -->
     <footer class="main-footer">

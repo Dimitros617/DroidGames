@@ -1,0 +1,145 @@
+/* Team Dashboard */
+
+.team-dashboard {
+    padding: 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.dashboard-header {
+    margin-bottom: 40px;
+}
+
+.dashboard-header h1 {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 2.5em;
+    color: #000;
+    margin-bottom: 10px;
+}
+
+.dashboard-header h1 .material-symbols-outlined {
+    color: #fdc71d;
+    font-size: 1.2em;
+}
+
+.team-welcome {
+    font-size: 1.2em;
+    color: #666;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+    margin-bottom: 50px;
+}
+
+.dashboard-card {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    border-left: 5px solid #fdc71d;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(253, 199, 29, 0.2);
+}
+
+.card-icon {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.card-icon .material-symbols-outlined {
+    font-size: 60px;
+    color: #fdc71d;
+}
+
+.card-content h3 {
+    text-align: center;
+    color: #666;
+    font-size: 1em;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.score-big {
+    text-align: center;
+    font-size: 3.5em;
+    font-weight: 900;
+    color: #000;
+    line-height: 1;
+}
+
+.score-label {
+    text-align: center;
+    color: #999;
+    margin-top: 5px;
+}
+
+.quick-actions {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.quick-actions h2 {
+    font-size: 1.8em;
+    margin-bottom: 25px;
+    color: #000;
+}
+
+.action-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 25px;
+    background: linear-gradient(135deg, #fdc71d 0%, #faba20 100%);
+    color: #000;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.1em;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(253, 199, 29, 0.3);
+}
+
+.action-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(253, 199, 29, 0.4);
+}
+
+.action-btn .material-symbols-outlined {
+    font-size: 28px;
+}
+
+@media (max-width: 768px) {
+    .team-dashboard {
+        padding: 20px;
+    }
+
+    .dashboard-header h1 {
+        font-size: 2em;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .action-buttons {
+        grid-template-columns: 1fr;
+    }
+}

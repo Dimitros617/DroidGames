@@ -1,0 +1,201 @@
+/* Admin Teams Page */
+
+.admin-teams {
+    padding: 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.page-header h1 {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 2.5em;
+    color: #000;
+    margin: 0;
+}
+
+.page-header h1 .material-symbols-outlined {
+    color: #fdc71d;
+    font-size: 1.2em;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #fdc71d 0%, #faba20 100%);
+    color: #000;
+    box-shadow: 0 4px 12px rgba(253, 199, 29, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(253, 199, 29, 0.4);
+}
+
+.loading-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: #666;
+}
+
+.loading-state .material-symbols-outlined {
+    font-size: 60px;
+    color: #fdc71d;
+    margin-bottom: 20px;
+}
+
+.spinning {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.teams-table {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background: #f8f9fa;
+}
+
+th {
+    padding: 16px;
+    text-align: left;
+    font-weight: 700;
+    color: #000;
+    text-transform: uppercase;
+    font-size: 0.85em;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #fdc71d;
+}
+
+tbody tr {
+    border-bottom: 1px solid #e9ecef;
+    transition: background 0.2s ease;
+}
+
+tbody tr:hover {
+    background: #f8f9fa;
+}
+
+td {
+    padding: 16px;
+    color: #495057;
+}
+
+.team-name {
+    font-weight: 600;
+    color: #000;
+}
+
+.team-pin {
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    color: #fdc71d;
+}
+
+.team-score {
+    font-weight: 700;
+    color: #000;
+}
+
+.team-position {
+    font-weight: 600;
+    color: #fdc71d;
+}
+
+.team-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    color: #666;
+}
+
+.btn-icon:hover {
+    background: #f8f9fa;
+    color: #000;
+}
+
+.btn-danger:hover {
+    background: #fff5f5;
+    color: #dc3545;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: #999;
+}
+
+.empty-state .material-symbols-outlined {
+    font-size: 80px;
+    color: #ddd;
+    margin-bottom: 20px;
+}
+
+.empty-state p {
+    font-size: 1.2em;
+    color: #666;
+}
+
+@media (max-width: 768px) {
+    .admin-teams {
+        padding: 20px;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .page-header h1 {
+        font-size: 2em;
+    }
+
+    .teams-table {
+        overflow-x: auto;
+    }
+
+    table {
+        min-width: 800px;
+    }
+}

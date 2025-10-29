@@ -7,20 +7,22 @@
 }
 else if (_isChecking)
 {
-    <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #1a1a1a;">
-        <div style="text-align: center; color: #00d4ff;">
-            <div style="font-size: 3em; margin-bottom: 20px;">⏳</div>
-            <div style="font-size: 1.2em;">Ověřuji oprávnění...</div>
+    <div class="auth-guard-loading">
+        <div class="loading-content">
+            <span class="material-symbols-outlined spinning">progress_activity</span>
+            <div class="loading-text">Ověřuji oprávnění...</div>
         </div>
     </div>
 }
 else
 {
-    <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #1a1a1a;">
-        <div style="max-width: 500px; padding: 40px; background: #2a2a2a; border-radius: 12px; text-align: center;">
-            <div style="font-size: 4em; margin-bottom: 20px;">🚫</div>
-            <h2 style="color: #ff6600; margin-bottom: 15px;">Přístup odepřen</h2>
-            <p style="color: #aaa; margin-bottom: 25px;">
+    <div class="auth-guard-denied">
+        <div class="denied-content">
+            <div class="denied-icon">
+                <span class="material-symbols-outlined">block</span>
+            </div>
+            <h2 class="denied-title">Přístup odepřen</h2>
+            <p class="denied-message">
                 @if (!UserSession.IsAuthenticated)
                 {
                     <span>Pro přístup k této stránce se musíte přihlásit.</span>
@@ -30,16 +32,27 @@ else
                     <span>Nemáte oprávnění pro přístup k této stránce.<br/>Vaše role: <strong>@UserSession.Role</strong></span>
                 }
             </p>
-            <button @onclick="RedirectToLogin" 
-                    style="padding: 12px 30px; background: #00d4ff; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em;">
-                @if (UserSession.IsAuthenticated)
-                {
-                    <span>🏠 Zpět na domovskou stránku</span>
-                }
-                else
-                {
-                    <span>🔐 Přejít na přihlášení</span>
-                }
+            <button @onclick="RedirectToLogin" class="denied-button">
+                <span class="material-symbols-outlined">
+                    @if (UserSession.IsAuthenticated)
+                    {
+                        <text>home</text>
+                    }
+                    else
+                    {
+                        <text>login</text>
+                    }
+                </span>
+                <span>
+                    @if (UserSession.IsAuthenticated)
+                    {
+                        <text>Zpět na domovskou stránku</text>
+                    }
+                    else
+                    {
+                        <text>Přejít na přihlášení</text>
+                    }
+                </span>
             </button>
         </div>
     </div>
@@ -52,13 +65,25 @@ else
     [Parameter]
     public BlazorApp1.Models.UserRole[]? RequiredRoles { get; set; }
 
+    [Parameter]
+    public string? RequiredRole { get; set; }
+
     private bool _isAuthorized = false;
     private bool _isChecking = true;
 
     protected override void OnInitialized()
     {
-        CheckAuthorization();
         UserSession.OnChange += OnUserSessionChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await UserSession.InitializeAsync();
+            CheckAuthorization();
+            StateHasChanged();
+        }
     }
 
     private void OnUserSessionChanged()
@@ -71,14 +96,22 @@ else
     {
         _isChecking = true;
 
+        // Pokud je RequiredRole zadán jako string, převeď ho na pole
+        BlazorApp1.Models.UserRole[]? rolesToCheck = RequiredRoles;
+        
+        if (!string.IsNullOrEmpty(RequiredRole) && Enum.TryParse<BlazorApp1.Models.UserRole>(RequiredRole.Split('.').Last(), out var role))
+        {
+            rolesToCheck = new[] { role };
+        }
+
         // Pokud nejsou požadovány žádné role, stačí být přihlášen
-        if (RequiredRoles == null || RequiredRoles.Length == 0)
+        if (rolesToCheck == null || rolesToCheck.Length == 0)
         {
             _isAuthorized = UserSession.IsAuthenticated;
         }
         else
         {
-            _isAuthorized = UserSession.IsAuthenticated && UserSession.HasAnyRole(RequiredRoles);
+            _isAuthorized = UserSession.IsAuthenticated && UserSession.HasAnyRole(rolesToCheck);
         }
 
         _isChecking = false;

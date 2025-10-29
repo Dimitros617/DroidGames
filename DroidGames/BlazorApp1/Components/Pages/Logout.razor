@@ -2,10 +2,21 @@
 @inject BlazorApp1.Services.UserSession UserSession
 @inject NavigationManager Navigation
 
+<div class="logout-container">
+    <div class="logout-content">
+        <span class="material-symbols-outlined spinning">logout</span>
+        <p>Odhlašuji...</p>
+    </div>
+</div>
+
 @code {
-    protected override void OnInitialized()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        UserSession.ClearUser();
-        Navigation.NavigateTo("/login", forceLoad: true);
+        if (firstRender)
+        {
+            await UserSession.ClearUserAsync();
+            Navigation.NavigateTo("/login", forceLoad: true);
+        }
     }
 }
+

@@ -1,0 +1,88 @@
+@page "/admin/teams"
+@inject BlazorApp1.Services.ITeamService TeamService
+@rendermode InteractiveServer
+
+<PageTitle>Správa týmů - Admin</PageTitle>
+
+<BlazorApp1.Components.Shared.AuthGuard RequiredRole="BlazorApp1.Models.UserRole.Admin">
+    <div class="admin-teams">
+        <div class="page-header">
+            <h1>
+                <span class="material-symbols-outlined">groups</span>
+                Správa týmů
+            </h1>
+        </div>
+
+        @if (_isLoading)
+        {
+            <div class="loading-state">
+                <span class="material-symbols-outlined spinning">progress_activity</span>
+                <p>Načítání týmů...</p>
+            </div>
+        }
+        else if (_teams != null && _teams.Any())
+        {
+            <div class="teams-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Název týmu</th>
+                            <th>Škola</th>
+                            <th>PIN</th>
+                            <th>Celkové skóre</th>
+                            <th>Pozice</th>
+                            <th>Kola</th>
+                            <th>Akce</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var team in _teams)
+                        {
+                            <tr>
+                                <td class="team-name">@team.Name</td>
+                                <td>@team.School</td>
+                                <td class="team-pin">@team.PinCode</td>
+                                <td class="team-score">@team.TotalScore bodů</td>
+                                <td class="team-position">@team.CurrentPosition.</td>
+                                <td>@team.Rounds.Count</td>
+                                <td class="team-actions">
+                                    <button class="btn-icon" title="Upravit">
+                                        <span class="material-symbols-outlined">edit</span>
+                                    </button>
+                                    <button class="btn-icon btn-danger" title="Smazat">
+                                        <span class="material-symbols-outlined">delete</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <span class="material-symbols-outlined">groups</span>
+                <p>Žádné týmy ještě nebyly přidány</p>
+            </div>
+        }
+    </div>
+</BlazorApp1.Components.Shared.AuthGuard>
+
+@code {
+    private List<BlazorApp1.Models.Team>? _teams;
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTeams();
+    }
+
+    private async Task LoadTeams()
+    {
+        _isLoading = true;
+        _teams = await TeamService.GetLeaderboardAsync();
+        _isLoading = false;
+        StateHasChanged();
+    }
+}

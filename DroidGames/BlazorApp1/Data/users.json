@@ -2,7 +2,7 @@
   {
     "Id": "admin-1",
     "Username": "admin",
-    "PasswordHash": "admin123",
+    "PasswordHash": "YWRtaW4xMjM=",
     "Role": "Admin",
     "TeamId": null,
     "CreatedAt": "2026-01-15T08:00:00Z"
@@ -10,7 +10,7 @@
   {
     "Id": "headref-1",
     "Username": "hlavni",
-    "PasswordHash": "hlavni123",
+    "PasswordHash": "aGxhdm5pMTIz",
     "Role": "HeadReferee",
     "TeamId": null,
     "CreatedAt": "2026-01-15T08:00:00Z"
@@ -18,7 +18,7 @@
   {
     "Id": "referee-1",
     "Username": "rozhod1",
-    "PasswordHash": "rozhod123",
+    "PasswordHash": "cm96aG9kMTIz",
     "Role": "Referee",
     "TeamId": null,
     "CreatedAt": "2026-01-15T08:00:00Z"
@@ -26,7 +26,7 @@
   {
     "Id": "production-1",
     "Username": "rezie",
-    "PasswordHash": "rezie123",
+    "PasswordHash": "cmV6aWUxMjM=",
     "Role": "Production",
     "TeamId": null,
     "CreatedAt": "2026-01-15T08:00:00Z"
