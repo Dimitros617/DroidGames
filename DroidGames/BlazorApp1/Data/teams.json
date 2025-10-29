@@ -1,0 +1,65 @@
+[
+  {
+    "Id": "team-1",
+    "Name": "RoboMasters",
+    "School": "ZŠ Plzeň",
+    "Members": ["Jan Novák", "Eva Svobodová", "Petr Dvořák"],
+    "PinCode": "1234",
+    "Rounds": [
+      {
+        "RoundNumber": 1,
+        "StartedAt": "2026-01-15T10:00:00Z",
+        "CompletedAt": "2026-01-15T10:05:00Z",
+        "FinalScore": 85,
+        "IsApproved": true,
+        "RefereeScores": {}
+      }
+    ],
+    "UnlockedAchievements": [],
+    "TotalScore": 85,
+    "CurrentPosition": 1,
+    "CreatedAt": "2026-01-15T09:00:00Z"
+  },
+  {
+    "Id": "team-2",
+    "Name": "Tech Warriors",
+    "School": "Gymnázium Praha",
+    "Members": ["Lucie Nováková", "Martin Procházka"],
+    "PinCode": "5678",
+    "Rounds": [
+      {
+        "RoundNumber": 1,
+        "StartedAt": "2026-01-15T10:00:00Z",
+        "CompletedAt": "2026-01-15T10:06:00Z",
+        "FinalScore": 72,
+        "IsApproved": true,
+        "RefereeScores": {}
+      }
+    ],
+    "UnlockedAchievements": [],
+    "TotalScore": 72,
+    "CurrentPosition": 2,
+    "CreatedAt": "2026-01-15T09:00:00Z"
+  },
+  {
+    "Id": "team-3",
+    "Name": "Code Ninjas",
+    "School": "ZŠ Brno",
+    "Members": ["Tomáš Veselý", "Klára Horáková", "David Černý"],
+    "PinCode": "9012",
+    "Rounds": [
+      {
+        "RoundNumber": 1,
+        "StartedAt": "2026-01-15T10:00:00Z",
+        "CompletedAt": "2026-01-15T10:07:00Z",
+        "FinalScore": 68,
+        "IsApproved": true,
+        "RefereeScores": {}
+      }
+    ],
+    "UnlockedAchievements": [],
+    "TotalScore": 68,
+    "CurrentPosition": 3,
+    "CreatedAt": "2026-01-15T09:00:00Z"
+  }
+]

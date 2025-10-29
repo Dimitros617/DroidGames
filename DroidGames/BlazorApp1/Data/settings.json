@@ -1,0 +1,14 @@
+{
+  "CompetitionName": "Droid Games 2026",
+  "CompetitionDate": "2026-01-15T00:00:00Z",
+  "Status": 0,
+  "TotalRounds": 5,
+  "CurrentRound": 1,
+  "RoundDurationSeconds": 180,
+  "TimerStatus": 0,
+  "TimerRemainingSeconds": 180,
+  "TimerStartedAt": null,
+  "AllowTeamSelfRegistration": false,
+  "ShowLiveLeaderboard": true,
+  "HardwareApiKey": "droid-games-2026-secret-key"
+}
