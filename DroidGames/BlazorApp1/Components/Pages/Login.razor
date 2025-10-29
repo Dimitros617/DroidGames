@@ -1,0 +1,518 @@
+@page "/login"
+@inject BlazorApp1.Services.IAuthService AuthService
+@inject BlazorApp1.Services.UserSession UserSession
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Přihlášení - DROID GAMES 2026</PageTitle>
+
+<div class="login-container">
+    <div class="login-box">
+        
+        <div class="login-header">
+            <img src="/graphic/DroidGames_logo_barva_v1.png" alt="DROID GAMES" class="login-logo" />
+            <h1 class="login-title">DROID GAMES 2026</h1>
+            <p class="login-subtitle">Management System</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="alert alert-error">
+                <span class="material-symbols-outlined">error</span>
+                <span>@_errorMessage</span>
+            </div>
+        }
+
+        @if (_isLoading)
+        {
+            <div class="login-loading">
+                <span class="material-symbols-outlined spinning">progress_activity</span>
+                <div>Přihlašuji...</div>
+            </div>
+        }
+        else
+        {
+            <!-- Tab Navigation -->
+            <div class="login-tabs">
+                <button @onclick="() => _activeTab = LoginTab.Team" 
+                        class="login-tab @(_activeTab == LoginTab.Team ? "active" : "")">
+                    <span class="material-symbols-outlined">groups</span>
+                    <span>TÝM (PIN)</span>
+                </button>
+                <button @onclick="() => _activeTab = LoginTab.Staff" 
+                        class="login-tab @(_activeTab == LoginTab.Staff ? "active" : "")">
+                    <span class="material-symbols-outlined">badge</span>
+                    <span>STAFF</span>
+                </button>
+            </div>
+
+            <!-- Team PIN Login -->
+            @if (_activeTab == LoginTab.Team)
+            {
+                <div class="login-form">
+                    <h3 class="form-title">Přihlášení týmu</h3>
+                    <p class="form-subtitle">Zadejte 4-místný PIN kód vašeho týmu</p>
+                    
+                    <div class="form-group">
+                        <input type="text" 
+                               @bind="_pinCode" 
+                               @bind:event="oninput"
+                               @onkeypress="OnPinKeyPress"
+                               placeholder="••••" 
+                               maxlength="4"
+                               class="pin-input" />
+                    </div>
+                    
+                    <button @onclick="LoginWithPin" 
+                            disabled="@(_pinCode.Length != 4)"
+                            class="btn btn-primary btn-large">
+                        <span class="material-symbols-outlined">login</span>
+                        <span>PŘIHLÁSIT SE</span>
+                    </button>
+                </div>
+            }
+
+            <!-- Staff Login -->
+            @if (_activeTab == LoginTab.Staff)
+            {
+                <div class="login-form">
+                    <h3 class="form-title">Přihlášení personálu</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span class="material-symbols-outlined">person</span>
+                            <span>Uživatelské jméno</span>
+                        </label>
+                        <input type="text" 
+                               @bind="_username" 
+                               @bind:event="oninput"
+                               @onkeypress="OnStaffKeyPress"
+                               placeholder="např. admin" 
+                               class="form-input" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span class="material-symbols-outlined">lock</span>
+                            <span>Heslo</span>
+                        </label>
+                        <input type="password" 
+                               @bind="_password" 
+                               @bind:event="oninput"
+                               @onkeypress="OnStaffKeyPress"
+                               placeholder="••••••••" 
+                               class="form-input" />
+                    </div>
+                    
+                    <button @onclick="LoginWithCredentials" 
+                            disabled="@(string.IsNullOrWhiteSpace(_username) || string.IsNullOrWhiteSpace(_password))"
+                            class="btn btn-primary btn-large">
+                        <span class="material-symbols-outlined">key</span>
+                        <span>PŘIHLÁSIT SE</span>
+                    </button>
+                </div>
+            }
+
+            <!-- Help Section -->
+            <div class="login-help">
+                <div class="help-title">
+                    <span class="material-symbols-outlined">info</span>
+                    <span>Nápověda</span>
+                </div>
+                <ul class="help-list">
+                    <li>Týmy: Použijte PIN kód, který jste obdrželi při registraci</li>
+                    <li>Rozhodčí, organizátoři: Přihlaste se přes "STAFF" záložku</li>
+                    <li>Problémy? Kontaktujte technickou podporu</li>
+                </ul>
+            </div>
+        }
+
+        <!-- Footer -->
+        <div class="login-footer">
+            © 2026 Centrum Robotiky Plzeň | Droid Games
+        </div>
+    </div>
+</div>
+
+<style>
+    .login-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--light-bg);
+        padding: 20px;
+    }
+
+    .login-box {
+        max-width: 500px;
+        width: 100%;
+    }
+
+    .login-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .login-logo {
+        height: 80px;
+        margin-bottom: 20px;
+    }
+
+    .login-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--black);
+        margin: 0 0 8px 0;
+    }
+
+    .login-subtitle {
+        color: var(--dark-gray);
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    .alert-error {
+        background: var(--danger-light);
+        color: var(--danger);
+        padding: 16px;
+        border-radius: var(--border-radius);
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border: 1px solid var(--danger);
+        font-weight: 600;
+    }
+
+    .alert-error .material-symbols-outlined {
+        font-size: 24px;
+    }
+
+    .login-loading {
+        background: white;
+        padding: 60px;
+        border-radius: var(--border-radius);
+        text-align: center;
+        box-shadow: var(--shadow-md);
+    }
+
+    .login-loading .material-symbols-outlined {
+        font-size: 48px;
+        color: var(--primary-gold);
+        margin-bottom: 16px;
+    }
+
+    .login-loading div {
+        color: var(--dark);
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    .login-tabs {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .login-tab {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 16px;
+        background: white;
+        color: var(--dark);
+        border: 2px solid var(--light-gray);
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: all var(--transition-fast);
+    }
+
+    .login-tab:hover {
+        border-color: var(--primary-gold);
+        background: var(--light-bg);
+    }
+
+    .login-tab.active {
+        background: var(--primary-gold);
+        border-color: var(--primary-gold);
+        color: white;
+    }
+
+    .login-tab .material-symbols-outlined {
+        font-size: 24px;
+    }
+
+    .login-form {
+        background: white;
+        padding: 32px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-md);
+        margin-bottom: 24px;
+    }
+
+    .form-title {
+        color: var(--primary-gold);
+        margin: 0 0 8px 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .form-subtitle {
+        color: var(--dark-gray);
+        margin: 0 0 24px 0;
+        font-size: 0.95rem;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--dark-gray);
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .form-label .material-symbols-outlined {
+        font-size: 20px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 14px;
+        font-size: 1rem;
+        background: var(--light-bg);
+        border: 2px solid var(--light-gray);
+        border-radius: var(--border-radius);
+        color: var(--black);
+        transition: all var(--transition-fast);
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--primary-gold);
+        background: white;
+    }
+
+    .pin-input {
+        width: 100%;
+        padding: 20px;
+        font-size: 2.5rem;
+        text-align: center;
+        background: var(--light-bg);
+        border: 3px solid var(--light-gray);
+        border-radius: var(--border-radius);
+        color: var(--black);
+        letter-spacing: 20px;
+        font-weight: 700;
+        transition: all var(--transition-fast);
+    }
+
+    .pin-input:focus {
+        outline: none;
+        border-color: var(--primary-gold);
+        background: white;
+    }
+
+    .btn-large {
+        width: 100%;
+        padding: 16px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .btn-large .material-symbols-outlined {
+        font-size: 26px;
+    }
+
+    .login-help {
+        background: rgba(253, 199, 29, 0.1);
+        border: 2px solid var(--primary-gold);
+        border-radius: var(--border-radius);
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+
+    .help-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--primary-gold);
+        font-weight: 700;
+        font-size: 1rem;
+        margin-bottom: 12px;
+    }
+
+    .help-title .material-symbols-outlined {
+        font-size: 22px;
+    }
+
+    .help-list {
+        color: var(--dark);
+        font-size: 0.9rem;
+        margin: 0;
+        padding-left: 20px;
+        line-height: 1.8;
+    }
+
+    .help-list li {
+        margin-bottom: 4px;
+    }
+
+    .login-footer {
+        text-align: center;
+        color: var(--dark-gray);
+        font-size: 0.85rem;
+    }
+
+    @@keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .spinning {
+        animation: spin 1s linear infinite;
+        display: inline-block;
+    }
+</style>
+
+@code {
+    private enum LoginTab
+    {
+        Team,
+        Staff
+    }
+
+    private LoginTab _activeTab = LoginTab.Team;
+    private string _pinCode = "";
+    private string _username = "";
+    private string _password = "";
+    private string _errorMessage = "";
+    private bool _isLoading = false;
+
+    protected override void OnInitialized()
+    {
+        // Pokud už je uživatel přihlášen, přesměruj ho
+        if (UserSession.IsAuthenticated)
+        {
+            RedirectToRoleHome();
+        }
+    }
+
+    private async Task LoginWithPin()
+    {
+        if (_pinCode.Length != 4) return;
+
+        _isLoading = true;
+        _errorMessage = "";
+        StateHasChanged();
+
+        try
+        {
+            var user = await AuthService.LoginWithPinAsync(_pinCode);
+            
+            if (user != null)
+            {
+                UserSession.SetUser(user);
+                Console.WriteLine($"[LOGIN] Team logged in: {user.Username} (ID: {user.Id})");
+                RedirectToRoleHome();
+            }
+            else
+            {
+                _errorMessage = "Neplatný PIN kód. Zkontrolujte zadání.";
+                _pinCode = "";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[LOGIN ERROR] {ex.Message}");
+            _errorMessage = "Chyba při přihlašování. Zkuste to znovu.";
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoginWithCredentials()
+    {
+        if (string.IsNullOrWhiteSpace(_username) || string.IsNullOrWhiteSpace(_password)) return;
+
+        _isLoading = true;
+        _errorMessage = "";
+        StateHasChanged();
+
+        try
+        {
+            var user = await AuthService.LoginAsync(_username, _password);
+            
+            if (user != null)
+            {
+                UserSession.SetUser(user);
+                Console.WriteLine($"[LOGIN] User logged in: {user.Username} (Role: {user.Role})");
+                RedirectToRoleHome();
+            }
+            else
+            {
+                _errorMessage = "Neplatné uživatelské jméno nebo heslo.";
+                _password = "";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[LOGIN ERROR] {ex.Message}");
+            _errorMessage = "Chyba při přihlašování. Zkuste to znovu.";
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void OnPinKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && _pinCode.Length == 4)
+        {
+            _ = LoginWithPin();
+        }
+    }
+
+    private void OnStaffKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(_username) && !string.IsNullOrWhiteSpace(_password))
+        {
+            _ = LoginWithCredentials();
+        }
+    }
+
+    private void RedirectToRoleHome()
+    {
+        var role = UserSession.CurrentUser?.Role;
+        var redirectUrl = role switch
+        {
+            BlazorApp1.Models.UserRole.Team => "/team/dashboard",
+            BlazorApp1.Models.UserRole.Referee => "/referee/scoring",
+            BlazorApp1.Models.UserRole.HeadReferee => "/headref/control",
+            BlazorApp1.Models.UserRole.Production => "/production/director",
+            BlazorApp1.Models.UserRole.Admin => "/admin/teams",
+            _ => "/"
+        };
+        
+        Navigation.NavigateTo(redirectUrl, forceLoad: true);
+    }
+}

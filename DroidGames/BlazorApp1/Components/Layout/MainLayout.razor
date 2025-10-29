@@ -1,11 +1,159 @@
 ﻿@inherits LayoutComponentBase
 
-<div style="min-height: 100vh; background: var(--dark); color: var(--white);">
-    @Body
+<div class="page-wrapper">
+    <!-- Header -->
+    <header class="main-header">
+        <div class="header-container">
+            <div class="header-logo">
+                <a href="/">
+                    <img src="/graphic/DroidGames_logo_barva_v1.png" alt="Droid Games 2026" height="50" />
+                </a>
+            </div>
+            <h1 class="header-title">Droid Games 2026</h1>
+            <div class="header-actions">
+                <!-- User info bude přidáno později -->
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <aside class="sidebar">
+            <NavMenu />
+        </aside>
+        
+        <main class="content-area">
+            @Body
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <p>&copy; 2026 Centrum Robotiky Plzeň | Droid Games</p>
+        </div>
+    </footer>
 </div>
 
-<div id="blazor-error-ui" style="background: var(--danger); color: white; padding: 10px; position: fixed; bottom: 0; width: 100%; display: none;">
+<div id="blazor-error-ui" class="blazor-error">
+    <span class="material-symbols-outlined">error</span>
     An unhandled error has occurred.
-    <a href="" class="reload" style="color: white; margin-left: 10px;">Reload</a>
-    <a class="dismiss" style="color: white; margin-left: 10px; cursor: pointer;">🗙</a>
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">✕</a>
 </div>
+
+<style>
+    .page-wrapper {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: var(--light-bg);
+    }
+
+    .main-header {
+        background: var(--gradient-header);
+        box-shadow: var(--shadow-md);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .header-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .header-logo img {
+        display: block;
+        height: 50px;
+        transition: transform var(--transition-normal);
+    }
+
+    .header-logo img:hover {
+        transform: scale(1.05);
+    }
+
+    .header-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--black);
+        margin: 0;
+        flex: 1;
+    }
+
+    .main-content {
+        flex: 1;
+        display: flex;
+        max-width: 1400px;
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    .sidebar {
+        width: 260px;
+        background: var(--white);
+        box-shadow: var(--shadow-sm);
+        padding: 20px 0;
+    }
+
+    .content-area {
+        flex: 1;
+        padding: 30px;
+        overflow-x: auto;
+    }
+
+    .main-footer {
+        background: var(--white);
+        border-top: 1px solid var(--light-gray);
+        padding: 20px;
+        text-align: center;
+        color: var(--dark-gray);
+        font-size: 0.9rem;
+    }
+
+    .blazor-error {
+        background: var(--danger);
+        color: white;
+        padding: 16px 20px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 9999;
+        display: none;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 -4px 12px rgba(0,0,0,0.2);
+    }
+
+    .blazor-error .reload,
+    .blazor-error .dismiss {
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: underline;
+        margin-left: 12px;
+    }
+
+    @media (max-width: 968px) {
+        .main-content {
+            flex-direction: column;
+        }
+
+        .sidebar {
+            width: 100%;
+        }
+
+        .header-title {
+            font-size: 1.3rem;
+        }
+
+        .content-area {
+            padding: 20px;
+        }
+    }
+</style>

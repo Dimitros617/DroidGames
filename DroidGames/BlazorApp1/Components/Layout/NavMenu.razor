@@ -1,55 +1,191 @@
 ﻿@implements IDisposable
 @inject NavigationManager NavigationManager
+@inject BlazorApp1.Services.UserSession UserSession
 
-<div class="top-row ps-3 navbar navbar-dark" style="background: var(--gradient-main);">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">
-            <img src="/graphic/DroidGames_logo_bile_v1.png" alt="DroidGames" style="height: 40px;" />
-        </a>
+<nav class="nav-menu">
+    @if (UserSession.IsAuthenticated)
+    {
+        <div class="nav-user-info">
+            <span class="material-symbols-outlined">account_circle</span>
+            <div>
+                <div class="nav-user-name">@UserSession.Username</div>
+                <div class="nav-user-role">@GetRoleName(UserSession.Role)</div>
+            </div>
+        </div>
+    }
+
+    <div class="nav-section">
+        <div class="nav-section-title">Veřejné</div>
+        
+        <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+            <span class="material-symbols-outlined">leaderboard</span>
+            <span>Žebříček</span>
+        </NavLink>
+
+        <NavLink class="nav-link" href="maps">
+            <span class="material-symbols-outlined">map</span>
+            <span>Mapy</span>
+        </NavLink>
     </div>
-</div>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span aria-hidden="true">🏠</span> Live Žebříček
+    @if (UserSession.HasRole(BlazorApp1.Models.UserRole.Team))
+    {
+        <div class="nav-section">
+            <div class="nav-section-title">Tým</div>
+            
+            <NavLink class="nav-link" href="team/dashboard">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span>Dashboard</span>
+            </NavLink>
+            <NavLink class="nav-link" href="team/statistics">
+                <span class="material-symbols-outlined">bar_chart</span>
+                <span>Statistiky</span>
+            </NavLink>
+            <NavLink class="nav-link" href="team/achievements">
+                <span class="material-symbols-outlined">emoji_events</span>
+                <span>Achievementy</span>
+            </NavLink>
+            <NavLink class="nav-link" href="team/quiz">
+                <span class="material-symbols-outlined">quiz</span>
+                <span>Kvíz</span>
             </NavLink>
         </div>
+    }
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span aria-hidden="true">📊</span> Counter
+    @if (UserSession.HasRole(BlazorApp1.Models.UserRole.Referee))
+    {
+        <div class="nav-section">
+            <div class="nav-section-title">Rozhodčí</div>
+            
+            <NavLink class="nav-link" href="referee/scoring">
+                <span class="material-symbols-outlined">edit_note</span>
+                <span>Bodování</span>
+            </NavLink>
+            <NavLink class="nav-link" href="referee/map">
+                <span class="material-symbols-outlined">map</span>
+                <span>Mapa</span>
             </NavLink>
         </div>
+    }
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span aria-hidden="true">☀️</span> Weather
+    @if (UserSession.HasRole(BlazorApp1.Models.UserRole.HeadReferee))
+    {
+        <div class="nav-section">
+            <div class="nav-section-title">Hlavní rozhodčí</div>
+            
+            <NavLink class="nav-link" href="headref/control">
+                <span class="material-symbols-outlined">settings</span>
+                <span>Ovládání</span>
+            </NavLink>
+            <NavLink class="nav-link" href="headref/approval">
+                <span class="material-symbols-outlined">check_circle</span>
+                <span>Schvalování</span>
+            </NavLink>
+            <NavLink class="nav-link" href="headref/timer">
+                <span class="material-symbols-outlined">timer</span>
+                <span>Časomíra</span>
+            </NavLink>
+            <NavLink class="nav-link" href="headref/funfacts">
+                <span class="material-symbols-outlined">lightbulb</span>
+                <span>Fun Facts</span>
+            </NavLink>
+            <NavLink class="nav-link" href="headref/reminders">
+                <span class="material-symbols-outlined">notifications</span>
+                <span>Připomínky</span>
+            </NavLink>
+            <NavLink class="nav-link" href="headref/production">
+                <span class="material-symbols-outlined">videocam</span>
+                <span>Režie</span>
             </NavLink>
         </div>
-    </nav>
-</div>
+    }
+
+    @if (UserSession.HasRole(BlazorApp1.Models.UserRole.Production))
+    {
+        <div class="nav-section">
+            <div class="nav-section-title">Produkce</div>
+            
+            <NavLink class="nav-link" href="production/director">
+                <span class="material-symbols-outlined">movie</span>
+                <span>Režisér</span>
+            </NavLink>
+        </div>
+    }
+
+    @if (UserSession.HasRole(BlazorApp1.Models.UserRole.Admin))
+    {
+        <div class="nav-section">
+            <div class="nav-section-title">Administrace</div>
+            
+            <NavLink class="nav-link" href="admin/teams">
+                <span class="material-symbols-outlined">groups</span>
+                <span>Týmy</span>
+            </NavLink>
+            <NavLink class="nav-link" href="admin/rounds">
+                <span class="material-symbols-outlined">sync</span>
+                <span>Kola</span>
+            </NavLink>
+            <NavLink class="nav-link" href="admin/maps">
+                <span class="material-symbols-outlined">terrain</span>
+                <span>Mapy</span>
+            </NavLink>
+            <NavLink class="nav-link" href="admin/settings">
+                <span class="material-symbols-outlined">tune</span>
+                <span>Nastavení</span>
+            </NavLink>
+            <NavLink class="nav-link" href="admin/diplomas">
+                <span class="material-symbols-outlined">workspace_premium</span>
+                <span>Diplomy</span>
+            </NavLink>
+        </div>
+    }
+
+    <div class="nav-section nav-bottom">
+        @if (UserSession.IsAuthenticated)
+        {
+            <a href="/logout" class="nav-link nav-logout">
+                <span class="material-symbols-outlined">logout</span>
+                <span>Odhlásit se</span>
+            </a>
+        }
+        else
+        {
+            <NavLink class="nav-link" href="login">
+                <span class="material-symbols-outlined">login</span>
+                <span>Přihlásit se</span>
+            </NavLink>
+        }
+    </div>
+</nav>
 
 @code {
-    private string? currentUrl;
-
     protected override void OnInitialized()
     {
-        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.LocationChanged += OnLocationChanged;
+        UserSession.OnChange += StateHasChanged;
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
         StateHasChanged();
+    }
+
+    private string GetRoleName(BlazorApp1.Models.UserRole role)
+    {
+        return role switch
+        {
+            BlazorApp1.Models.UserRole.Team => "Tým",
+            BlazorApp1.Models.UserRole.Referee => "Rozhodčí",
+            BlazorApp1.Models.UserRole.HeadReferee => "Hlavní rozhodčí",
+            BlazorApp1.Models.UserRole.Production => "Produkce",
+            BlazorApp1.Models.UserRole.Admin => "Administrátor",
+            _ => "Návštěvník"
+        };
     }
 
     public void Dispose()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
+        UserSession.OnChange -= StateHasChanged;
     }
 }
