@@ -1,3 +1,4 @@
+using System;
 using BlazorApp1.Data;
 using BlazorApp1.Models;
 
@@ -11,6 +12,7 @@ public class TeamService : ITeamService
 
     public TeamService(IRepository<Team> repository)
     {
+        Console.WriteLine("[DEBUG] TeamService created");
         _repository = repository;
     }
 
@@ -61,6 +63,7 @@ public class ScoreService : IScoreService
 
     public ScoreService(IRepository<Team> teamRepository)
     {
+        Console.WriteLine("[DEBUG] ScoreService created");
         _teamRepository = teamRepository;
     }
 
@@ -98,6 +101,7 @@ public class MapService : IMapService
 
     public MapService(IRepository<MapConfiguration> repository)
     {
+        Console.WriteLine("[DEBUG] MapService created");
         _repository = repository;
     }
 
@@ -123,6 +127,7 @@ public class AchievementService : IAchievementService
         IRepository<Achievement> achievementRepository,
         IRepository<Team> teamRepository)
     {
+        Console.WriteLine("[DEBUG] AchievementService created");
         _achievementRepository = achievementRepository;
         _teamRepository = teamRepository;
     }
@@ -174,6 +179,7 @@ public class QuizService : IQuizService
 
     public QuizService(IRepository<QuizQuestion> repository)
     {
+        Console.WriteLine("[DEBUG] QuizService created");
         _repository = repository;
     }
 
@@ -183,19 +189,19 @@ public class QuizService : IQuizService
         return all.OrderBy(q => Guid.NewGuid()).Take(count).ToList();
     }
 
-    public async Task<QuizSession> StartSessionAsync(string userId)
+    public Task<QuizSession> StartSessionAsync(string userId)
     {
-        return new QuizSession
+        return Task.FromResult(new QuizSession
         {
             UserId = userId,
             StartedAt = DateTime.UtcNow
-        };
+        });
     }
 
-    public async Task<QuizSession> SubmitAnswerAsync(string sessionId, QuizAnswer answer)
+    public Task<QuizSession> SubmitAnswerAsync(string sessionId, QuizAnswer answer)
     {
         // Simplified - in real implementation would load from repository
-        return new QuizSession { SessionId = sessionId };
+        return Task.FromResult(new QuizSession { SessionId = sessionId });
     }
 }
 
@@ -205,6 +211,7 @@ public class ReminderService : IReminderService
 
     public ReminderService(IRepository<Reminder> repository)
     {
+        Console.WriteLine("[DEBUG] ReminderService created");
         _repository = repository;
     }
 
@@ -238,6 +245,7 @@ public class FunFactService : IFunFactService
 
     public FunFactService(IRepository<FunFact> repository)
     {
+        Console.WriteLine("[DEBUG] FunFactService created");
         _repository = repository;
     }
 
@@ -269,6 +277,7 @@ public class AuthService : IAuthService
 
     public AuthService(IRepository<User> userRepository, IRepository<Team> teamRepository)
     {
+        Console.WriteLine("[DEBUG] AuthService created");
         _userRepository = userRepository;
         _teamRepository = teamRepository;
     }
@@ -328,6 +337,7 @@ public class TimerService : ITimerService
 
     public TimerService(CompetitionSettings settings)
     {
+        Console.WriteLine("[DEBUG] TimerService created");
         _settings = settings;
     }
 
@@ -377,6 +387,7 @@ public class TimerBackgroundService : BackgroundService
 
     public TimerBackgroundService(ITimerService timerService, ILogger<TimerBackgroundService> logger)
     {
+        Console.WriteLine("[DEBUG] TimerBackgroundService created");
         _timerService = timerService;
         _logger = logger;
     }

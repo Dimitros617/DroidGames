@@ -1,0 +1,29 @@
+@using Microsoft.AspNetCore.Components.Web
+
+<CascadingValue Value="this">
+    @ChildContent
+</CascadingValue>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public RenderFragment<Exception>? ErrorContent { get; set; }
+
+    public Exception? CurrentException { get; private set; }
+
+    protected override void OnParametersSet()
+    {
+        CurrentException = null;
+    }
+
+    public void HandleException(Exception exception)
+    {
+        CurrentException = exception;
+        Console.WriteLine($"[ERROR BOUNDARY] Caught exception: {exception.GetType().Name}");
+        Console.WriteLine($"[ERROR BOUNDARY] Message: {exception.Message}");
+        Console.WriteLine($"[ERROR BOUNDARY] Stack: {exception.StackTrace}");
+        StateHasChanged();
+    }
+}

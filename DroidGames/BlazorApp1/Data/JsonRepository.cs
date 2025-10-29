@@ -1,3 +1,4 @@
+using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -14,6 +15,7 @@ public class JsonRepository<T> : IRepository<T> where T : class
     {
         Directory.CreateDirectory(dataDirectory);
         _filePath = Path.Combine(dataDirectory, fileName);
+        Console.WriteLine($"[DEBUG] JsonRepository<{typeof(T).Name}> ctor start. Path: {_filePath}");
         
         _jsonOptions = new JsonSerializerOptions
         {
@@ -23,22 +25,55 @@ public class JsonRepository<T> : IRepository<T> where T : class
             Converters = { new JsonStringEnumConverter() }
         };
         
-        LoadAsync().Wait();
+        // FIXED: Synchronous file loading to avoid deadlock in Blazor Server
+        try
+        {
+            LoadSync();
+            Console.WriteLine($"[DEBUG] JsonRepository<{typeof(T).Name}> initial load complete. Items: {_cache.Count}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] JsonRepository<{typeof(T).Name}> failed to load: {ex}");
+            throw;
+        }
+    }
+
+    private void LoadSync()
+    {
+        Console.WriteLine($"[DEBUG] JsonRepository<{typeof(T).Name}> LoadSync start");
+        if (File.Exists(_filePath))
+        {
+            Console.WriteLine($"[DEBUG] JsonRepository<{typeof(T).Name}> reading {_filePath}");
+            var json = File.ReadAllText(_filePath);
+            _cache = JsonSerializer.Deserialize<List<T>>(json, _jsonOptions) ?? new List<T>();
+            Console.WriteLine($"[DEBUG] JsonRepository<{typeof(T).Name}> loaded {_cache.Count} items");
+        }
+        else
+        {
+            _cache = new List<T>();
+            Console.WriteLine($"[DEBUG] JsonRepository<{typeof(T).Name}> file missing, creating new store");
+            var json = JsonSerializer.Serialize(_cache, _jsonOptions);
+            File.WriteAllText(_filePath, json);
+        }
     }
 
     private async Task LoadAsync()
     {
+        Console.WriteLine($"[DEBUG] JsonRepository<{typeof(T).Name}> LoadAsync start");
         await _lock.WaitAsync();
         try
         {
             if (File.Exists(_filePath))
             {
+                Console.WriteLine($"[DEBUG] JsonRepository<{typeof(T).Name}> reading {_filePath}");
                 var json = await File.ReadAllTextAsync(_filePath);
                 _cache = JsonSerializer.Deserialize<List<T>>(json, _jsonOptions) ?? new List<T>();
+                Console.WriteLine($"[DEBUG] JsonRepository<{typeof(T).Name}> loaded {_cache.Count} items");
             }
             else
             {
                 _cache = new List<T>();
+                Console.WriteLine($"[DEBUG] JsonRepository<{typeof(T).Name}> file missing, creating new store");
                 await SaveAsync();
             }
         }
@@ -155,6 +190,7 @@ public class JsonRepository<T> : IRepository<T> where T : class
 
     public async Task SaveAsync()
     {
+        Console.WriteLine($"[DEBUG] JsonRepository<{typeof(T).Name}> SaveAsync writing {_cache.Count} items to {_filePath}");
         var json = JsonSerializer.Serialize(_cache, _jsonOptions);
         await File.WriteAllTextAsync(_filePath, json);
     }

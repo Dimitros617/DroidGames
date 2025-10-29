@@ -112,6 +112,24 @@ Console.WriteLine("[DEBUG] Building app...");
 var app = builder.Build();
 Console.WriteLine("[DEBUG] App built successfully");
 
+// Configure global exception handler
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        var exceptionHandlerPathFeature = 
+            context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature>();
+        var exception = exceptionHandlerPathFeature?.Error;
+        
+        Console.WriteLine($"[ERROR] Unhandled exception: {exception?.GetType().Name}");
+        Console.WriteLine($"[ERROR] Message: {exception?.Message}");
+        Console.WriteLine($"[ERROR] StackTrace: {exception?.StackTrace}");
+        
+        context.Response.StatusCode = 500;
+        await context.Response.WriteAsync("Internal Server Error. Check console for details.");
+    });
+});
+
 // Configure the HTTP request pipeline
 if (!app.Environment.IsDevelopment())
 {
