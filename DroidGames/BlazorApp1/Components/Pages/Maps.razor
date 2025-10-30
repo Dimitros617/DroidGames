@@ -1,42 +1,242 @@
 @page "/maps"
+@inject BlazorApp1.Services.IMapService MapService
+@inject BlazorApp1.Services.UserSession UserSession
+@rendermode InteractiveServer
 
 <PageTitle>Mapy - DROID GAMES 2026</PageTitle>
 
-<div class="maps-page">
-    <div class="page-header">
-        <h1>
+<div class="maps-container">
+    <div class="maps-header">
+        <h1 class="page-title">
             <span class="material-symbols-outlined">map</span>
-            Herní mapy
+            Herní Mapy
         </h1>
-        <p class="subtitle">Prohlédněte si všechny mapy soutěže</p>
+        <p class="page-subtitle">
+            Konfigurace herních plánů pro jednotlivá kola
+        </p>
     </div>
 
-    <div class="maps-grid">
-        <div class="map-card">
-            <div class="map-icon">
-                <span class="material-symbols-outlined">terrain</span>
-            </div>
-            <h3>Základní mapa</h3>
-            <p>Klasická mapa pro zahřátí</p>
-            <span class="map-difficulty easy">Snadná</span>
+    @if (_isLoading)
+    {
+        <!-- Loading skeleton -->
+        <div class="loading-grid">
+            <div class="skeleton-map-card"></div>
+            <div class="skeleton-map-card"></div>
+            <div class="skeleton-map-card"></div>
+        </div>
+    }
+    else if (_error != null)
+    {
+        <div class="error-card">
+            <h2>
+                <span class="material-symbols-outlined">error</span>
+                Chyba při načítání map
+            </h2>
+            <pre class="error-message">@_error</pre>
+            <button class="btn-retry" @onclick="LoadMaps">
+                <span class="material-symbols-outlined">refresh</span>
+                Zkusit znovu
+            </button>
+        </div>
+    }
+    else if (_publishedMaps != null && _publishedMaps.Any())
+    {
+        <div class="maps-grid">
+            @foreach (var map in _publishedMaps)
+            {
+                <div class="map-card" style="animation-delay: @(_publishedMaps.IndexOf(map) * 0.1)s">
+                    <div class="map-header">
+                        <div class="map-name">
+                            <span class="material-symbols-outlined">grid_on</span>
+                            @map.Name
+                        </div>
+                        <div class="map-round-badge">
+                            Kolo @map.RoundNumber
+                        </div>
+                    </div>
+
+                    <div class="map-preview">
+                        <!-- Simple grid representation -->
+                        <div class="map-grid-preview">
+                            @foreach (var block in GetPreviewBlocks(map))
+                            {
+                                <div class="preview-block @GetBlockClass(block)"></div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="map-stats">
+                        <div class="stat-row">
+                            <span class="stat-icon">📊</span>
+                            <span class="stat-label">Průměrné skóre:</span>
+                            <span class="stat-value">@map.AverageScore.ToString("F1") bodů</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-icon">🎮</span>
+                            <span class="stat-label">Odehráno:</span>
+                            <span class="stat-value">@map.TimesPlayed× </span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-icon">🔷</span>
+                            <span class="stat-label">Krystaly:</span>
+                            <span class="stat-value">@GetCrystalCount(map)</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-icon">🟡</span>
+                            <span class="stat-label">Síry:</span>
+                            <span class="stat-value">@GetSulfurCount(map)</span>
+                        </div>
+                    </div>
+
+                    @if (UserSession.HasRole(BlazorApp1.Models.UserRole.Admin))
+                    {
+                        <div class="map-admin-badge">
+                            <span class="material-symbols-outlined">admin_panel_settings</span>
+                            ID: @map.Id[..8]...
+                        </div>
+                    }
+                </div>
+            }
         </div>
 
-        <div class="map-card">
-            <div class="map-icon">
-                <span class="material-symbols-outlined">landscape</span>
+        <div class="maps-summary">
+            <div class="summary-card">
+                <div class="summary-icon">📚</div>
+                <div class="summary-content">
+                    <div class="summary-title">Celkem map</div>
+                    <div class="summary-value">@_publishedMaps.Count</div>
+                </div>
             </div>
-            <h3>Střední mapa</h3>
-            <p>Mapa s většími výzvami</p>
-            <span class="map-difficulty medium">Střední</span>
-        </div>
-
-        <div class="map-card">
-            <div class="map-icon">
-                <span class="material-symbols-outlined">hiking</span>
+            <div class="summary-card">
+                <div class="summary-icon">⭐</div>
+                <div class="summary-content">
+                    <div class="summary-title">Nejhranější mapa</div>
+                    <div class="summary-value">@GetMostPlayedMap()</div>
+                </div>
             </div>
-            <h3>Pokročilá mapa</h3>
-            <p>Mapa pro zkušené týmy</p>
-            <span class="map-difficulty hard">Náročná</span>
+            <div class="summary-card">
+                <div class="summary-icon">🏆</div>
+                <div class="summary-content">
+                    <div class="summary-title">Nejvyšší průměr</div>
+                    <div class="summary-value">@GetHighestAverageScore() bodů</div>
+                </div>
+            </div>
         </div>
-    </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <span class="material-symbols-outlined empty-icon">layers_clear</span>
+            <h2>Zatím nejsou publikovány žádné mapy</h2>
+            <p>Mapy budou zveřejněny před začátkem každého kola.</p>
+            @if (UserSession.HasRole(BlazorApp1.Models.UserRole.Admin))
+            {
+                <p class="admin-note">
+                    <span class="material-symbols-outlined">info</span>
+                    Admin: Publikujte mapy v sekci Admin → Maps
+                </p>
+            }
+        </div>
+    }
 </div>
+
+@code {
+    private bool _isLoading = true;
+    private string? _error = null;
+    private List<BlazorApp1.Models.MapConfiguration>? _publishedMaps = null;
+    private string _debugLog = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMaps();
+    }
+
+    private async Task LoadMaps()
+    {
+        _isLoading = true;
+        _error = null;
+        _debugLog = "";
+        StateHasChanged();
+
+        try
+        {
+            AddDebugLog("Načítám mapy...");
+
+            var allMaps = await MapService.GetAllMapsAsync();
+            AddDebugLog($"Načteno {allMaps.Count} celkem map");
+
+            // Filter only published maps (unless admin)
+            if (UserSession.HasRole(BlazorApp1.Models.UserRole.Admin))
+            {
+                _publishedMaps = allMaps;
+                AddDebugLog($"Admin: zobrazuji všechny mapy ({allMaps.Count})");
+            }
+            else
+            {
+                _publishedMaps = allMaps.Where(m => m.IsPublished).ToList();
+                AddDebugLog($"Public: zobrazuji pouze publikované mapy ({_publishedMaps.Count})");
+            }
+
+            _isLoading = false;
+            AddDebugLog("Načítání dokončeno");
+        }
+        catch (Exception ex)
+        {
+            _error = $"Typ: {ex.GetType().Name}\nZpráva: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}";
+            AddDebugLog($"CHYBA: {ex.GetType().Name} - {ex.Message}");
+            _isLoading = false;
+        }
+
+        StateHasChanged();
+    }
+
+    private List<BlazorApp1.Models.MapBlock> GetPreviewBlocks(BlazorApp1.Models.MapConfiguration map)
+    {
+        // Return all 54 blocks (6 rows × 9 columns) for full 6x9 grid display
+        return map.Blocks ?? new List<BlazorApp1.Models.MapBlock>();
+    }
+
+    private string GetBlockClass(BlazorApp1.Models.MapBlock block)
+    {
+        return block.Type switch
+        {
+            BlazorApp1.Models.MapBlockType.BlueCrystal => "block-crystal",
+            BlazorApp1.Models.MapBlockType.YellowSulfur => "block-sulfur",
+            BlazorApp1.Models.MapBlockType.Rock => "block-rock",
+            _ => "block-empty"
+        };
+    }
+
+    private int GetCrystalCount(BlazorApp1.Models.MapConfiguration map)
+    {
+        return (map.Blocks ?? new List<BlazorApp1.Models.MapBlock>())
+            .Count(b => b.Type == BlazorApp1.Models.MapBlockType.BlueCrystal);
+    }
+
+    private int GetSulfurCount(BlazorApp1.Models.MapConfiguration map)
+    {
+        return (map.Blocks ?? new List<BlazorApp1.Models.MapBlock>())
+            .Count(b => b.Type == BlazorApp1.Models.MapBlockType.YellowSulfur);
+    }
+
+    private string GetMostPlayedMap()
+    {
+        if (_publishedMaps == null || !_publishedMaps.Any()) return "-";
+
+        var mostPlayed = _publishedMaps.OrderByDescending(m => m.TimesPlayed).FirstOrDefault();
+        return mostPlayed != null ? $"{mostPlayed.Name} ({mostPlayed.TimesPlayed}×)" : "-";
+    }
+
+    private double GetHighestAverageScore()
+    {
+        if (_publishedMaps == null || !_publishedMaps.Any()) return 0;
+        return _publishedMaps.Max(m => m.AverageScore);
+    }
+
+    private void AddDebugLog(string message)
+    {
+        var timestamp = DateTime.Now.ToString("HH:mm:ss.fff");
+        _debugLog += $"[{timestamp}] {message}\n";
+    }
+}
+

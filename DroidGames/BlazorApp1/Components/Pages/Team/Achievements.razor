@@ -1,39 +1,273 @@
 @page "/team/achievements"
+@using BlazorApp1.Services
+@using BlazorApp1.Models
+@inject UserSession UserSession
+@inject IAchievementService AchievementService
+@inject ITeamService TeamService
 @rendermode InteractiveServer
 
 <PageTitle>Achievementy</PageTitle>
 
 <BlazorApp1.Components.Shared.AuthGuard RequiredRole="BlazorApp1.Models.UserRole.Team">
-    <div class="page-container">
-        <h1>
-            <span class="material-symbols-outlined">workspace_premium</span>
-            Achievementy
-        </h1>
-        <p class="placeholder-text">Seznam achievementů bude brzy k dispozici.</p>
+    <div class="achievements-page">
+        <div class="achievements-header">
+            <h1>
+                <span class="material-symbols-outlined">workspace_premium</span>
+                Achievementy
+            </h1>
+            <p class="subtitle">Sbírejte odznaky za své výkony</p>
+        </div>
+
+        @if (_loading)
+        {
+            <div class="loading-state">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Načítání...</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            <!-- Stats Overview -->
+            <div class="achievement-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-outlined">check_circle</span>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@_unlockedCount</div>
+                        <div class="stat-label">Odemčeno</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-outlined">lock</span>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@_lockedCount</div>
+                        <div class="stat-label">Zamčeno</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-outlined">percent</span>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@_completionPercentage%</div>
+                        <div class="stat-label">Dokončeno</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rarity Filter -->
+            <div class="filter-section">
+                <h3>Filtrovat podle vzácnosti:</h3>
+                <div class="filter-buttons">
+                    <button class="filter-btn @(_selectedRarity == null ? "active" : "")" 
+                            @onclick="() => FilterByRarity(null)">
+                        Vše
+                    </button>
+                    <button class="filter-btn rarity-common @(_selectedRarity == AchievementRarity.Common ? "active" : "")" 
+                            @onclick="() => FilterByRarity(AchievementRarity.Common)">
+                        Běžné
+                    </button>
+                    <button class="filter-btn rarity-rare @(_selectedRarity == AchievementRarity.Rare ? "active" : "")" 
+                            @onclick="() => FilterByRarity(AchievementRarity.Rare)">
+                        Vzácné
+                    </button>
+                    <button class="filter-btn rarity-epic @(_selectedRarity == AchievementRarity.Epic ? "active" : "")" 
+                            @onclick="() => FilterByRarity(AchievementRarity.Epic)">
+                        Epické
+                    </button>
+                    <button class="filter-btn rarity-legendary @(_selectedRarity == AchievementRarity.Legendary ? "active" : "")" 
+                            @onclick="() => FilterByRarity(AchievementRarity.Legendary)">
+                        Legendární
+                    </button>
+                </div>
+            </div>
+
+            <!-- Achievements Grid -->
+            <div class="achievements-grid">
+                @foreach (var achievement in _filteredAchievements)
+                {
+                    var isUnlocked = _unlockedAchievementIds.Contains(achievement.Id);
+                    var isHidden = achievement.IsHidden && !isUnlocked;
+
+                    <div class="achievement-card rarity-@achievement.Rarity.ToString().ToLower() @(isUnlocked ? "unlocked" : "locked")">
+                        @if (isHidden)
+                        {
+                            <div class="achievement-hidden">
+                                <span class="material-symbols-outlined">lock</span>
+                                <div class="achievement-title">???</div>
+                                <div class="achievement-description">Skrytý achievement</div>
+                                <div class="achievement-rarity">@GetRarityText(achievement.Rarity)</div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="achievement-icon">
+                                <span class="material-symbols-outlined">@achievement.Icon</span>
+                                @if (isUnlocked)
+                                {
+                                    <div class="unlocked-badge">
+                                        <span class="material-symbols-outlined">check_circle</span>
+                                    </div>
+                                }
+                            </div>
+                            <div class="achievement-content">
+                                <div class="achievement-title">@achievement.Name</div>
+                                <div class="achievement-description">@achievement.Description</div>
+                                <div class="achievement-rarity">@GetRarityText(achievement.Rarity)</div>
+                                
+                                @if (!isUnlocked && achievement.Condition != null)
+                                {
+                                    <div class="achievement-progress">
+                                        @{
+                                            var progress = GetAchievementProgress(achievement);
+                                        }
+                                        <div class="progress">
+                                            <div class="progress-bar" 
+                                                 role="progressbar" 
+                                                 style="width: @progress%"
+                                                 aria-valuenow="@progress" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                        <small class="progress-text">@progress% splněno</small>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            @if (!_filteredAchievements.Any())
+            {
+                <div class="empty-state">
+                    <span class="material-symbols-outlined">search_off</span>
+                    <h3>Žádné achievementy</h3>
+                    <p>V této kategorii zatím nejsou žádné achievementy</p>
+                </div>
+            }
+        }
     </div>
 </BlazorApp1.Components.Shared.AuthGuard>
 
-<style>
-    .page-container {
-        padding: 40px;
-        max-width: 1400px;
-        margin: 0 auto;
-        text-align: center;
+@code {
+    private bool _loading = true;
+    private List<Achievement> _allAchievements = new();
+    private List<Achievement> _filteredAchievements = new();
+    private HashSet<string> _unlockedAchievementIds = new();
+    private AchievementRarity? _selectedRarity = null;
+    private Team? _currentTeam;
+
+    private int _unlockedCount = 0;
+    private int _lockedCount = 0;
+    private int _completionPercentage = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (UserSession.IsAuthenticated && UserSession.CurrentUser?.TeamId != null)
+        {
+            await LoadAchievementsAsync();
+        }
+        _loading = false;
     }
-    .page-container h1 {
-        display: inline-flex;
-        align-items: center;
-        gap: 15px;
-        font-size: 2.5em;
-        color: #000;
-        margin-bottom: 20px;
+
+    private async Task LoadAchievementsAsync()
+    {
+        try
+        {
+            // Load all achievements
+            _allAchievements = await AchievementService.GetAllAchievementsAsync();
+            
+            // Load team data
+            var teams = await TeamService.GetAllTeamsAsync();
+            _currentTeam = teams.FirstOrDefault(t => t.Id == UserSession.CurrentUser?.TeamId);
+            
+            if (_currentTeam != null)
+            {
+                _unlockedAchievementIds = _currentTeam.UnlockedAchievements.ToHashSet();
+            }
+
+            // Calculate stats
+            _unlockedCount = _unlockedAchievementIds.Count;
+            _lockedCount = _allAchievements.Count - _unlockedCount;
+            _completionPercentage = _allAchievements.Any() 
+                ? (int)((double)_unlockedCount / _allAchievements.Count * 100) 
+                : 0;
+
+            // Apply initial filter
+            FilterByRarity(null);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading achievements: {ex.Message}");
+        }
     }
-    .page-container h1 .material-symbols-outlined {
-        color: #fdc71d;
-        font-size: 1.2em;
+
+    private void FilterByRarity(AchievementRarity? rarity)
+    {
+        _selectedRarity = rarity;
+        
+        if (rarity == null)
+        {
+            _filteredAchievements = _allAchievements.ToList();
+        }
+        else
+        {
+            _filteredAchievements = _allAchievements
+                .Where(a => a.Rarity == rarity.Value)
+                .ToList();
+        }
     }
-    .placeholder-text {
-        font-size: 1.2em;
-        color: #666;
+
+    private string GetRarityText(AchievementRarity rarity)
+    {
+        return rarity switch
+        {
+            AchievementRarity.Common => "Běžný",
+            AchievementRarity.Rare => "Vzácný",
+            AchievementRarity.Epic => "Epický",
+            AchievementRarity.Legendary => "Legendární",
+            _ => "Neznámý"
+        };
     }
-</style>
+
+    private int GetAchievementProgress(Achievement achievement)
+    {
+        if (_currentTeam == null || achievement.Condition == null)
+            return 0;
+
+        // Calculate progress based on condition type
+        var condition = achievement.Condition;
+        
+        // For most achievements, we'll show 0% if not unlocked, 100% if unlocked
+        // More complex progress tracking would require detailed condition parameters
+        
+        switch (condition.Type)
+        {
+            case AchievementConditionType.ConsistentScores:
+                // Could calculate variance in scores
+                if (_currentTeam.Rounds.Count >= 3)
+                {
+                    var scores = _currentTeam.Rounds.Select(r => (double)(r.FinalScore ?? 0)).ToList();
+                    var avg = scores.Average();
+                    var variance = scores.Sum(s => Math.Pow(s - avg, 2)) / scores.Count;
+                    var consistency = Math.Max(0, 100 - (int)(variance / 10));
+                    return Math.Min(100, consistency);
+                }
+                return 0;
+                
+            case AchievementConditionType.PositionImprovement:
+                // Track position changes
+                return _currentTeam.Rounds.Count >= 2 ? 50 : 0;
+                
+            default:
+                // For other types, simple binary: 0% or would need unlock
+                return 0;
+        }
+    }
+}

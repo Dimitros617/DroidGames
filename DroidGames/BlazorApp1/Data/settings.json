@@ -1,14 +1,19 @@
-{
-  "CompetitionName": "Droid Games 2026",
-  "CompetitionDate": "2026-01-15T00:00:00Z",
-  "Status": 0,
-  "TotalRounds": 5,
-  "CurrentRound": 1,
-  "RoundDurationSeconds": 180,
-  "TimerStatus": 0,
-  "TimerRemainingSeconds": 180,
-  "TimerStartedAt": null,
-  "AllowTeamSelfRegistration": false,
-  "ShowLiveLeaderboard": true,
-  "HardwareApiKey": "droid-games-2026-secret-key"
-}
+[
+  {
+    "CurrentRound": 2,
+    "Status": 1,
+    "RoundDurationSeconds": 90,
+    "PreparationDurationSeconds": 60,
+    "TotalRounds": 5,
+    "MaxTeams": 16,
+    "MaxTeamsPerSchool": 3,
+    "TimerStartedAt": null,
+    "TimerRemainingSeconds": 90,
+    "TimerStatus": 0,
+    "CurrentTeamAId": "team-1",
+    "CurrentTeamBId": "team-2",
+    "NextTeamAId": "team-3",
+    "NextTeamBId": "team-test",
+    "HardwareApiKey": "droid-games-2026-secret-key"
+  }
+]

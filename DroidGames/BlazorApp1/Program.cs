@@ -64,6 +64,8 @@ builder.Services.AddSingleton<IRepository<Achievement>>(sp =>
     new JsonRepository<Achievement>(dataPath, "achievements.json"));
 builder.Services.AddSingleton<IRepository<QuizQuestion>>(sp => 
     new JsonRepository<QuizQuestion>(dataPath, "quiz.json"));
+builder.Services.AddSingleton<IRepository<QuizProgress>>(sp => 
+    new JsonRepository<QuizProgress>(dataPath, "quiz-progress.json"));
 builder.Services.AddSingleton<IRepository<Reminder>>(sp => 
     new JsonRepository<Reminder>(dataPath, "reminders.json"));
 builder.Services.AddSingleton<IRepository<FunFact>>(sp => 
@@ -71,23 +73,18 @@ builder.Services.AddSingleton<IRepository<FunFact>>(sp =>
 builder.Services.AddSingleton<IRepository<User>>(sp => 
     new JsonRepository<User>(dataPath, "users.json"));
 
-// Settings as singleton
+// Settings repository - needed for Home.razor
+builder.Services.AddSingleton<IRepository<CompetitionSettings>>(sp => 
+    new JsonRepository<CompetitionSettings>(dataPath, "settings.json"));
+
+// Settings as singleton (for backward compatibility)
 Console.WriteLine("[DEBUG] Loading settings...");
 builder.Services.AddSingleton<CompetitionSettings>(sp =>
 {
-    var settingsPath = Path.Combine(dataPath, "settings.json");
-    Console.WriteLine($"[DEBUG] Settings path: {settingsPath}");
-    if (File.Exists(settingsPath))
-    {
-        Console.WriteLine("[DEBUG] Settings file exists, loading...");
-        var json = File.ReadAllText(settingsPath);
-        var settings = System.Text.Json.JsonSerializer.Deserialize<CompetitionSettings>(json) 
-            ?? new CompetitionSettings();
-        Console.WriteLine("[DEBUG] Settings loaded successfully");
-        return settings;
-    }
-    Console.WriteLine("[DEBUG] Settings file not found, using defaults");
-    return new CompetitionSettings();
+    var settingsRepo = sp.GetRequiredService<IRepository<CompetitionSettings>>();
+    var allSettings = settingsRepo.GetAllAsync().Result;
+    Console.WriteLine($"[DEBUG] Settings loaded: {allSettings.Count} items");
+    return allSettings.FirstOrDefault() ?? new CompetitionSettings();
 });
 Console.WriteLine("[DEBUG] Settings registration complete");
 

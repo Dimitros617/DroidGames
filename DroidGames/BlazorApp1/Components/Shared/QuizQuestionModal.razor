@@ -1,0 +1,187 @@
+@using BlazorApp1.Models
+@using System.Timers
+@implements IDisposable
+
+<!-- Modal Overlay -->
+<div class="quiz-modal-overlay" @onclick="Close">
+    <div class="quiz-modal-dialog" @onclick:stopPropagation="true">
+        <div class="quiz-modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <span class="material-symbols-outlined">quiz</span>
+                    Otázka #@((int)(Question?.Difficulty ?? QuizDifficulty.Easy) + 1)
+                </h5>
+                <button type="button" class="btn-close" @onclick="Close" disabled="@_answerSubmitted"></button>
+            </div>
+            <div class="modal-body">
+                @if (Question != null)
+                {
+                    <!-- Časový odpočet -->
+                    <div class="timer-section mb-4">
+                        <div class="timer-label">Zbývající čas</div>
+                        <div class="timer-display @(_timeLeft <= 5 ? "warning" : "")">
+                            <span class="material-symbols-outlined">timer</span>
+                            @_timeLeft sekund
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar @GetProgressBarClass()" 
+                                 role="progressbar" 
+                                 style="width: @(_timeLeft * 100 / 15)%"
+                                 aria-valuenow="@_timeLeft" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="15"></div>
+                        </div>
+                    </div>
+
+                    <!-- Otázka -->
+                    <div class="question-section mb-4">
+                        <h4>@Question.Question</h4>
+                    </div>
+
+                    <!-- Odpovědi -->
+                    <div class="answers-section">
+                        @for (int i = 0; i < Question.Options.Count; i++)
+                        {
+                            var index = i;
+                            var optionClass = GetOptionClass(index);
+                            var isDisabled = _answerSubmitted || _timeLeft <= 0;
+                            
+                            <button class="answer-option @optionClass" 
+                                    @onclick="() => SelectAnswer(index)"
+                                    disabled="@isDisabled">
+                                <span class="option-letter">@((char)('A' + index))</span>
+                                <span class="option-text">@Question.Options[index]</span>
+                                @if (_answerSubmitted && index == _selectedAnswerIndex)
+                                {
+                                    <span class="material-symbols-outlined option-icon">
+                                        @(_isCorrect ? "check_circle" : "cancel")
+                                    </span>
+                                }
+                            </button>
+                        }
+                    </div>
+
+                    <!-- Zpětná vazba -->
+                    @if (_answerSubmitted)
+                    {
+                        <div class="feedback-section mt-4">
+                            @if (_isCorrect)
+                            {
+                                <div class="alert alert-success d-flex align-items-center">
+                                    <span class="material-symbols-outlined me-2">check_circle</span>
+                                    <strong>Správně!</strong>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-danger d-flex align-items-center">
+                                    <span class="material-symbols-outlined me-2">cancel</span>
+                                    <strong>Bohužel špatně. Zkuste to znovu!</strong>
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+            </div>
+            <div class="modal-footer">
+                @if (!_answerSubmitted)
+                {
+                    <button type="button" class="btn btn-secondary" @onclick="Close">Zrušit</button>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-primary" @onclick="Close">
+                        <span class="material-symbols-outlined">@(_isCorrect ? "check" : "refresh")</span>
+                        @(_isCorrect ? "Pokračovat" : "Zkusit znovu")
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public QuizQuestion? Question { get; set; }
+    [Parameter] public EventCallback<(int selectedAnswerIndex, int timeToAnswerMs)> OnSubmit { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private Timer? _timer;
+    private int _timeLeft = 15;
+    private int _selectedAnswerIndex = -1;
+    private bool _answerSubmitted = false;
+    private bool _isCorrect = false;
+
+    protected override void OnInitialized()
+    {
+        StartTimer();
+    }
+
+    private void StartTimer()
+    {
+        _timeLeft = 15;
+        _timer = new Timer(1000);
+        _timer.Elapsed += OnTimerElapsed;
+        _timer.Start();
+    }
+
+    private void OnTimerElapsed(object? sender, ElapsedEventArgs e)
+    {
+        _timeLeft--;
+        
+        if (_timeLeft <= 0)
+        {
+            _timer?.Stop();
+            if (!_answerSubmitted)
+            {
+                _ = InvokeAsync(async () =>
+                {
+                    // Automaticky uzavřít modal při vypršení času
+                    await Close();
+                });
+            }
+        }
+        
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SelectAnswer(int index)
+    {
+        if (_answerSubmitted || _timeLeft <= 0) return;
+
+        _selectedAnswerIndex = index;
+        _isCorrect = index == Question?.CorrectAnswerIndex;
+        _answerSubmitted = true;
+        _timer?.Stop();
+
+        var timeToAnswer = (15 - _timeLeft) * 1000;
+
+        // Odeslat odpověď
+        await OnSubmit.InvokeAsync((index, timeToAnswer));
+    }
+
+    private async Task Close()
+    {
+        _timer?.Stop();
+        await OnClose.InvokeAsync();
+    }
+
+    private string GetOptionClass(int index)
+    {
+        if (!_answerSubmitted) return "";
+        if (index != _selectedAnswerIndex) return "";
+        return _isCorrect ? "correct" : "incorrect";
+    }
+
+    private string GetProgressBarClass()
+    {
+        if (_timeLeft <= 5) return "bg-danger";
+        if (_timeLeft <= 10) return "bg-warning";
+        return "bg-success";
+    }
+
+    public void Dispose()
+    {
+        _timer?.Stop();
+        _timer?.Dispose();
+    }
+}

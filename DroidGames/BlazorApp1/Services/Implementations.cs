@@ -175,33 +175,99 @@ public class AchievementService : IAchievementService
 
 public class QuizService : IQuizService
 {
-    private readonly IRepository<QuizQuestion> _repository;
+    private readonly IRepository<QuizQuestion> _questionRepository;
+    private readonly IRepository<QuizProgress> _progressRepository;
 
-    public QuizService(IRepository<QuizQuestion> repository)
+    public QuizService(IRepository<QuizQuestion> questionRepository, IRepository<QuizProgress> progressRepository)
     {
         Console.WriteLine("[DEBUG] QuizService created");
-        _repository = repository;
+        _questionRepository = questionRepository;
+        _progressRepository = progressRepository;
     }
 
-    public async Task<List<QuizQuestion>> GetQuestionsAsync(int count)
+    public async Task<List<QuizQuestion>> GetAllQuestionsAsync()
     {
-        var all = await _repository.GetAllAsync();
-        return all.OrderBy(q => Guid.NewGuid()).Take(count).ToList();
+        return await _questionRepository.GetAllAsync();
     }
 
-    public Task<QuizSession> StartSessionAsync(string userId)
+    public async Task<QuizProgress> GetTeamProgressAsync(string teamId)
     {
-        return Task.FromResult(new QuizSession
+        var allProgress = await _progressRepository.GetAllAsync();
+        var progress = allProgress.FirstOrDefault(p => p.TeamId == teamId);
+        
+        if (progress == null)
         {
-            UserId = userId,
-            StartedAt = DateTime.UtcNow
-        });
+            progress = new QuizProgress { TeamId = teamId };
+            progress = await _progressRepository.AddAsync(progress);
+        }
+        
+        return progress;
     }
 
-    public Task<QuizSession> SubmitAnswerAsync(string sessionId, QuizAnswer answer)
+    public async Task<QuizAttempt> SubmitAttemptAsync(string teamId, string questionId, int selectedAnswerIndex, int timeToAnswerMs)
     {
-        // Simplified - in real implementation would load from repository
-        return Task.FromResult(new QuizSession { SessionId = sessionId });
+        var question = await _questionRepository.GetByIdAsync(questionId);
+        if (question == null)
+            throw new ArgumentException($"Question {questionId} not found");
+        
+        var progress = await GetTeamProgressAsync(teamId);
+        
+        var attempt = new QuizAttempt
+        {
+            QuestionId = questionId,
+            SelectedAnswerIndex = selectedAnswerIndex,
+            IsCorrect = selectedAnswerIndex == question.CorrectAnswerIndex,
+            TimeToAnswerMs = timeToAnswerMs,
+            AttemptedAt = DateTime.Now
+        };
+        
+        progress.Attempts.Add(attempt);
+        progress.LastAttemptAt = DateTime.Now;
+        
+        await _progressRepository.UpdateAsync(progress);
+        
+        return attempt;
+    }
+
+    public async Task<List<QuizQuestionStatus>> GetAllQuestionsWithStatusAsync(string teamId)
+    {
+        var questions = await GetAllQuestionsAsync();
+        var progress = await GetTeamProgressAsync(teamId);
+        
+        var statuses = new List<QuizQuestionStatus>();
+        
+        foreach (var question in questions)
+        {
+            var attempts = progress.Attempts.Where(a => a.QuestionId == question.Id).ToList();
+            var hasCorrect = attempts.Any(a => a.IsCorrect);
+            
+            var status = new QuizQuestionStatus
+            {
+                Question = question,
+                State = hasCorrect ? QuizQuestionState.Correct : 
+                       (attempts.Any() ? QuizQuestionState.Incorrect : QuizQuestionState.Unanswered),
+                TotalAttempts = attempts.Count,
+                CorrectAttempts = attempts.Count(a => a.IsCorrect),
+                IncorrectAttempts = attempts.Count(a => !a.IsCorrect),
+                LastAttemptAt = attempts.OrderByDescending(a => a.AttemptedAt).FirstOrDefault()?.AttemptedAt
+            };
+            
+            statuses.Add(status);
+        }
+        
+        return statuses;
+    }
+
+    public async Task<QuizQuestion?> GetRandomUnansweredQuestionAsync(string teamId)
+    {
+        var statuses = await GetAllQuestionsWithStatusAsync(teamId);
+        var unanswered = statuses.Where(s => s.State == QuizQuestionState.Unanswered).ToList();
+        
+        if (!unanswered.Any())
+            return null;
+        
+        var random = unanswered[Random.Shared.Next(unanswered.Count)];
+        return random.Question;
     }
 }
 

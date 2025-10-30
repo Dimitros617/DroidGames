@@ -1,6 +1,11 @@
 @page "/team/dashboard"
-@inject BlazorApp1.Services.UserSession UserSession
-@inject BlazorApp1.Services.ITeamService TeamService
+@using BlazorApp1.Services
+@using BlazorApp1.Models
+@using BlazorApp1.Data
+@inject UserSession UserSession
+@inject ITeamService TeamService
+@inject IAchievementService AchievementService
+@inject IRepository<CompetitionSettings> SettingsRepo
 @rendermode InteractiveServer
 
 <PageTitle>Dashboard - @UserSession.Username</PageTitle>
@@ -16,54 +21,136 @@
         </div>
 
         <div class="dashboard-grid">
-            <!-- Current Score Card -->
-            <div class="dashboard-card">
+            <!-- Current Position & Score Card -->
+            <div class="dashboard-card position-card">
                 <div class="card-icon">
-                    <span class="material-symbols-outlined">emoji_events</span>
-                </div>
-                <div class="card-content">
-                    <h3>Celkové skóre</h3>
-                    <div class="score-big">@_totalScore</div>
-                    <p class="score-label">bodů</p>
-                </div>
-            </div>
-
-            <!-- Current Position Card -->
-            <div class="dashboard-card">
-                <div class="card-icon">
-                    <span class="material-symbols-outlined">leaderboard</span>
+                    <span class="material-symbols-outlined">trophy</span>
                 </div>
                 <div class="card-content">
                     <h3>Aktuální pozice</h3>
                     <div class="score-big">@_position.</div>
-                    <p class="score-label">místo</p>
+                    <p class="score-label">z @_totalTeams týmů</p>
+                    <div class="total-score-mini">@_totalScore bodů celkem</div>
                 </div>
             </div>
 
-            <!-- Completed Rounds Card -->
-            <div class="dashboard-card">
+            <!-- Progress to TOP 3 Card -->
+            <div class="dashboard-card progress-card">
                 <div class="card-icon">
-                    <span class="material-symbols-outlined">check_circle</span>
+                    <span class="material-symbols-outlined">trending_up</span>
                 </div>
                 <div class="card-content">
-                    <h3>Dokončená kola</h3>
-                    <div class="score-big">@_completedRounds</div>
-                    <p class="score-label">kol</p>
+                    <h3>Cesta do TOP 3</h3>
+                    @if (_position <= 3)
+                    {
+                        <div class="success-message">
+                            <span class="material-symbols-outlined">celebration</span>
+                            <p>Gratulujeme!</p>
+                            <p class="success-sub">Jste v TOP 3!</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="progress-info">
+                            <p class="points-needed">Chybí <strong>@_pointsToTop3</strong> bodů</p>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" 
+                                     role="progressbar" 
+                                     style="width: @_progressToTop3%"
+                                     aria-valuenow="@_progressToTop3" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                </div>
+                            </div>
+                            <p class="progress-label">@_progressToTop3% cesty</p>
+                        </div>
+                    }
                 </div>
             </div>
 
-            <!-- Achievements Card -->
-            <div class="dashboard-card">
+            <!-- Next Round Notification Card -->
+            <div class="dashboard-card next-round-card @(_isNextRound ? "is-next" : "")">
                 <div class="card-icon">
-                    <span class="material-symbols-outlined">workspace_premium</span>
+                    <span class="material-symbols-outlined @(_isNextRound ? "rotating-hourglass" : "")">
+                        @(_isNextRound ? "hourglass_empty" : "schedule")
+                    </span>
                 </div>
                 <div class="card-content">
-                    <h3>Achievementy</h3>
-                    <div class="score-big">@_achievementCount</div>
-                    <p class="score-label">odemčeno</p>
+                    <h3>Další kolo</h3>
+                    @if (_isNextRound)
+                    {
+                        <div class="next-round-active">
+                            <span class="material-symbols-outlined pulse">notifications_active</span>
+                            <h4>Připravte se!</h4>
+                            <p>Jste na řadě</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="next-round-waiting">
+                            <p>Budete vyzváni, až budete na řadě</p>
+                            <small class="text-muted">Sledujte notifikace</small>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Quick Stats Card -->
+            <div class="dashboard-card stats-card">
+                <div class="card-icon">
+                    <span class="material-symbols-outlined">bar_chart</span>
+                </div>
+                <div class="card-content">
+                    <h3>Rychlé statistiky</h3>
+                    <div class="stats-mini-grid">
+                        <div class="stat-mini-item">
+                            <span class="material-symbols-outlined">emoji_events</span>
+                            <div class="stat-mini-value">@_completedRounds</div>
+                            <div class="stat-mini-label">Kola</div>
+                        </div>
+                        <div class="stat-mini-item">
+                            <span class="material-symbols-outlined">show_chart</span>
+                            <div class="stat-mini-value">@_avgScore.ToString("F1")</div>
+                            <div class="stat-mini-label">Průměr</div>
+                        </div>
+                        <div class="stat-mini-item">
+                            <span class="material-symbols-outlined">workspace_premium</span>
+                            <div class="stat-mini-value">@_achievementCount</div>
+                            <div class="stat-mini-label">Odznaky</div>
+                        </div>
+                        <div class="stat-mini-item">
+                            <span class="material-symbols-outlined">stars</span>
+                            <div class="stat-mini-value">@_bestScore</div>
+                            <div class="stat-mini-label">Nejlepší</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <!-- Achievement Preview -->
+        @if (_achievements.Any())
+        {
+            <div class="achievements-preview">
+                <h2>
+                    <span class="material-symbols-outlined">military_tech</span>
+                    Poslední achievementy
+                </h2>
+                <div class="achievement-badges">
+                    @foreach (var achievement in _achievements.Take(6))
+                    {
+                        <div class="achievement-badge rarity-@achievement.Rarity.ToString().ToLower()" 
+                             title="@achievement.Name - @achievement.Description">
+                            <span class="material-symbols-outlined">@achievement.Icon</span>
+                            <div class="achievement-name">@achievement.Name</div>
+                        </div>
+                    }
+                </div>
+                <a href="/team/achievements" class="view-all-link">
+                    Zobrazit všechny <span class="material-symbols-outlined">arrow_forward</span>
+                </a>
+            </div>
+        }
 
         <!-- Quick Actions -->
         <div class="quick-actions">
@@ -93,23 +180,84 @@
 @code {
     private int _totalScore = 0;
     private int _position = 0;
+    private int _totalTeams = 0;
     private int _completedRounds = 0;
     private int _achievementCount = 0;
+    private double _avgScore = 0;
+    private int _bestScore = 0;
+    private int _pointsToTop3 = 0;
+    private int _progressToTop3 = 0;
+    private bool _isNextRound = false;
+    private List<Achievement> _achievements = new();
 
     protected override async Task OnInitializedAsync()
     {
         if (UserSession.IsAuthenticated && UserSession.CurrentUser?.TeamId != null)
         {
+            await LoadDashboardDataAsync();
+        }
+    }
+
+    private async Task LoadDashboardDataAsync()
+    {
+        try
+        {
             var teams = await TeamService.GetLeaderboardAsync();
-            var currentTeam = teams.FirstOrDefault(t => t.Id == UserSession.CurrentUser.TeamId);
+            var currentTeam = teams.FirstOrDefault(t => t.Id == UserSession.CurrentUser?.TeamId);
             
             if (currentTeam != null)
             {
+                // Basic stats
                 _totalScore = currentTeam.TotalScore;
                 _position = currentTeam.CurrentPosition;
+                _totalTeams = teams.Count;
                 _completedRounds = currentTeam.Rounds.Count;
                 _achievementCount = currentTeam.UnlockedAchievements.Count;
+
+                // Calculate average and best score
+                if (currentTeam.Rounds.Any())
+                {
+                    _avgScore = currentTeam.Rounds.Average(r => r.FinalScore) ?? 0;
+                    _bestScore = currentTeam.Rounds.Max(r => r.FinalScore) ?? 0;
+                }
+
+                // Calculate progress to TOP 3
+                if (_position > 3 && teams.Count >= 3)
+                {
+                    var thirdPlaceTeam = teams.OrderByDescending(t => t.TotalScore).Skip(2).FirstOrDefault();
+                    if (thirdPlaceTeam != null)
+                    {
+                        _pointsToTop3 = thirdPlaceTeam.TotalScore - _totalScore + 1;
+                        
+                        // Calculate progress percentage
+                        var fourthPlaceTeam = teams.OrderByDescending(t => t.TotalScore).Skip(3).FirstOrDefault();
+                        if (fourthPlaceTeam != null)
+                        {
+                            var range = thirdPlaceTeam.TotalScore - fourthPlaceTeam.TotalScore;
+                            if (range > 0)
+                            {
+                                _progressToTop3 = (int)((double)(_totalScore - fourthPlaceTeam.TotalScore) / range * 100);
+                                _progressToTop3 = Math.Max(0, Math.Min(100, _progressToTop3));
+                            }
+                        }
+                    }
+                }
+
+                // Check if next round
+                var settings = (await SettingsRepo.GetAllAsync()).FirstOrDefault();
+                if (settings != null)
+                {
+                    _isNextRound = settings.NextTeamAId == currentTeam.Id || 
+                                   settings.NextTeamBId == currentTeam.Id;
+                }
+
+                // Load achievements
+                _achievements = await AchievementService.GetUnlockedForTeamAsync(currentTeam.Id);
             }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading dashboard: {ex.Message}");
         }
     }
 }

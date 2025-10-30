@@ -1,0 +1,94 @@
+[
+  {
+    "Id": "3a6f8f8d-7fe1-4de6-9f6d-738eb8e353a9",
+    "TeamId": "",
+    "Attempts": [],
+    "CreatedAt": "2025-10-30T15:20:34.1423993+01:00",
+    "TotalAttempts": 0,
+    "CorrectAnswers": 0,
+    "IncorrectAnswers": 0,
+    "AnsweredQuestionIds": [],
+    "SuccessRate": 0
+  },
+  {
+    "Id": "e2456863-95e2-47fa-b17d-c96ffeda78dd",
+    "TeamId": "team-test",
+    "Attempts": [
+      {
+        "QuestionId": "q1",
+        "SelectedAnswerIndex": 0,
+        "IsCorrect": false,
+        "TimeToAnswerMs": 3000,
+        "AttemptedAt": "2025-10-30T15:27:09.5468572+01:00"
+      },
+      {
+        "QuestionId": "q1",
+        "SelectedAnswerIndex": 1,
+        "IsCorrect": true,
+        "TimeToAnswerMs": 0,
+        "AttemptedAt": "2025-10-30T15:27:16.9239452+01:00"
+      },
+      {
+        "QuestionId": "q2",
+        "SelectedAnswerIndex": 1,
+        "IsCorrect": true,
+        "TimeToAnswerMs": 0,
+        "AttemptedAt": "2025-10-30T15:27:21.9110836+01:00"
+      },
+      {
+        "QuestionId": "q3",
+        "SelectedAnswerIndex": 2,
+        "IsCorrect": true,
+        "TimeToAnswerMs": 0,
+        "AttemptedAt": "2025-10-30T15:27:24.3564035+01:00"
+      },
+      {
+        "QuestionId": "q4",
+        "SelectedAnswerIndex": 1,
+        "IsCorrect": false,
+        "TimeToAnswerMs": 0,
+        "AttemptedAt": "2025-10-30T15:27:26.3280446+01:00"
+      },
+      {
+        "QuestionId": "q20",
+        "SelectedAnswerIndex": 1,
+        "IsCorrect": true,
+        "TimeToAnswerMs": 0,
+        "AttemptedAt": "2025-10-30T15:27:33.4459097+01:00"
+      },
+      {
+        "QuestionId": "q18",
+        "SelectedAnswerIndex": 2,
+        "IsCorrect": false,
+        "TimeToAnswerMs": 0,
+        "AttemptedAt": "2025-10-30T15:27:36.0181471+01:00"
+      },
+      {
+        "QuestionId": "q6",
+        "SelectedAnswerIndex": 0,
+        "IsCorrect": false,
+        "TimeToAnswerMs": 0,
+        "AttemptedAt": "2025-10-30T15:27:38.2002888+01:00"
+      },
+      {
+        "QuestionId": "q10",
+        "SelectedAnswerIndex": 1,
+        "IsCorrect": false,
+        "TimeToAnswerMs": 0,
+        "AttemptedAt": "2025-10-30T15:27:39.9103559+01:00"
+      }
+    ],
+    "CreatedAt": "2025-10-30T15:22:41.053192+01:00",
+    "LastAttemptAt": "2025-10-30T15:27:39.9103587+01:00",
+    "TotalAttempts": 9,
+    "CorrectAnswers": 4,
+    "IncorrectAnswers": 5,
+    "AnsweredQuestionIds": [
+      "q1",
+      "q2",
+      "q3",
+      "q20"
+    ],
+    "SuccessRate": 44.44444444444444
+  }
+]

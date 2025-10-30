@@ -14,5 +14,7 @@ public class CompetitionSettings
     public TimerStatus TimerStatus { get; set; } = TimerStatus.Stopped;
     public string? CurrentTeamAId { get; set; }
     public string? CurrentTeamBId { get; set; }
+    public string? NextTeamAId { get; set; }
+    public string? NextTeamBId { get; set; }
     public string HardwareApiKey { get; set; } = Guid.NewGuid().ToString();
 }

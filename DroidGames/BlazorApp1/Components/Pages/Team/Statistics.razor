@@ -1,39 +1,312 @@
 @page "/team/statistics"
+@using BlazorApp1.Services
+@using BlazorApp1.Models
+@inject UserSession UserSession
+@inject ITeamService TeamService
 @rendermode InteractiveServer
 
 <PageTitle>Statistiky</PageTitle>
 
 <BlazorApp1.Components.Shared.AuthGuard RequiredRole="BlazorApp1.Models.UserRole.Team">
-    <div class="page-container">
-        <h1>
-            <span class="material-symbols-outlined">bar_chart</span>
-            Statistiky týmu
-        </h1>
-        <p class="placeholder-text">Detailní statistiky budou brzy k dispozici.</p>
+    <div class="statistics-page">
+        <div class="statistics-header">
+            <h1>
+                <span class="material-symbols-outlined">bar_chart</span>
+                Statistiky týmu
+            </h1>
+            <p class="subtitle">Detailní přehled vašich výsledků</p>
+        </div>
+
+        @if (_loading)
+        {
+            <div class="loading-state">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Načítání...</span>
+                </div>
+            </div>
+        }
+        else if (_team == null)
+        {
+            <div class="alert alert-warning">
+                <span class="material-symbols-outlined">error</span>
+                Tým nebyl nalezen
+            </div>
+        }
+        else if (!_team.Rounds.Any())
+        {
+            <div class="empty-state">
+                <span class="material-symbols-outlined">insights</span>
+                <h3>Zatím žádná data</h3>
+                <p>Začněte soutěžit a zde uvidíte své statistiky!</p>
+            </div>
+        }
+        else
+        {
+            <!-- Summary Cards -->
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="summary-icon">
+                        <span class="material-symbols-outlined">emoji_events</span>
+                    </div>
+                    <div class="summary-content">
+                        <div class="summary-label">Celkové skóre</div>
+                        <div class="summary-value">@_team.TotalScore</div>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="summary-icon">
+                        <span class="material-symbols-outlined">show_chart</span>
+                    </div>
+                    <div class="summary-content">
+                        <div class="summary-label">Průměrné skóre</div>
+                        <div class="summary-value">@_avgScore.ToString("F1")</div>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="summary-icon">
+                        <span class="material-symbols-outlined">stars</span>
+                    </div>
+                    <div class="summary-content">
+                        <div class="summary-label">Nejlepší kolo</div>
+                        <div class="summary-value">@_bestScore</div>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="summary-icon">
+                        <span class="material-symbols-outlined">trending_up</span>
+                    </div>
+                    <div class="summary-content">
+                        <div class="summary-label">Trend</div>
+                        <div class="summary-value trend-@(_trend > 0 ? "up" : _trend < 0 ? "down" : "neutral")">
+                            @if (_trend > 0)
+                            {
+                                <span>↑ @_trend.ToString("F1")</span>
+                            }
+                            else if (_trend < 0)
+                            {
+                                <span>↓ @Math.Abs(_trend).ToString("F1")</span>
+                            }
+                            else
+                            {
+                                <span>→ 0</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Round Breakdown -->
+            <div class="rounds-section">
+                <h2>
+                    <span class="material-symbols-outlined">format_list_numbered</span>
+                    Breakdown po kolech
+                </h2>
+                
+                <div class="rounds-table">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Kolo</th>
+                                <th>Skóre</th>
+                                <th>vs Průměr</th>
+                                <th>vs Vítěz</th>
+                                <th>Rozdíl</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var round in _team.Rounds.OrderBy(r => r.RoundNumber))
+                            {
+                                var roundScore = round.FinalScore ?? 0;
+                                var avgInRound = _averageScoresByRound.GetValueOrDefault(round.RoundNumber, 0);
+                                var winnerInRound = _winnerScoresByRound.GetValueOrDefault(round.RoundNumber, 0);
+                                var diffFromAvg = roundScore - avgInRound;
+                                var diffFromWinner = roundScore - winnerInRound;
+
+                                <tr>
+                                    <td>
+                                        <strong>Kolo @round.RoundNumber</strong>
+                                    </td>
+                                    <td>
+                                        <span class="score-badge">@roundScore</span>
+                                    </td>
+                                    <td>
+                                        <span class="comparison-value">
+                                            @avgInRound.ToString("F1")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="comparison-value">
+                                            @winnerInRound
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="diff-badge diff-@(diffFromAvg >= 0 ? "positive" : "negative")">
+                                            @(diffFromAvg >= 0 ? "+" : "")@diffFromAvg.ToString("F1")
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Strengths & Weaknesses -->
+            <div class="analysis-section">
+                <div class="analysis-grid">
+                    <div class="analysis-card strengths">
+                        <h3>
+                            <span class="material-symbols-outlined">thumb_up</span>
+                            Silné stránky
+                        </h3>
+                        <ul>
+                            @if (_bestRounds.Any())
+                            {
+                                <li>
+                                    <strong>Nejlepší výkon:</strong> Kolo @_bestRounds.First() 
+                                    (@_team.Rounds.First(r => r.RoundNumber == _bestRounds.First()).FinalScore bodů)
+                                </li>
+                            }
+                            @if (_avgScore > _globalAverage)
+                            {
+                                <li>
+                                    <strong>Nadprůměrný výkon:</strong> +@((_avgScore - _globalAverage).ToString("F1")) bodů nad celkovým průměrem
+                                </li>
+                            }
+                            @if (_consistency > 0.7)
+                            {
+                                <li>
+                                    <strong>Konzistentní výkony:</strong> Stabilní výsledky napříč koly
+                                </li>
+                            }
+                        </ul>
+                    </div>
+
+                    <div class="analysis-card weaknesses">
+                        <h3>
+                            <span class="material-symbols-outlined">thumb_down</span>
+                            Oblasti ke zlepšení
+                        </h3>
+                        <ul>
+                            @if (_worstRounds.Any())
+                            {
+                                <li>
+                                    <strong>Nejslabší kolo:</strong> Kolo @_worstRounds.First() 
+                                    (@_team.Rounds.First(r => r.RoundNumber == _worstRounds.First()).FinalScore bodů)
+                                </li>
+                            }
+                            @if (_avgScore < _globalAverage)
+                            {
+                                <li>
+                                    <strong>Pod průměrem:</strong> -@((_globalAverage - _avgScore).ToString("F1")) bodů pod celkovým průměrem
+                                </li>
+                            }
+                            @if (_consistency < 0.5)
+                            {
+                                <li>
+                                    <strong>Nepravidelné výkony:</strong> Zaměřte se na stabilitu výsledků
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 </BlazorApp1.Components.Shared.AuthGuard>
 
-<style>
-    .page-container {
-        padding: 40px;
-        max-width: 1400px;
-        margin: 0 auto;
-        text-align: center;
+@code {
+    private Team? _team;
+    private bool _loading = true;
+    private double _avgScore = 0;
+    private int _bestScore = 0;
+    private double _trend = 0;
+    private double _globalAverage = 0;
+    private double _consistency = 0;
+    private List<int> _bestRounds = new();
+    private List<int> _worstRounds = new();
+    private Dictionary<int, double> _averageScoresByRound = new();
+    private Dictionary<int, int> _winnerScoresByRound = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (UserSession.IsAuthenticated && UserSession.CurrentUser?.TeamId != null)
+        {
+            await LoadStatisticsAsync();
+        }
+        _loading = false;
     }
-    .page-container h1 {
-        display: inline-flex;
-        align-items: center;
-        gap: 15px;
-        font-size: 2.5em;
-        color: #000;
-        margin-bottom: 20px;
+
+    private async Task LoadStatisticsAsync()
+    {
+        try
+        {
+            var allTeams = await TeamService.GetAllTeamsAsync();
+            _team = allTeams.FirstOrDefault(t => t.Id == UserSession.CurrentUser?.TeamId);
+
+            if (_team == null || !_team.Rounds.Any()) return;
+
+            // Basic calculations
+            _avgScore = _team.Rounds.Average(r => r.FinalScore) ?? 0;
+            _bestScore = _team.Rounds.Max(r => r.FinalScore) ?? 0;
+
+            // Calculate trend (last 3 rounds vs first 3 rounds)
+            if (_team.Rounds.Count >= 3)
+            {
+                var firstThree = _team.Rounds.OrderBy(r => r.RoundNumber).Take(3).Average(r => r.FinalScore) ?? 0;
+                var lastThree = _team.Rounds.OrderByDescending(r => r.RoundNumber).Take(3).Average(r => r.FinalScore) ?? 0;
+                _trend = lastThree - firstThree;
+            }
+
+            // Calculate global average
+            var allRounds = allTeams.SelectMany(t => t.Rounds).ToList();
+            if (allRounds.Any())
+            {
+                _globalAverage = allRounds.Average(r => r.FinalScore) ?? 0;
+            }
+
+            // Calculate consistency (lower standard deviation = more consistent)
+            if (_team.Rounds.Count > 1)
+            {
+                var scores = _team.Rounds.Select(r => (double)(r.FinalScore ?? 0)).ToList();
+                var stdDev = Math.Sqrt(scores.Average(v => Math.Pow(v - _avgScore, 2)));
+                _consistency = 1.0 - Math.Min(1.0, stdDev / Math.Max(1, _avgScore));
+            }
+
+            // Find best and worst rounds
+            _bestRounds = _team.Rounds
+                .Where(r => r.FinalScore == _bestScore)
+                .Select(r => r.RoundNumber)
+                .ToList();
+
+            var worstScore = _team.Rounds.Min(r => r.FinalScore) ?? 0;
+            _worstRounds = _team.Rounds
+                .Where(r => r.FinalScore == worstScore)
+                .Select(r => r.RoundNumber)
+                .ToList();
+
+            // Calculate average and winner scores by round
+            foreach (var roundNumber in _team.Rounds.Select(r => r.RoundNumber).Distinct())
+            {
+                var roundScores = allTeams
+                    .SelectMany(t => t.Rounds)
+                    .Where(r => r.RoundNumber == roundNumber)
+                    .Select(r => r.FinalScore)
+                    .ToList();
+
+                if (roundScores.Any())
+                {
+                    _averageScoresByRound[roundNumber] = roundScores.Average() ?? 0;
+                    _winnerScoresByRound[roundNumber] = roundScores.Max() ?? 0;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading statistics: {ex.Message}");
+        }
     }
-    .page-container h1 .material-symbols-outlined {
-        color: #fdc71d;
-        font-size: 1.2em;
-    }
-    .placeholder-text {
-        font-size: 1.2em;
-        color: #666;
-    }
-</style>
+}

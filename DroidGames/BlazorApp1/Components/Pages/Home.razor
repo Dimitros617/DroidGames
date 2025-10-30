@@ -1,17 +1,29 @@
 ﻿@page "/"
 @inject BlazorApp1.Services.ITeamService TeamService
+@inject BlazorApp1.Services.ITimerService TimerService
+@inject BlazorApp1.Data.IRepository<BlazorApp1.Models.CompetitionSettings> SettingsRepository
 @inject BlazorApp1.Services.UserSession UserSession
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 
-<PageTitle>DROID GAMES 2026</PageTitle>
+<PageTitle>DROID GAMES 2026 - LIVE VÝSLEDKY</PageTitle>
 
 <!-- Hero Section -->
 <div class="hero-section">
     <div class="hero-content">
         <img src="/graphic/DroidGames_logo_barva_v1.png" alt="Droid Games 2026" class="hero-logo" />
-        <h1 class="hero-title">DROID GAMES 2026</h1>
+        <h1 class="hero-title">🏆 DROID GAMES 2026</h1>
         <p class="hero-subtitle">Soutěž v robotice | Centrum Robotiky Plzeň</p>
+        
+        @if (_settings != null)
+        {
+            <div class="round-indicator">
+                <span class="round-badge">Kolo @_settings.CurrentRound z @_settings.TotalRounds</span>
+                <span class="status-badge status-@_settings.Status.ToString().ToLower()">
+                    @GetStatusText(_settings.Status)
+                </span>
+            </div>
+        }
     </div>
 </div>
 
@@ -44,38 +56,177 @@
     }
     else
     {
-        <!-- Leaderboard -->
-        <div class="leaderboard-section">
-            <h2 class="section-title">
-                <span class="material-symbols-outlined">leaderboard</span>
-                Žebříček týmů
-            </h2>
-            @if (_teams != null && _teams.Any())
+        <div class="content-grid">
+            <!-- Current Match Card -->
+            @if (_currentTeamA != null && _currentTeamB != null)
             {
-                <div class="teams-grid">
-                    @foreach (var (team, index) in _teams.Select((t, i) => (t, i)))
-                    {
-                        <div class="team-card" style="animation-delay: @(index * 0.1)s">
-                            <div class="team-rank">@(index + 1)</div>
-                            <div class="team-info">
-                                <div class="team-name">@team.Name</div>
-                                <div class="team-school">@team.School</div>
-                            </div>
-                            <div class="team-score">
-                                <div class="score-value">@team.TotalScore</div>
-                                <div class="score-label">bodů</div>
-                            </div>
+                <div class="current-match-card">
+                    <h3 class="match-title">
+                        <span class="material-symbols-outlined pulse">sports_esports</span>
+                        Aktuální zápas
+                    </h3>
+                    
+                    <div class="match-teams">
+                        <div class="match-team">
+                            <div class="team-name-large">@_currentTeamA.Name</div>
+                            <div class="team-school-small">@_currentTeamA.School</div>
                         </div>
-                    }
+                        <div class="vs-divider">VS</div>
+                        <div class="match-team">
+                            <div class="team-name-large">@_currentTeamB.Name</div>
+                            <div class="team-school-small">@_currentTeamB.School</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Timer Display -->
+                    <div class="timer-display timer-@(_timerStatus.ToString().ToLower())">
+                        <div class="timer-value">@FormatTime(_timerRemaining)</div>
+                        <div class="timer-status">
+                            @if (_timerStatus == BlazorApp1.Models.TimerStatus.Running)
+                            {
+                                <span class="status-dot running"></span>
+                                <text>Běží</text>
+                            }
+                            else if (_timerStatus == BlazorApp1.Models.TimerStatus.Paused)
+                            {
+                                <span class="status-dot paused"></span>
+                                <text>Pauza</text>
+                            }
+                            else
+                            {
+                                <span class="status-dot stopped"></span>
+                                <text>Připraveno</text>
+                            }
+                        </div>
+                    </div>
                 </div>
             }
-            else
+
+            <!-- Next Match Info -->
+            @if (_nextTeamA != null && _nextTeamB != null)
             {
-                <div class="empty-state">
-                    <span class="material-symbols-outlined">emoji_events</span>
-                    <p>Žebříček bude zveřejněn po začátku soutěže</p>
+                <div class="next-match-info">
+                    <p class="next-match-label">
+                        <span class="material-symbols-outlined rotating-hourglass">hourglass_empty</span>
+                        Následující:
+                    </p>
+                    <p class="next-match-teams">
+                        <span class="next-team">@_nextTeamA.Name</span>
+                        <span class="next-vs">vs</span>
+                        <span class="next-team">@_nextTeamB.Name</span>
+                    </p>
                 </div>
             }
+
+            <!-- Leaderboard -->
+            <div class="leaderboard-section">
+                <h2 class="section-title">
+                    <span class="material-symbols-outlined">leaderboard</span>
+                    Live Žebříček
+                    <span class="live-indicator" title="Automatické aktualizace aktivní">
+                        <span class="live-dot"></span> LIVE
+                    </span>
+                </h2>
+                
+                @if (_teams != null && _teams.Any())
+                {
+                    <div class="teams-list">
+                        @foreach (var (team, index) in _teams.Select((t, i) => (t, i)))
+                        {
+                            var position = index + 1;
+                            var medalClass = position <= 3 ? $"medal-{position}" : "";
+                            var positionChange = GetPositionChange(team.Id);
+                            
+                            <div class="team-row @medalClass @GetPositionChangeClass(positionChange)" 
+                                 style="animation-delay: @(index * 0.05)s">
+                                <div class="team-position">
+                                    @if (position == 1)
+                                    {
+                                        <span class="medal">🥇</span>
+                                    }
+                                    else if (position == 2)
+                                    {
+                                        <span class="medal">🥈</span>
+                                    }
+                                    else if (position == 3)
+                                    {
+                                        <span class="medal">🥉</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="position-number">@position</span>
+                                    }
+                                </div>
+                                
+                                <div class="team-details">
+                                    <div class="team-name">@team.Name</div>
+                                    <div class="team-school">@team.School</div>
+                                </div>
+                                
+                                @if (positionChange != 0)
+                                {
+                                    <div class="position-change">
+                                        @if (positionChange > 0)
+                                        {
+                                            <span class="change-arrow up">↑@Math.Abs(positionChange)</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="change-arrow down">↓@Math.Abs(positionChange)</span>
+                                        }
+                                    </div>
+                                }
+                                
+                                <div class="team-score-display">
+                                    <div class="score-number">@team.TotalScore</div>
+                                    <div class="score-label">bodů</div>
+                                </div>
+                                
+                                <!-- Achievement badges -->
+                                @if (team.UnlockedAchievements?.Count > 0)
+                                {
+                                    <div class="achievement-badges">
+                                        @foreach (var achievement in team.UnlockedAchievements.Take(3))
+                                        {
+                                            <span class="achievement-icon" title="Achievement">🏆</span>
+                                        }
+                                        @if (team.UnlockedAchievements.Count > 3)
+                                        {
+                                            <span class="achievement-more">+@(team.UnlockedAchievements.Count - 3)</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                    
+                    <!-- Statistics -->
+                    <div class="stats-bar">
+                        <div class="stat-item">
+                            <span class="stat-icon">📊</span>
+                            <span class="stat-label">Průměr:</span>
+                            <span class="stat-value">@GetAverageScore() bodů</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-icon">🔥</span>
+                            <span class="stat-label">Nejlepší:</span>
+                            <span class="stat-value">@GetTopScore() bodů</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-icon">👥</span>
+                            <span class="stat-label">Týmů:</span>
+                            <span class="stat-value">@_teams.Count</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <span class="material-symbols-outlined">emoji_events</span>
+                        <p>Žebříček bude zveřejněn po začátku soutěže</p>
+                    </div>
+                }
+            </div>
         </div>
     }
     
@@ -95,9 +246,18 @@
 @code {
     private bool _isLoading = true;
     private string? _error = null;
-    private int _teamCount = 0;
     private List<BlazorApp1.Models.Team>? _teams = null;
+    private BlazorApp1.Models.CompetitionSettings? _settings = null;
+    private BlazorApp1.Models.Team? _currentTeamA = null;
+    private BlazorApp1.Models.Team? _currentTeamB = null;
+    private BlazorApp1.Models.Team? _nextTeamA = null;
+    private BlazorApp1.Models.Team? _nextTeamB = null;
+    private int _timerRemaining = 90;
+    private BlazorApp1.Models.TimerStatus _timerStatus = BlazorApp1.Models.TimerStatus.Stopped;
     private string _debugLog = "";
+    
+    // Position tracking for animations
+    private Dictionary<string, int> _previousPositions = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -108,22 +268,51 @@
     {
         _isLoading = true;
         _error = null;
-        _debugLog = "";
         StateHasChanged();
         
         try
         {
-            AddDebugLog("OnInitializedAsync začíná");
-            StateHasChanged();
+            AddDebugLog("Načítám data...");
             
-            AddDebugLog("Volám TeamService.GetLeaderboardAsync()");
+            // Load teams and leaderboard
             _teams = await TeamService.GetLeaderboardAsync();
+            AddDebugLog($"Načteno {_teams?.Count ?? 0} týmů");
             
-            _teamCount = _teams?.Count ?? 0;
-            AddDebugLog($"Načteno {_teamCount} týmů");
+            // Load settings
+            var allSettings = await SettingsRepository.GetAllAsync();
+            _settings = allSettings.FirstOrDefault() ?? new BlazorApp1.Models.CompetitionSettings();
+            AddDebugLog($"Aktuální kolo: {_settings.CurrentRound}, Status: {_settings.Status}");
+            
+            // Load current match teams
+            if (!string.IsNullOrEmpty(_settings.CurrentTeamAId))
+            {
+                _currentTeamA = await TeamService.GetTeamByIdAsync(_settings.CurrentTeamAId);
+            }
+            if (!string.IsNullOrEmpty(_settings.CurrentTeamBId))
+            {
+                _currentTeamB = await TeamService.GetTeamByIdAsync(_settings.CurrentTeamBId);
+            }
+            
+            // Load next match teams
+            if (!string.IsNullOrEmpty(_settings.NextTeamAId))
+            {
+                _nextTeamA = await TeamService.GetTeamByIdAsync(_settings.NextTeamAId);
+            }
+            if (!string.IsNullOrEmpty(_settings.NextTeamBId))
+            {
+                _nextTeamB = await TeamService.GetTeamByIdAsync(_settings.NextTeamBId);
+            }
+            
+            // Load timer status
+            _timerRemaining = await TimerService.GetRemainingSecondsAsync();
+            _timerStatus = TimerService.GetStatus();
+            AddDebugLog($"Timer: {_timerRemaining}s, Status: {_timerStatus}");
+            
+            // Track initial positions
+            UpdatePositionTracking();
             
             _isLoading = false;
-            AddDebugLog("Načítání úspěšně dokončeno");
+            AddDebugLog("Načítání dokončeno");
         }
         catch (Exception ex)
         {
@@ -138,6 +327,67 @@
     private async Task ReloadData()
     {
         await LoadData();
+    }
+
+    private void UpdatePositionTracking()
+    {
+        if (_teams == null) return;
+        
+        _previousPositions.Clear();
+        for (int i = 0; i < _teams.Count; i++)
+        {
+            _previousPositions[_teams[i].Id] = i + 1;
+        }
+    }
+    
+    private int GetPositionChange(string teamId)
+    {
+        if (!_previousPositions.ContainsKey(teamId) || _teams == null)
+            return 0;
+        
+        var currentPosition = _teams.FindIndex(t => t.Id == teamId) + 1;
+        var previousPosition = _previousPositions[teamId];
+        
+        // Positive = moved up, Negative = moved down
+        return previousPosition - currentPosition;
+    }
+    
+    private string GetPositionChangeClass(int change)
+    {
+        if (change > 0) return "position-up";
+        if (change < 0) return "position-down";
+        return "";
+    }
+
+    private string FormatTime(int seconds)
+    {
+        var minutes = seconds / 60;
+        var secs = seconds % 60;
+        return $"{minutes:00}:{secs:00}";
+    }
+    
+    private string GetStatusText(BlazorApp1.Models.CompetitionStatus status)
+    {
+        return status switch
+        {
+            BlazorApp1.Models.CompetitionStatus.NotStarted => "Příprava",
+            BlazorApp1.Models.CompetitionStatus.InProgress => "Probíhá",
+            BlazorApp1.Models.CompetitionStatus.Paused => "Pauza",
+            BlazorApp1.Models.CompetitionStatus.Finished => "Ukončeno",
+            _ => status.ToString()
+        };
+    }
+    
+    private double GetAverageScore()
+    {
+        if (_teams == null || !_teams.Any()) return 0;
+        return Math.Round(_teams.Average(t => t.TotalScore), 1);
+    }
+    
+    private int GetTopScore()
+    {
+        if (_teams == null || !_teams.Any()) return 0;
+        return _teams.Max(t => t.TotalScore);
     }
 
     private void AddDebugLog(string message)

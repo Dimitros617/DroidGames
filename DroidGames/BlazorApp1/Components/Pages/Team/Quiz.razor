@@ -1,39 +1,189 @@
-@page "/team/quiz"
+﻿@page "/team/quiz"
+@using BlazorApp1.Models
+@using BlazorApp1.Services
+@using BlazorApp1.Components.Shared
+@inject IQuizService QuizService
+@inject UserSession UserSession
 @rendermode InteractiveServer
 
-<PageTitle>Kvíz</PageTitle>
+<PageTitle>Kvíz - DroidGames</PageTitle>
 
-<BlazorApp1.Components.Shared.AuthGuard RequiredRole="BlazorApp1.Models.UserRole.Team">
-    <div class="page-container">
+<AuthGuard RequiredRole="UserRole.Team">
+    <div class="quiz-page">
         <h1>
             <span class="material-symbols-outlined">quiz</span>
             Kvíz
         </h1>
-        <p class="placeholder-text">Kvíz bude brzy k dispozici.</p>
-    </div>
-</BlazorApp1.Components.Shared.AuthGuard>
 
-<style>
-    .page-container {
-        padding: 40px;
-        max-width: 1400px;
-        margin: 0 auto;
-        text-align: center;
+        @if (_loading)
+        {
+            <div class="loading">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Načítání...</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            <!-- Statistiky -->
+            <div class="stats-container mb-4">
+                <div class="stat-card">
+                    <span class="material-symbols-outlined">analytics</span>
+                    <div class="stat-content">
+                        <div class="stat-label">Celková úspěšnost</div>
+                        <div class="stat-value">@(_progress.SuccessRate.ToString("F1"))%</div>
+                    </div>
+                </div>
+                <div class="stat-card success">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    <div class="stat-content">
+                        <div class="stat-label">Správně</div>
+                        <div class="stat-value">@_progress.CorrectAnswers</div>
+                    </div>
+                </div>
+                <div class="stat-card error">
+                    <span class="material-symbols-outlined">cancel</span>
+                    <div class="stat-content">
+                        <div class="stat-label">Špatně</div>
+                        <div class="stat-value">@_progress.IncorrectAnswers</div>
+                    </div>
+                </div>
+                <div class="stat-card info">
+                    <span class="material-symbols-outlined">quiz</span>
+                    <div class="stat-content">
+                        <div class="stat-label">Zodpovězeno</div>
+                        <div class="stat-value">@_progress.AnsweredQuestionIds.Count / @_allStatuses.Count</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Náhodná otázka button -->
+            <div class="random-question-section mb-4">
+                <button class="btn btn-primary btn-lg" @onclick="OpenRandomQuestion" disabled="@(_unansweredCount == 0)">
+                    <span class="material-symbols-outlined">casino</span>
+                    Náhodná otázka
+                    @if (_unansweredCount > 0)
+                    {
+                        <span class="badge bg-light text-dark ms-2">@_unansweredCount nezodpovězených</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success ms-2">Vše zodpovězeno!</span>
+                    }
+                </button>
+            </div>
+
+            <!-- Mřížka všech otázek -->
+            <h2 class="section-title mb-3">
+                <span class="material-symbols-outlined">grid_view</span>
+                Všechny otázky
+            </h2>
+            <div class="questions-grid">
+                @foreach (var status in _allStatuses)
+                {
+                    <div class="question-card @GetStateClass(status.State)" @onclick="() => OpenQuestion(status.Question)">
+                        <div class="question-number">Otázka #@(_allStatuses.IndexOf(status) + 1)</div>
+                        <div class="question-text">@status.Question.Question</div>
+                        <div class="question-status">
+                            @if (status.State == QuizQuestionState.Unanswered)
+                            {
+                                <span class="material-symbols-outlined status-icon unanswered">help_outline</span>
+                                <span class="status-text">Nezodpovězeno</span>
+                            }
+                            else if (status.State == QuizQuestionState.Correct)
+                            {
+                                <span class="material-symbols-outlined status-icon correct">check_circle</span>
+                                <span class="status-text">Správně</span>
+                            }
+                            else
+                            {
+                                <span class="material-symbols-outlined status-icon incorrect">cancel</span>
+                                <span class="status-text">Špatně (@status.TotalAttempts pokusů)</span>
+                            }
+                        </div>
+                        @if (status.TotalAttempts > 0)
+                        {
+                            <div class="attempts-info">
+                                <small>
+                                    @status.CorrectAttempts správně / @status.IncorrectAttempts špatně
+                                </small>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- Modal pro otázku -->
+        @if (_selectedQuestion != null)
+        {
+            <QuizQuestionModal 
+                Question="_selectedQuestion" 
+                OnSubmit="@((tuple) => HandleAnswerSubmit(tuple.selectedAnswerIndex, tuple.timeToAnswerMs))" 
+                OnClose="CloseModal" />
+        }
+    </div>
+</AuthGuard>
+
+@code {
+    private QuizProgress _progress = new();
+    private List<QuizQuestionStatus> _allStatuses = new();
+    private QuizQuestion? _selectedQuestion;
+    private bool _loading = true;
+    private int _unansweredCount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
     }
-    .page-container h1 {
-        display: inline-flex;
-        align-items: center;
-        gap: 15px;
-        font-size: 2.5em;
-        color: #000;
-        margin-bottom: 20px;
+
+    private async Task LoadData()
+    {
+        _loading = true;
+        
+        var teamId = UserSession.TeamId ?? string.Empty;
+        _progress = await QuizService.GetTeamProgressAsync(teamId);
+        _allStatuses = await QuizService.GetAllQuestionsWithStatusAsync(teamId);
+        _unansweredCount = _allStatuses.Count(s => s.State == QuizQuestionState.Unanswered);
+        
+        _loading = false;
     }
-    .page-container h1 .material-symbols-outlined {
-        color: #fdc71d;
-        font-size: 1.2em;
+
+    private async Task OpenRandomQuestion()
+    {
+        var teamId = UserSession.TeamId ?? string.Empty;
+        _selectedQuestion = await QuizService.GetRandomUnansweredQuestionAsync(teamId);
     }
-    .placeholder-text {
-        font-size: 1.2em;
-        color: #666;
+
+    private void OpenQuestion(QuizQuestion question)
+    {
+        _selectedQuestion = question;
     }
-</style>
+
+    private async Task HandleAnswerSubmit(int selectedAnswerIndex, int timeToAnswerMs)
+    {
+        if (_selectedQuestion == null) return;
+        
+        var teamId = UserSession.TeamId ?? string.Empty;
+        await QuizService.SubmitAttemptAsync(teamId, _selectedQuestion.Id, selectedAnswerIndex, timeToAnswerMs);
+        
+        // Reload data
+        await LoadData();
+    }
+
+    private void CloseModal()
+    {
+        _selectedQuestion = null;
+    }
+
+    private string GetStateClass(QuizQuestionState state)
+    {
+        return state switch
+        {
+            QuizQuestionState.Unanswered => "state-unanswered",
+            QuizQuestionState.Correct => "state-correct",
+            QuizQuestionState.Incorrect => "state-incorrect",
+            _ => ""
+        };
+    }
+}

@@ -143,3 +143,255 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Additional styles for new features */
+.total-score-mini {
+    text-align: center;
+    color: #999;
+    font-size: 0.9em;
+    margin-top: 10px;
+}
+
+.success-message {
+    text-align: center;
+    padding: 20px;
+}
+
+.success-message .material-symbols-outlined {
+    font-size: 48px;
+    color: #28a745;
+    animation: bounce 1s infinite;
+}
+
+.success-message p {
+    margin: 10px 0 5px 0;
+    font-weight: 700;
+    font-size: 1.2em;
+    color: #28a745;
+}
+
+.success-sub {
+    color: #666 !important;
+    font-size: 0.9em !important;
+}
+
+.progress-info {
+    padding: 10px;
+}
+
+.points-needed {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #666;
+}
+
+.progress {
+    height: 20px;
+    border-radius: 10px;
+    background: #e9ecef;
+    margin-bottom: 10px;
+}
+
+.progress-bar {
+    border-radius: 10px;
+    transition: width 0.6s ease;
+}
+
+.progress-label {
+    text-align: center;
+    color: #999;
+    font-size: 0.9em;
+}
+
+.next-round-card {
+    transition: all 0.3s ease;
+}
+
+.next-round-card.is-next {
+    border-left-color: #28a745;
+    animation: pulse-border 2s infinite;
+}
+
+.rotating-hourglass {
+    animation: rotate 2s linear infinite;
+}
+
+.pulse {
+    animation: pulse-icon 1.5s infinite;
+}
+
+.next-round-active {
+    text-align: center;
+    padding: 10px;
+}
+
+.next-round-active .material-symbols-outlined {
+    font-size: 48px;
+    color: #28a745;
+}
+
+.next-round-active h4 {
+    margin: 10px 0 5px 0;
+    color: #000;
+    font-size: 1.3em;
+}
+
+.next-round-active p {
+    color: #666;
+}
+
+.next-round-waiting {
+    text-align: center;
+    padding: 20px;
+}
+
+.next-round-waiting p {
+    margin-bottom: 10px;
+    color: #666;
+}
+
+.stats-mini-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.stat-mini-item {
+    text-align: center;
+    padding: 10px;
+}
+
+.stat-mini-item .material-symbols-outlined {
+    font-size: 32px;
+    color: #fdc71d;
+}
+
+.stat-mini-value {
+    font-size: 1.8em;
+    font-weight: 700;
+    color: #000;
+    margin: 5px 0;
+}
+
+.stat-mini-label {
+    font-size: 0.85em;
+    color: #666;
+}
+
+.achievements-preview {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+}
+
+.achievements-preview h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.5em;
+    margin-bottom: 25px;
+    color: #000;
+}
+
+.achievements-preview h2 .material-symbols-outlined {
+    color: #fdc71d;
+    font-size: 1.2em;
+}
+
+.achievement-badges {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.achievement-badge {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.achievement-badge:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+}
+
+.achievement-badge.rarity-common {
+    border-color: #6c757d;
+}
+
+.achievement-badge.rarity-rare {
+    border-color: #0d6efd;
+}
+
+.achievement-badge.rarity-epic {
+    border-color: #6f42c1;
+}
+
+.achievement-badge.rarity-legendary {
+    border-color: #fdc71d;
+    animation: glow 2s infinite;
+}
+
+.achievement-badge .material-symbols-outlined {
+    font-size: 48px;
+    color: #fdc71d;
+}
+
+.achievement-name {
+    margin-top: 10px;
+    font-size: 0.85em;
+    color: #666;
+    font-weight: 600;
+}
+
+.view-all-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #fdc71d;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.view-all-link:hover {
+    gap: 12px;
+    color: #faba20;
+}
+
+.view-all-link .material-symbols-outlined {
+    font-size: 20px;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-border {
+    0%, 100% { border-left-color: #28a745; }
+    50% { border-left-color: #20c997; }
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-icon {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+@keyframes glow {
+    0%, 100% { box-shadow: 0 0 10px rgba(253, 199, 29, 0.3); }
+    50% { box-shadow: 0 0 20px rgba(253, 199, 29, 0.6); }
+}

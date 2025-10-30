@@ -1,1 +1,182 @@
-[]
+[
+  {
+    "Id": "q1",
+    "Question": "Jakou frekvenci vysílá ultrazvukový senzor EV3?",
+    "Options": ["Přes 20 kHz", "Přes 40 kHz", "Přes 60 kHz", "Přes 80 kHz"],
+    "CorrectAnswerIndex": 1,
+    "Explanation": "Ultrazvukový senzor EV3 vysílá zvukové vlny o frekvenci přes 40 kHz, což je dvojnásobek hranice lidského sluchu. Podobnou technologii používají netopýři pro echolokaci.",
+    "Difficulty": 1,
+    "Tags": ["senzory", "fyzika"]
+  },
+  {
+    "Id": "q2",
+    "Question": "Jaká je přibližná rychlost šíření ultrazvuku ve vzduchu?",
+    "Options": ["243 m/s", "343 m/s", "443 m/s", "543 m/s"],
+    "CorrectAnswerIndex": 1,
+    "Explanation": "Rychlost šíření ultrazvuku ve vzduchu je přibližně 343 m/s, ale výrazně se mění s teplotou. Proto může být přesnost vašeho robota ovlivněna i teplotou v místnosti!",
+    "Difficulty": 1,
+    "Tags": ["fyzika", "ultrazvuk"]
+  },
+  {
+    "Id": "q3",
+    "Question": "V jakém rozsahu vlnových délek detekují infračervené senzory?",
+    "Options": ["100-500 nm", "500-700 nm", "700 nm - 1 mm", "1-5 mm"],
+    "CorrectAnswerIndex": 2,
+    "Explanation": "Infračervené senzory detekují světlo o vlnové délce mezi 700 nm a 1 mm, tedy mimo viditelné spektrum. Používá se stejný princip jako v televizních ovladačích.",
+    "Difficulty": 2,
+    "Tags": ["senzory", "infračervené"]
+  },
+  {
+    "Id": "q4",
+    "Question": "Kolik různých barev dokáže rozpoznat barevný senzor LEGO Mindstorms?",
+    "Options": ["4 barvy", "6 barev", "8 barev", "12 barev"],
+    "CorrectAnswerIndex": 2,
+    "Explanation": "Barevné senzory v LEGO Mindstorms obsahují tři různé LED - červenou, zelenou a modrou. Měřením odraženého světla z každé LED dokáží rozpoznat až 8 různých barev.",
+    "Difficulty": 1,
+    "Tags": ["senzory", "barvy"]
+  },
+  {
+    "Id": "q5",
+    "Question": "Jakou úhlovou rychlost dokáže měřit gyroskopický senzor?",
+    "Options": ["220 stupňů/s", "330 stupňů/s", "440 stupňů/s", "550 stupňů/s"],
+    "CorrectAnswerIndex": 2,
+    "Explanation": "Gyroskopický senzor měří úhlovou rychlost až 440 stupňů za sekundu. Využívá piezoelektrický efekt, kdy mechanické vibrace vytvářejí elektrické napětí.",
+    "Difficulty": 2,
+    "Tags": ["senzory", "gyroskop"]
+  },
+  {
+    "Id": "q6",
+    "Question": "Jaká je přesnost rotačního enkodéru v servomotorech EV3?",
+    "Options": ["0,5 stupně", "1 stupeň", "2 stupně", "5 stupňů"],
+    "CorrectAnswerIndex": 1,
+    "Explanation": "Servomotory EV3 obsahují zabudovaný rotační enkodér s přesností 1 stupeň, což znamená, že dokáží rozlišit až 360 různých poloh v jedné otáčce.",
+    "Difficulty": 1,
+    "Tags": ["motory", "přesnost"]
+  },
+  {
+    "Id": "q7",
+    "Question": "Jaký je koeficient tření pneumatik LEGO na hladkém povrchu?",
+    "Options": ["Asi 0,2", "Asi 0,4", "Asi 0,6", "Asi 0,8"],
+    "CorrectAnswerIndex": 1,
+    "Explanation": "Pneumatiky LEGO mají koeficient tření přibližně 0,4 na hladkém povrchu. To je podobné jako u skutečných pneumatik na mokrém asfaltu.",
+    "Difficulty": 2,
+    "Tags": ["fyzika", "tření"]
+  },
+  {
+    "Id": "q8",
+    "Question": "Kolik procent světla odráží černý povrch?",
+    "Options": ["3-5%", "10-15%", "20-25%", "30-35%"],
+    "CorrectAnswerIndex": 0,
+    "Explanation": "Černý povrch odráží jen asi 3-5% dopadajícího světla, zatímco bílý až 85%. Proto je detekce černé čáry na bílém pozadí tak efektivní metodou navigace.",
+    "Difficulty": 2,
+    "Tags": ["optika", "navigace"]
+  },
+  {
+    "Id": "q9",
+    "Question": "V kterém roce byl poprvé použit wall-following algoritmus?",
+    "Options": ["1957", "1962", "1967", "1972"],
+    "CorrectAnswerIndex": 2,
+    "Explanation": "Algoritmus sledování stěny byl poprvé použit v roce 1967 pro robota Shakey, prvního mobilního robota, který používal umělou inteligenci.",
+    "Difficulty": 3,
+    "Tags": ["algoritmy", "historie"]
+  },
+  {
+    "Id": "q10",
+    "Question": "Kdy byla poprvé matematicky popsána PID regulace?",
+    "Options": ["1882", "1902", "1922", "1942"],
+    "CorrectAnswerIndex": 2,
+    "Explanation": "PID regulace, kterou mnoho robotů používá pro plynulou jízdu, byla poprvé matematicky popsána v roce 1922, ale její princip navigace používaly už parní stroje v 18. století.",
+    "Difficulty": 3,
+    "Tags": ["algoritmy", "řízení"]
+  },
+  {
+    "Id": "q11",
+    "Question": "Co znamená zkratka SLAM v robotice?",
+    "Options": ["Super Light Advanced Mapping", "Simultaneous Localization and Mapping", "Smart Location Area Management", "Synchronized Laser Alignment Method"],
+    "CorrectAnswerIndex": 1,
+    "Explanation": "SLAM (Simultaneous Localization and Mapping), princip mapování, který mnozí z vás využíváte v robotech, používají i autonomní vozidla jako auto od Googlu nebo Tesla.",
+    "Difficulty": 2,
+    "Tags": ["algoritmy", "mapování"]
+  },
+  {
+    "Id": "q12",
+    "Question": "Kdo poprvé použil slovo 'robot'?",
+    "Options": ["Isaac Asimov", "Karel Čapek", "George Devol", "Seymour Papert"],
+    "CorrectAnswerIndex": 1,
+    "Explanation": "Slovo 'robot' pochází z češtiny a poprvé ho použil Karel Čapek ve své hře R.U.R. (Rossum's Universal Robots) v roce 1920. Původně znamenalo 'nucenou práci'.",
+    "Difficulty": 1,
+    "Tags": ["historie", "slovník"]
+  },
+  {
+    "Id": "q13",
+    "Question": "Kolik zákonů robotiky formuloval Isaac Asimov?",
+    "Options": ["2", "3", "4", "5"],
+    "CorrectAnswerIndex": 1,
+    "Explanation": "Tři zákony robotiky, které mnozí znáte, formuloval sci-fi autor Isaac Asimov v roce 1942. Dnes se staly základem úvah o etice umělé inteligence.",
+    "Difficulty": 1,
+    "Tags": ["historie", "etika"]
+  },
+  {
+    "Id": "q14",
+    "Question": "Podle čeho je pojmenováno LEGO Mindstorms?",
+    "Options": ["Podle bouře nápadů", "Podle knihy Seymoura Paperta", "Podle větrné bouře", "Podle softwaru Mindstorm"],
+    "CorrectAnswerIndex": 1,
+    "Explanation": "LEGO Mindstorms je pojmenováno podle knihy 'Mindstorms: Children, Computers, and Powerful Ideas' od Seymoura Paperta, průkopníka ve vzdělávací robotice.",
+    "Difficulty": 2,
+    "Tags": ["LEGO", "historie"]
+  },
+  {
+    "Id": "q15",
+    "Question": "Kolik dílků obsahuje stavebnice LEGO Mindstorms EV3 Education?",
+    "Options": ["341", "441", "541", "641"],
+    "CorrectAnswerIndex": 2,
+    "Explanation": "Stavebnice LEGO Mindstorms EV3 Education obsahuje přesně 541 dílků. Kdybychom je postavili na sebe, věž by byla vysoká přes 5 metrů!",
+    "Difficulty": 2,
+    "Tags": ["LEGO", "fakta"]
+  },
+  {
+    "Id": "q16",
+    "Question": "Jaký procesor má řídící kostka EV3?",
+    "Options": ["ARM7 200MHz", "ARM9 300MHz", "ARM11 400MHz", "Cortex-A 500MHz"],
+    "CorrectAnswerIndex": 1,
+    "Explanation": "Řídící kostka EV3 má 300MHz procesor ARM9 a 64MB RAM. To je přibližně stejný výkon jako měly mobilní telefony kolem roku 2006.",
+    "Difficulty": 3,
+    "Tags": ["EV3", "hardware"]
+  },
+  {
+    "Id": "q17",
+    "Question": "Jakou kapacitu má dobíjecí baterie EV3?",
+    "Options": ["1050 mAh", "1550 mAh", "2050 mAh", "2550 mAh"],
+    "CorrectAnswerIndex": 2,
+    "Explanation": "Dobíjecí baterie EV3 má kapacitu 2050 mAh, což je dostatečné pro napájení motoru po dobu 5-6 hodin nepřetržitého provozu.",
+    "Difficulty": 2,
+    "Tags": ["EV3", "baterie"]
+  },
+  {
+    "Id": "q18",
+    "Question": "Kdy byl patent na Ackermanův podvozek?",
+    "Options": ["1778", "1818", "1858", "1898"],
+    "CorrectAnswerIndex": 1,
+    "Explanation": "Ackermanův podvozek byl patentován v roce 1818 a řeší problém, že při zatáčení musí vnitřní kolo opisovat menší oblouk než vnější.",
+    "Difficulty": 3,
+    "Tags": ["mechanika", "historie"]
+  },
+  {
+    "Id": "q19",
+    "Question": "Jaká je přesnost výroby LEGO dílků?",
+    "Options": ["0,004 mm", "0,04 mm", "0,4 mm", "4 mm"],
+    "CorrectAnswerIndex": 0,
+    "Explanation": "LEGO vyrábí své díly s přesností na 0,004 mm, což je desetkrát přesnější než tolerance běžných plastových hraček.",
+    "Difficulty": 3,
+    "Tags": ["LEGO", "výroba"]
+  },
+  {
+    "Id": "q20",
+    "Question": "Z jakého materiálu jsou vyrobeny LEGO díly?",
+    "Options": ["PVC", "ABS", "PET", "PP"],
+    "CorrectAnswerIndex": 1,
+    "Explanation": "LEGO díly jsou vyráběny z akrylonitril-butadien-styrenu (ABS), stejného materiálu, který se používá na výrobu ochranných helem díky své odolnosti a pružnosti.",
+    "Difficulty": 2,
+    "Tags": ["LEGO", "materiály"]
+  }
+]

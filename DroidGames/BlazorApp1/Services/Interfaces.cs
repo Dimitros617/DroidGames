@@ -26,9 +26,11 @@ public interface IAchievementService
 
 public interface IQuizService
 {
-    Task<List<QuizQuestion>> GetQuestionsAsync(int count);
-    Task<QuizSession> StartSessionAsync(string userId);
-    Task<QuizSession> SubmitAnswerAsync(string sessionId, QuizAnswer answer);
+    Task<List<QuizQuestion>> GetAllQuestionsAsync();
+    Task<QuizProgress> GetTeamProgressAsync(string teamId);
+    Task<QuizAttempt> SubmitAttemptAsync(string teamId, string questionId, int selectedAnswerIndex, int timeToAnswerMs);
+    Task<List<QuizQuestionStatus>> GetAllQuestionsWithStatusAsync(string teamId);
+    Task<QuizQuestion?> GetRandomUnansweredQuestionAsync(string teamId);
 }
 
 public interface IReminderService

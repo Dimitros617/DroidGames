@@ -1,0 +1,310 @@
+/* Team Statistics */
+
+.statistics-page {
+    padding: 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.statistics-header {
+    margin-bottom: 40px;
+}
+
+.statistics-header h1 {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 2.5em;
+    color: #000;
+    margin-bottom: 10px;
+}
+
+.statistics-header h1 .material-symbols-outlined {
+    color: #fdc71d;
+    font-size: 1.2em;
+}
+
+.subtitle {
+    font-size: 1.1em;
+    color: #666;
+}
+
+.loading-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.empty-state .material-symbols-outlined {
+    font-size: 80px;
+    color: #fdc71d;
+    margin-bottom: 20px;
+}
+
+.empty-state h3 {
+    font-size: 1.8em;
+    margin-bottom: 15px;
+    color: #000;
+}
+
+.empty-state p {
+    font-size: 1.1em;
+    color: #666;
+}
+
+/* Summary Cards */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.summary-card {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.3s ease;
+}
+
+.summary-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+
+.summary-icon {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #fdc71d 0%, #faba20 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.summary-icon .material-symbols-outlined {
+    font-size: 40px;
+    color: white;
+}
+
+.summary-content {
+    flex: 1;
+}
+
+.summary-label {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.summary-value {
+    font-size: 2.2em;
+    font-weight: 900;
+    color: #000;
+}
+
+.trend-up {
+    color: #28a745;
+}
+
+.trend-down {
+    color: #dc3545;
+}
+
+.trend-neutral {
+    color: #6c757d;
+}
+
+/* Rounds Section */
+.rounds-section {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+}
+
+.rounds-section h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.8em;
+    margin-bottom: 25px;
+    color: #000;
+}
+
+.rounds-section h2 .material-symbols-outlined {
+    color: #fdc71d;
+    font-size: 1.2em;
+}
+
+.rounds-table {
+    overflow-x: auto;
+}
+
+.rounds-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.rounds-table th {
+    text-align: left;
+    padding: 15px;
+    background: #f8f9fa;
+    color: #666;
+    font-weight: 600;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.rounds-table td {
+    padding: 15px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.rounds-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.score-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    background: linear-gradient(135deg, #fdc71d 0%, #faba20 100%);
+    color: #000;
+    font-weight: 700;
+    border-radius: 8px;
+    font-size: 1.1em;
+}
+
+.comparison-value {
+    color: #666;
+    font-weight: 500;
+}
+
+.diff-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.95em;
+}
+
+.diff-positive {
+    background: #d4edda;
+    color: #28a745;
+}
+
+.diff-negative {
+    background: #f8d7da;
+    color: #dc3545;
+}
+
+/* Analysis Section */
+.analysis-section {
+    margin-top: 30px;
+}
+
+.analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 25px;
+}
+
+.analysis-card {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.analysis-card h3 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.4em;
+    margin-bottom: 20px;
+    color: #000;
+}
+
+.analysis-card.strengths h3 .material-symbols-outlined {
+    color: #28a745;
+}
+
+.analysis-card.weaknesses h3 .material-symbols-outlined {
+    color: #dc3545;
+}
+
+.analysis-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.analysis-card li {
+    padding: 12px;
+    margin-bottom: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid transparent;
+}
+
+.analysis-card.strengths li {
+    border-left-color: #28a745;
+}
+
+.analysis-card.weaknesses li {
+    border-left-color: #dc3545;
+}
+
+.analysis-card li:last-child {
+    margin-bottom: 0;
+}
+
+.analysis-card li strong {
+    color: #000;
+    display: block;
+    margin-bottom: 5px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .statistics-page {
+        padding: 20px;
+    }
+
+    .statistics-header h1 {
+        font-size: 2em;
+    }
+
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .analysis-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .rounds-table {
+        font-size: 0.9em;
+    }
+
+    .summary-value {
+        font-size: 1.8em;
+    }
+}
