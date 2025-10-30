@@ -3,6 +3,7 @@
 @using BlazorApp1.Services
 @using BlazorApp1.Components.Shared
 @inject IQuizService QuizService
+@inject IAchievementService AchievementService
 @inject UserSession UserSession
 @rendermode InteractiveServer
 
@@ -57,20 +58,66 @@
                 </div>
             </div>
 
-            <!-- Náhodná otázka button -->
-            <div class="random-question-section mb-4">
-                <button class="btn btn-primary btn-lg" @onclick="OpenRandomQuestion" disabled="@(_unansweredCount == 0)">
-                    <span class="material-symbols-outlined">casino</span>
-                    Náhodná otázka
-                    @if (_unansweredCount > 0)
-                    {
-                        <span class="badge bg-light text-dark ms-2">@_unansweredCount nezodpovězených</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-success ms-2">Vše zodpovězeno!</span>
-                    }
-                </button>
+            <!-- Mystery Box pro náhodnou otázku - 3D Flip -->
+            <div class="mystery-box-section mb-4">
+                <div class="mystery-box-container" @onclick="OpenRandomQuestionWithAnimation">
+                    <div class="mystery-box @(_isShaking ? "shake" : "") @(_isFlipping ? "flip" : "")">
+                        <!-- Front Side -->
+                        <div class="mystery-box-side mystery-box-front">
+                            <div class="mystery-box-inner">
+                                <div class="mystery-icon-wrapper">
+                                    <span class="material-symbols-outlined mystery-icon">casino</span>
+                                    <span class="material-symbols-outlined mystery-icon-sparkle">auto_awesome</span>
+                                </div>
+                                <h3 class="mystery-title">Náhodná otázka</h3>
+                                <p class="mystery-subtitle">
+                                    @if (_unansweredCount > 0)
+                                    {
+                                        <span>Klikni a zkus štěstí!</span>
+                                        <span class="mystery-badge">@_unansweredCount nezodpovězených</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-success">✨ Všechny otázky zodpovězeny!</span>
+                                    }
+                                </p>
+                                @if (_unansweredCount > 0)
+                                {
+                                    <div class="mystery-hint">
+                                        <span class="material-symbols-outlined">touch_app</span>
+                                        Klikni mě!
+                                    </div>
+                                }
+                            </div>
+                            @if (_unansweredCount > 0)
+                            {
+                                <div class="mystery-particles">
+                                    <span class="particle"></span>
+                                    <span class="particle"></span>
+                                    <span class="particle"></span>
+                                    <span class="particle"></span>
+                                    <span class="particle"></span>
+                                    <span class="particle"></span>
+                                </div>
+                            }
+                        </div>
+                        
+                        <!-- Back Side - Question Preview -->
+                        <div class="mystery-box-side mystery-box-back">
+                            <div class="question-preview-icon">
+                                <span class="material-symbols-outlined">help_outline</span>
+                            </div>
+                            @if (_previewQuestion != null)
+                            {
+                                <div class="preview-question">@_previewQuestion.Question</div>
+                            }
+                            else
+                            {
+                                <div class="preview-loading">Načítám otázku...</div>
+                            }
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Mřížka všech otázek -->
@@ -122,6 +169,27 @@
                 OnSubmit="@((tuple) => HandleAnswerSubmit(tuple.selectedAnswerIndex, tuple.timeToAnswerMs))" 
                 OnClose="CloseModal" />
         }
+        
+        <!-- Achievement Notification -->
+        @if (_showAchievementNotification && _newAchievements.Any())
+        {
+            <div class="achievement-notification">
+                @foreach (var achievement in _newAchievements)
+                {
+                    <div class="achievement-card @GetRarityClass(achievement.Rarity)">
+                        <div class="achievement-icon">
+                            <span class="material-symbols-outlined">@achievement.Icon</span>
+                        </div>
+                        <div class="achievement-content">
+                            <div class="achievement-title">Achievement Unlocked!</div>
+                            <div class="achievement-name">@achievement.Name</div>
+                            <div class="achievement-desc">@achievement.Description</div>
+                        </div>
+                        <div class="achievement-rarity">@achievement.Rarity</div>
+                    </div>
+                }
+            </div>
+        }
     </div>
 </AuthGuard>
 
@@ -131,6 +199,9 @@
     private QuizQuestion? _selectedQuestion;
     private bool _loading = true;
     private int _unansweredCount = 0;
+    private bool _isShaking = false;
+    private bool _isFlipping = false;
+    private QuizQuestion? _previewQuestion = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -149,6 +220,41 @@
         _loading = false;
     }
 
+    private async Task OpenRandomQuestionWithAnimation()
+    {
+        if (_unansweredCount == 0) return;
+        
+        // Step 1: Shake animation
+        _isShaking = true;
+        StateHasChanged();
+        await Task.Delay(600);
+        _isShaking = false;
+        
+        // Step 2: Load random question
+        var teamId = UserSession.TeamId ?? string.Empty;
+        _previewQuestion = await QuizService.GetRandomUnansweredQuestionAsync(teamId);
+        
+        if (_previewQuestion == null)
+        {
+            StateHasChanged();
+            return;
+        }
+        
+        // Step 3: 3D Flip animation
+        _isFlipping = true;
+        StateHasChanged();
+        await Task.Delay(1000); // Flip animation duration
+        
+        // Step 4: Show question on back side for 3 seconds
+        await Task.Delay(1500);
+        
+        // Step 5: Open modal with zoom animation
+        _selectedQuestion = _previewQuestion;
+        _isFlipping = false;
+        _previewQuestion = null;
+        StateHasChanged();
+    }
+
     private async Task OpenRandomQuestion()
     {
         var teamId = UserSession.TeamId ?? string.Empty;
@@ -160,15 +266,32 @@
         _selectedQuestion = question;
     }
 
+    private List<Achievement> _newAchievements = new();
+    private bool _showAchievementNotification = false;
+
     private async Task HandleAnswerSubmit(int selectedAnswerIndex, int timeToAnswerMs)
     {
         if (_selectedQuestion == null) return;
         
         var teamId = UserSession.TeamId ?? string.Empty;
-        await QuizService.SubmitAttemptAsync(teamId, _selectedQuestion.Id, selectedAnswerIndex, timeToAnswerMs);
+        var attempt = await QuizService.SubmitAttemptAsync(teamId, _selectedQuestion.Id, selectedAnswerIndex, timeToAnswerMs);
         
         // Reload data
         await LoadData();
+        
+        // Check for achievements
+        var newAchievements = await AchievementService.CheckQuizAchievementsAsync(teamId, _progress, attempt);
+        if (newAchievements.Any())
+        {
+            _newAchievements = newAchievements;
+            _showAchievementNotification = true;
+            StateHasChanged();
+            
+            // Auto-hide after 5 seconds
+            await Task.Delay(5000);
+            _showAchievementNotification = false;
+            StateHasChanged();
+        }
     }
 
     private void CloseModal()
@@ -183,6 +306,18 @@
             QuizQuestionState.Unanswered => "state-unanswered",
             QuizQuestionState.Correct => "state-correct",
             QuizQuestionState.Incorrect => "state-incorrect",
+            _ => ""
+        };
+    }
+    
+    private string GetRarityClass(AchievementRarity rarity)
+    {
+        return rarity switch
+        {
+            AchievementRarity.Common => "rarity-common",
+            AchievementRarity.Rare => "rarity-rare",
+            AchievementRarity.Epic => "rarity-epic",
+            AchievementRarity.Legendary => "rarity-legendary",
             _ => ""
         };
     }

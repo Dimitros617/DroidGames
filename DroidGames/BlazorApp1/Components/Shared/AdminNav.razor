@@ -1,0 +1,29 @@
+@inject NavigationManager Navigation
+
+<div class="admin-nav">
+    <button class="@GetTabClass("/admin/teams")" @onclick='() => NavigateTo("/admin/teams")'>
+        <span class="material-symbols-outlined">groups</span>
+        Týmy
+    </button>
+    <button class="@GetTabClass("/admin/diplomas")" @onclick='() => NavigateTo("/admin/diplomas")'>
+        <span class="material-symbols-outlined">workspace_premium</span>
+        Diplomy
+    </button>
+    <button class="@GetTabClass("/admin/maps")" @onclick='() => NavigateTo("/admin/maps")'>
+        <span class="material-symbols-outlined">map</span>
+        Mapy
+    </button>
+</div>
+
+@code {
+    private string GetTabClass(string path)
+    {
+        var currentPath = new Uri(Navigation.Uri).AbsolutePath;
+        return currentPath == path ? "admin-tab active" : "admin-tab";
+    }
+
+    private void NavigateTo(string path)
+    {
+        Navigation.NavigateTo(path);
+    }
+}

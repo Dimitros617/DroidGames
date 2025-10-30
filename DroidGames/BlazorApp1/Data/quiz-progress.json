@@ -76,19 +76,26 @@
         "IsCorrect": false,
         "TimeToAnswerMs": 0,
         "AttemptedAt": "2025-10-30T15:27:39.9103559+01:00"
+      },
+      {
+        "QuestionId": "q14",
+        "SelectedAnswerIndex": 0,
+        "IsCorrect": false,
+        "TimeToAnswerMs": 1000,
+        "AttemptedAt": "2025-10-30T15:46:33.8664341+01:00"
       }
     ],
     "CreatedAt": "2025-10-30T15:22:41.053192+01:00",
-    "LastAttemptAt": "2025-10-30T15:27:39.9103587+01:00",
-    "TotalAttempts": 9,
+    "LastAttemptAt": "2025-10-30T15:46:33.8664348+01:00",
+    "TotalAttempts": 10,
     "CorrectAnswers": 4,
-    "IncorrectAnswers": 5,
+    "IncorrectAnswers": 6,
     "AnsweredQuestionIds": [
       "q1",
       "q2",
       "q3",
       "q20"
     ],
-    "SuccessRate": 44.44444444444444
+    "SuccessRate": 40
   }
 ]

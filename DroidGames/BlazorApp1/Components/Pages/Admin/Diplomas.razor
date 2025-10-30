@@ -1,0 +1,262 @@
+@page "/admin/diplomas"
+@using BlazorApp1.Models
+@using BlazorApp1.Services
+@inject IDiplomaService DiplomaService
+@inject ITeamService TeamService
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+
+<PageTitle>Správa diplomů - DROID GAMES</PageTitle>
+
+<BlazorApp1.Components.Shared.AuthGuard RequiredRole="BlazorApp1.Models.UserRole.Admin">
+    <BlazorApp1.Components.Shared.AdminNav />
+
+    <div class="diploma-admin-container">
+    <div class="page-header">
+        <h1>📜 Správa diplomů</h1>
+        <p class="subtitle">Generování a stahování diplomů pro týmy</p>
+    </div>
+
+    @if (!_isInitialized)
+    {
+        <div class="loading-container">
+            <div class="spinner"></div>
+            <p>Načítání týmů...</p>
+        </div>
+    }
+    else
+    {
+        <div class="diploma-controls">
+            <!-- Template status -->
+            <div class="template-status @(_templateExists ? "success" : "warning")">
+                <span class="material-symbols-outlined">
+                    @(_templateExists ? "check_circle" : "warning")
+                </span>
+                <div class="status-text">
+                    @if (_templateExists)
+                    {
+                        <strong>PDF template nalezen</strong>
+                        <p>Diplomy budou vygenerovány podle vaší šablony</p>
+                    }
+                    else
+                    {
+                        <strong>PDF template nenalezen</strong>
+                        <p>Diplomy budou vygenerovány s výchozím designem. Nahrajte <code>diploma-template.pdf</code> do složky <code>wwwroot/templates/</code></p>
+                    }
+                </div>
+            </div>
+
+            <!-- Team selector -->
+            <div class="team-selector">
+                <label>Vyberte tým:</label>
+                <select @bind="_selectedTeamId" @bind:after="UpdateSelectedTeam" class="form-select">
+                    <option value="">-- Vyberte tým --</option>
+                    @foreach (var team in _teams.OrderBy(t => t.CurrentPosition))
+                    {
+                        <option value="@team.Id">
+                            @team.CurrentPosition. místo - @team.Name (@team.Members.Count členů)
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <!-- Team details -->
+            @if (_selectedTeam != null)
+            {
+                <div class="team-details">
+                    <h3>@_selectedTeam.Name</h3>
+                    <div class="team-info">
+                        <div class="info-item">
+                            <span class="label">Škola:</span>
+                            <span class="value">@_selectedTeam.School</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Umístění:</span>
+                            <span class="value">@_selectedTeam.CurrentPosition. místo</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Body:</span>
+                            <span class="value">@_selectedTeam.TotalScore bodů</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Počet členů:</span>
+                            <span class="value">@_selectedTeam.Members.Count</span>
+                        </div>
+                    </div>
+
+                    <div class="members-list">
+                        <h4>Členové týmu:</h4>
+                        <ul>
+                            @foreach (var member in _selectedTeam.Members)
+                            {
+                                <li>@member</li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            }
+
+            <!-- Action buttons -->
+            <div class="action-buttons">
+                <button class="btn btn-primary" 
+                        @onclick="DownloadSingleTeamDiplomas" 
+                        disabled="@(string.IsNullOrEmpty(_selectedTeamId) || _isGenerating)">
+                    <span class="material-symbols-outlined">download</span>
+                    Stáhnout diplomy pro vybraný tým
+                    @if (_isGenerating)
+                    {
+                        <span class="spinner-small"></span>
+                    }
+                </button>
+
+                <button class="btn btn-success" 
+                        @onclick="DownloadAllTeamsDiplomas" 
+                        disabled="@_isGenerating">
+                    <span class="material-symbols-outlined">download_for_offline</span>
+                    Stáhnout diplomy pro všechny týmy
+                    @if (_isGenerating)
+                    {
+                        <span class="spinner-small"></span>
+                    }
+                </button>
+            </div>
+
+            <!-- Status message -->
+            @if (!string.IsNullOrEmpty(_statusMessage))
+            {
+                <div class="alert @(_isError ? "alert-error" : "alert-success")">
+                    <span class="material-symbols-outlined">
+                        @(_isError ? "error" : "check_circle")
+                    </span>
+                    @_statusMessage
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<Team> _teams = new();
+    private string _selectedTeamId = string.Empty;
+    private Team? _selectedTeam = null;
+    private bool _isInitialized = false;
+    private bool _isGenerating = false;
+    private bool _templateExists = false;
+    private string _statusMessage = string.Empty;
+    private bool _isError = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+        _isInitialized = true;
+    }
+
+    private async Task LoadData()
+    {
+        _teams = await TeamService.GetAllTeamsAsync();
+        
+        // Check if template exists
+        var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "templates", "diploma-template.pdf");
+        _templateExists = File.Exists(templatePath);
+    }
+
+    private void OnTeamSelected(ChangeEventArgs e)
+    {
+        _selectedTeamId = e.Value?.ToString() ?? string.Empty;
+        
+        if (!string.IsNullOrEmpty(_selectedTeamId))
+        {
+            _selectedTeam = _teams.FirstOrDefault(t => t.Id == _selectedTeamId);
+        }
+        else
+        {
+            _selectedTeam = null;
+        }
+    }
+
+    private void UpdateSelectedTeam()
+    {
+        if (!string.IsNullOrEmpty(_selectedTeamId))
+        {
+            _selectedTeam = _teams.FirstOrDefault(t => t.Id == _selectedTeamId);
+        }
+        else
+        {
+            _selectedTeam = null;
+        }
+    }
+
+    private async Task DownloadSingleTeamDiplomas()
+    {
+        if (string.IsNullOrEmpty(_selectedTeamId) || _selectedTeam == null)
+            return;
+
+        try
+        {
+            _isGenerating = true;
+            _statusMessage = $"Generuji diplomy pro tým {_selectedTeam.Name}...";
+            _isError = false;
+            StateHasChanged();
+
+            var zipBytes = await DiplomaService.GenerateBulkDiplomasAsync(_selectedTeamId);
+            
+            var fileName = $"Diplomy_{_selectedTeam.Name}.zip".Replace(" ", "_");
+            
+            await JS.InvokeVoidAsync("downloadFile", fileName, Convert.ToBase64String(zipBytes));
+            
+            _statusMessage = $"✅ Diplomy pro tým {_selectedTeam.Name} byly úspěšně staženy!";
+            _isError = false;
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = $"❌ Chyba při generování diplomů: {ex.Message}";
+            _isError = true;
+        }
+        finally
+        {
+            _isGenerating = false;
+            StateHasChanged();
+            
+            // Clear message after 5 seconds
+            await Task.Delay(5000);
+            _statusMessage = string.Empty;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DownloadAllTeamsDiplomas()
+    {
+        try
+        {
+            _isGenerating = true;
+            _statusMessage = "Generuji diplomy pro všechny týmy...";
+            _isError = false;
+            StateHasChanged();
+
+            var zipBytes = await DiplomaService.GenerateAllTeamsDiplomasAsync();
+            
+            var fileName = $"Diplomy_Vsechny_Tymy_{DateTime.Now:yyyyMMdd}.zip";
+            
+            await JS.InvokeVoidAsync("downloadFile", fileName, Convert.ToBase64String(zipBytes));
+            
+            _statusMessage = "✅ Diplomy pro všechny týmy byly úspěšně staženy!";
+            _isError = false;
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = $"❌ Chyba při generování diplomů: {ex.Message}";
+            _isError = true;
+        }
+        finally
+        {
+            _isGenerating = false;
+            StateHasChanged();
+            
+            // Clear message after 5 seconds
+            await Task.Delay(5000);
+            _statusMessage = string.Empty;
+            StateHasChanged();
+        }
+    }
+}
+</BlazorApp1.Components.Shared.AuthGuard>

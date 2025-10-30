@@ -62,6 +62,8 @@ builder.Services.AddSingleton<IRepository<MapConfiguration>>(sp =>
     new JsonRepository<MapConfiguration>(dataPath, "maps.json"));
 builder.Services.AddSingleton<IRepository<Achievement>>(sp => 
     new JsonRepository<Achievement>(dataPath, "achievements.json"));
+builder.Services.AddSingleton<IRepository<TeamAchievement>>(sp => 
+    new JsonRepository<TeamAchievement>(dataPath, "team-achievements.json"));
 builder.Services.AddSingleton<IRepository<QuizQuestion>>(sp => 
     new JsonRepository<QuizQuestion>(dataPath, "quiz.json"));
 builder.Services.AddSingleton<IRepository<QuizProgress>>(sp => 
@@ -99,6 +101,7 @@ builder.Services.AddSingleton<IReminderService, ReminderService>();
 builder.Services.AddSingleton<IFunFactService, FunFactService>();
 builder.Services.AddSingleton<IAuthService, AuthService>();
 builder.Services.AddSingleton<ITimerService, TimerService>();
+builder.Services.AddSingleton<IDiplomaService, DiplomaService>();
 
 // Background services
 Console.WriteLine("[DEBUG] Registering background services...");

@@ -21,7 +21,9 @@ public interface IAchievementService
 {
     Task<List<Achievement>> GetAllAchievementsAsync();
     Task<List<Achievement>> GetUnlockedForTeamAsync(string teamId);
+    Task<List<TeamAchievement>> GetTeamAchievementsAsync(string teamId);
     Task CheckAndUnlockAchievementsAsync(string teamId);
+    Task<List<Achievement>> CheckQuizAchievementsAsync(string teamId, QuizProgress progress, QuizAttempt lastAttempt);
 }
 
 public interface IQuizService
@@ -61,4 +63,11 @@ public interface ITimerService
     Task ResetAsync();
     Task<int> GetRemainingSecondsAsync();
     TimerStatus GetStatus();
+}
+
+public interface IDiplomaService
+{
+    Task<byte[]> GenerateDiplomaAsync(string teamId, string memberName, int position);
+    Task<byte[]> GenerateBulkDiplomasAsync(string teamId);
+    Task<byte[]> GenerateAllTeamsDiplomasAsync();
 }

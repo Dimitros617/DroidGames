@@ -35,7 +35,7 @@
             </li>
         }
 
-        @if (UserSession.HasRole(BlazorApp1.Models.UserRole.Referee))
+        @if (UserSession.HasRole(BlazorApp1.Models.UserRole.Referee) || UserSession.HasRole(BlazorApp1.Models.UserRole.Admin))
         {
             <li>
                 <NavLink href="referee/scoring">
@@ -44,7 +44,7 @@
             </li>
         }
 
-        @if (UserSession.HasRole(BlazorApp1.Models.UserRole.HeadReferee))
+        @if (UserSession.HasRole(BlazorApp1.Models.UserRole.HeadReferee) || UserSession.HasRole(BlazorApp1.Models.UserRole.Admin))
         {
             <li>
                 <NavLink href="headref/control">

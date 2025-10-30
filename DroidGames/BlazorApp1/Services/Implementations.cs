@@ -122,14 +122,17 @@ public class AchievementService : IAchievementService
 {
     private readonly IRepository<Achievement> _achievementRepository;
     private readonly IRepository<Team> _teamRepository;
+    private readonly IRepository<TeamAchievement> _teamAchievementRepository;
 
     public AchievementService(
         IRepository<Achievement> achievementRepository,
-        IRepository<Team> teamRepository)
+        IRepository<Team> teamRepository,
+        IRepository<TeamAchievement> teamAchievementRepository)
     {
         Console.WriteLine("[DEBUG] AchievementService created");
         _achievementRepository = achievementRepository;
         _teamRepository = teamRepository;
+        _teamAchievementRepository = teamAchievementRepository;
     }
 
     public async Task<List<Achievement>> GetAllAchievementsAsync() => 
@@ -137,13 +140,17 @@ public class AchievementService : IAchievementService
 
     public async Task<List<Achievement>> GetUnlockedForTeamAsync(string teamId)
     {
-        var team = await _teamRepository.GetByIdAsync(teamId);
-        if (team == null) return new List<Achievement>();
-
+        var teamAchievements = await GetTeamAchievementsAsync(teamId);
         var allAchievements = await _achievementRepository.GetAllAsync();
-        return allAchievements
-            .Where(a => team.UnlockedAchievements.Contains(a.Id))
-            .ToList();
+        
+        var unlockedIds = teamAchievements.Select(ta => ta.AchievementId).ToHashSet();
+        return allAchievements.Where(a => unlockedIds.Contains(a.Id)).ToList();
+    }
+
+    public async Task<List<TeamAchievement>> GetTeamAchievementsAsync(string teamId)
+    {
+        var all = await _teamAchievementRepository.GetAllAsync();
+        return all.Where(ta => ta.TeamId == teamId).ToList();
     }
 
     public async Task CheckAndUnlockAchievementsAsync(string teamId)
@@ -152,10 +159,12 @@ public class AchievementService : IAchievementService
         if (team == null) return;
 
         var allAchievements = await _achievementRepository.GetAllAsync();
+        var unlockedAchievements = await GetTeamAchievementsAsync(teamId);
+        var unlockedIds = unlockedAchievements.Select(ta => ta.AchievementId).ToHashSet();
         
         foreach (var achievement in allAchievements)
         {
-            if (team.UnlockedAchievements.Contains(achievement.Id)) continue;
+            if (unlockedIds.Contains(achievement.Id)) continue;
 
             bool shouldUnlock = achievement.Condition.Type switch
             {
@@ -166,10 +175,118 @@ public class AchievementService : IAchievementService
 
             if (shouldUnlock)
             {
-                team.UnlockedAchievements.Add(achievement.Id);
-                await _teamRepository.UpdateAsync(team);
+                await UnlockAchievementAsync(teamId, achievement.Id);
             }
         }
+    }
+
+    public async Task<List<Achievement>> CheckQuizAchievementsAsync(string teamId, QuizProgress progress, QuizAttempt lastAttempt)
+    {
+        var allAchievements = await _achievementRepository.GetAllAsync();
+        var unlockedAchievements = await GetTeamAchievementsAsync(teamId);
+        var unlockedIds = unlockedAchievements.Select(ta => ta.AchievementId).ToHashSet();
+        var newlyUnlocked = new List<Achievement>();
+
+        foreach (var achievement in allAchievements)
+        {
+            if (unlockedIds.Contains(achievement.Id)) continue;
+
+            bool shouldUnlock = await CheckQuizCondition(achievement, progress, lastAttempt);
+
+            if (shouldUnlock)
+            {
+                await UnlockAchievementAsync(teamId, achievement.Id, new Dictionary<string, object>
+                {
+                    ["unlockedVia"] = "quiz",
+                    ["questionId"] = lastAttempt.QuestionId,
+                    ["timestamp"] = lastAttempt.AttemptedAt
+                });
+                newlyUnlocked.Add(achievement);
+            }
+        }
+
+        return newlyUnlocked;
+    }
+
+    private Task<bool> CheckQuizCondition(Achievement achievement, QuizProgress progress, QuizAttempt lastAttempt)
+    {
+        var condition = achievement.Condition;
+        
+        var result = condition.Type switch
+        {
+            AchievementConditionType.QuizFirstCorrect => 
+                lastAttempt.IsCorrect && progress.CorrectAnswers == 1,
+            
+            AchievementConditionType.QuizCorrectAnswers => 
+                condition.Parameters.TryGetValue("count", out var countObj) && 
+                progress.CorrectAnswers >= Convert.ToInt32(countObj),
+            
+            AchievementConditionType.QuizConsecutiveCorrect => 
+                condition.Parameters.TryGetValue("streak", out var streakObj) && 
+                GetCurrentStreak(progress) >= Convert.ToInt32(streakObj),
+            
+            AchievementConditionType.QuizCompleteAll => 
+                progress.AnsweredQuestionIds.Count >= 20 && 
+                progress.AnsweredQuestionIds.Count == progress.CorrectAnswers,
+            
+            AchievementConditionType.QuizNoMistakes => 
+                progress.IncorrectAnswers == 0 && 
+                progress.AnsweredQuestionIds.Count >= 20,
+            
+            AchievementConditionType.QuizSpeedDemon => 
+                lastAttempt.IsCorrect &&
+                condition.Parameters.TryGetValue("maxSeconds", out var maxSecsObj) && 
+                lastAttempt.TimeToAnswerMs <= Convert.ToInt32(maxSecsObj) * 1000,
+            
+            AchievementConditionType.QuizMastermind => 
+                condition.Parameters.TryGetValue("successRate", out var rateObj) && 
+                progress.TotalAttempts >= 10 &&
+                progress.SuccessRate >= Convert.ToDouble(rateObj),
+            
+            AchievementConditionType.QuizNightOwl => 
+                lastAttempt.IsCorrect &&
+                lastAttempt.AttemptedAt.Hour >= 23 || lastAttempt.AttemptedAt.Hour < 5,
+            
+            AchievementConditionType.QuizEarlyBird => 
+                lastAttempt.IsCorrect &&
+                lastAttempt.AttemptedAt.Hour >= 5 && lastAttempt.AttemptedAt.Hour < 7,
+            
+            _ => false
+        };
+        
+        return Task.FromResult(result);
+    }
+
+    private int GetCurrentStreak(QuizProgress progress)
+    {
+        // Najdeme nejdelší aktuální sérii správných odpovědí
+        var allAttempts = progress.Attempts
+            .OrderByDescending(a => a.AttemptedAt)
+            .ToList();
+
+        int currentStreak = 0;
+        foreach (var attempt in allAttempts)
+        {
+            if (attempt.IsCorrect)
+                currentStreak++;
+            else
+                break;
+        }
+
+        return currentStreak;
+    }
+
+    private async Task UnlockAchievementAsync(string teamId, string achievementId, Dictionary<string, object>? unlockData = null)
+    {
+        var teamAchievement = new TeamAchievement
+        {
+            TeamId = teamId,
+            AchievementId = achievementId,
+            UnlockedAt = DateTime.UtcNow,
+            UnlockData = unlockData ?? new Dictionary<string, object>()
+        };
+
+        await _teamAchievementRepository.AddAsync(teamAchievement);
     }
 }
 

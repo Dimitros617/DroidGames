@@ -5,61 +5,88 @@
 @inject IMapService MapService
 @inject IScoreService ScoreService
 @inject UserSession UserSession
-@implements IDisposable
+@rendermode InteractiveServer
 
 <PageTitle>Bodování - Rozhodčí</PageTitle>
 
-<BlazorApp1.Components.Shared.AuthGuard RequiredRoles="@(new[] { UserRole.Referee, UserRole.Admin })">
-    <div class="referee-scoring-page">
-        <div class="page-header">
-            <h1>🎯 Bodování týmu</h1>
-            <p>Jednoduché bodování - klikněte na bloky v mapě</p>
-        </div>
-
+<BlazorApp1.Components.Shared.AuthGuard RequiredRole="BlazorApp1.Models.UserRole.Referee">
+    <div class="referee-scoring-container">
+        
         @if (!_isInitialized)
         {
-            <div class="loading">
+            <div class="loading-state">
                 <div class="spinner"></div>
                 <p>Načítání...</p>
             </div>
         }
+        else if (_currentRound == null)
+        {
+            <div class="no-round-state">
+                <span class="material-symbols-outlined">event_busy</span>
+                <h2>Žádné aktivní kolo</h2>
+                <p>V tuto chvíli neprobíhá žádné kolo, které byste mohli bodovat.</p>
+            </div>
+        }
         else
         {
-            <!-- Team Selection -->
-            <div class="team-selection">
-                <h2>Vyberte tým</h2>
-                <div class="team-buttons">
-                    @if (_team1 != null)
+            <!-- Header -->
+            <div class="scoring-header">
+                <div class="round-info">
+                    <h1>
+                        <span class="material-symbols-outlined">edit_note</span>
+                        Bodování - Kolo @_currentRound.RoundNumber
+                    </h1>
+                    <div class="teams-info">
+                        <div class="team-badge">@_team1?.Name</div>
+                        <span class="vs-text">VS</span>
+                        <div class="team-badge">@_team2?.Name</div>
+                    </div>
+                </div>
+                
+                <div class="timer-section">
+                    @if (_isRunning)
                     {
-                        <button class="team-card @(_selectedTeamId == _team1.Id ? "selected" : "")"
-                                @onclick="() => SelectTeam(_team1.Id)">
-                            <span class="team-icon" style="background: #3498db;">@_team1.Name[0]</span>
-                            <div class="team-info">
-                                <strong>@_team1.Name</strong>
-                                <small>Tým 1</small>
-                            </div>
-                        </button>
+                        <div class="timer running">
+                            <span class="material-symbols-outlined">timer</span>
+                            <span class="time">@FormatTime(_elapsedSeconds)</span>
+                        </div>
                     }
-                    
-                    @if (_team2 != null)
+                    else if (_elapsedSeconds > 0)
                     {
-                        <button class="team-card @(_selectedTeamId == _team2.Id ? "selected" : "")"
-                                @onclick="() => SelectTeam(_team2.Id)">
-                            <span class="team-icon" style="background: #e74c3c;">@_team2.Name[0]</span>
-                            <div class="team-info">
-                                <strong>@_team2.Name</strong>
-                                <small>Tým 2</small>
-                            </div>
-                        </button>
+                        <div class="timer finished">
+                            <span class="material-symbols-outlined">check_circle</span>
+                            <span class="time">@FormatTime(_elapsedSeconds)</span>
+                        </div>
                     }
                 </div>
             </div>
 
+            <!-- Team Selection -->
+            <div class="team-selection">
+                <button class="team-select-btn @(_selectedTeamId == _team1?.Id ? "active" : "")"
+                        @onclick="() => SelectTeam(_team1?.Id ?? string.Empty)">
+                    <span class="material-symbols-outlined">groups</span>
+                    @_team1?.Name
+                </button>
+                <button class="team-select-btn @(_selectedTeamId == _team2?.Id ? "active" : "")"
+                        @onclick="() => SelectTeam(_team2?.Id ?? string.Empty)">
+                    <span class="material-symbols-outlined">groups</span>
+                    @_team2?.Name
+                </button>
+            </div>
+
             @if (!string.IsNullOrEmpty(_selectedTeamId) && _selectedMap != null)
             {
-                <!-- Map Grid -->
-                <div class="map-section">
-                    <h2>🗺️ Herní pole</h2>
+                <!-- Interactive Map -->
+                <div class="map-scoring-section">
+                    <div class="map-header">
+                        <h2>@_selectedMap.Name</h2>
+                        <div class="current-score">
+                            <span class="label">Aktuální skóre:</span>
+                            <span class="score">@_currentScore bodů</span>
+                        </div>
+                    </div>
+
                     <div class="map-container">
                         <div class="map-grid">
                             @for (int y = 0; y < 6; y++)
@@ -89,6 +116,8 @@
                                                 </div>
                                             }
                                         }
+                                        
+                                        <div class="cell-coords">@x,@y</div>
                                     </div>
                                 }
                             }
@@ -96,7 +125,7 @@
                     </div>
                 </div>
 
-                <!-- Events Table -->
+                <!-- Score Summary - Tabulka událostí -->
                 <div class="score-summary">
                     <h3>📋 Události (pořadí kliknutí)</h3>
                     <div class="events-table">
@@ -116,7 +145,7 @@
                                     @foreach (var evt in _scoringEvents.OrderBy(e => e.Id))
                                     {
                                         <tr>
-                                            <td class="event-id"><strong>@evt.Id</strong></td>
+                                            <td class="event-id">@evt.Id</td>
                                             <td class="event-pos">[@evt.X, @evt.Y]</td>
                                             <td class="event-desc">@evt.Description</td>
                                             <td class="event-points @(evt.Points > 0 ? "positive" : "negative")">
@@ -124,7 +153,7 @@
                                             </td>
                                             <td class="event-actions">
                                                 <button class="btn-remove" @onclick="() => RemoveEvent(evt.Id)" title="Smazat událost">
-                                                    ❌
+                                                    <span class="material-symbols-outlined">close</span>
                                                 </button>
                                             </td>
                                         </tr>
@@ -139,7 +168,7 @@
                     </div>
                     
                     <div class="total-score-display">
-                        <span class="label">Celkové skóre:</span>
+                        <span class="label">Celkem:</span>
                         <span class="total">@_currentScore bodů</span>
                     </div>
                 </div>
@@ -149,7 +178,8 @@
                     <button class="btn btn-primary btn-lg" 
                             @onclick="SubmitScore"
                             disabled="@(_scoringEvents.Count == 0 || _isSubmitting)">
-                        📤 Odeslat hodnocení
+                        <span class="material-symbols-outlined">send</span>
+                        Odeslat hodnocení
                         @if (_isSubmitting)
                         {
                             <span class="spinner-small"></span>
@@ -160,7 +190,8 @@
             else
             {
                 <div class="select-team-prompt">
-                    <p>👆 Vyberte tým pro začátek bodování</p>
+                    <span class="material-symbols-outlined">touch_app</span>
+                    <p>Vyberte tým pro bodování</p>
                 </div>
             }
         }
@@ -168,6 +199,9 @@
         @if (!string.IsNullOrEmpty(_statusMessage))
         {
             <div class="toast @(_isError ? "error" : "success")">
+                <span class="material-symbols-outlined">
+                    @(_isError ? "error" : "check_circle")
+                </span>
                 @_statusMessage
             </div>
         }
@@ -185,7 +219,11 @@
     private int _currentScore = 0;
     private List<ScoringEvent> _scoringEvents = new();
     private int _nextEventId = 1;
-    private Dictionary<string, List<int>> _blockEventIds = new();
+    private Dictionary<string, List<int>> _blockEventIds = new(); // Track which events belong to each block
+    
+    private bool _isRunning = false;
+    private int _elapsedSeconds = 0;
+    private System.Threading.Timer? _timer;
     
     private bool _isSubmitting = false;
     private string _statusMessage = string.Empty;
@@ -210,6 +248,9 @@
 
     private async Task LoadData()
     {
+        // TODO: Load current active round from competition status
+        // For now, we'll create a mock scenario
+        
         var teams = await TeamService.GetAllTeamsAsync();
         if (teams.Count >= 2)
         {
@@ -223,6 +264,7 @@
             _selectedMap = maps.FirstOrDefault(m => m.IsPublished);
         }
         
+        // Mock current round
         _currentRound = new RoundParticipation
         {
             RoundNumber = 1,
@@ -257,8 +299,7 @@
 
     private void OnBlockClick(MapBlock? block, int x, int y)
     {
-        if (block == null || string.IsNullOrEmpty(_selectedTeamId) || 
-            block.Type == MapBlockType.Empty || block.Type == MapBlockType.Rock) 
+        if (block == null || string.IsNullOrEmpty(_selectedTeamId) || block.Type == MapBlockType.Empty || block.Type == MapBlockType.Rock) 
             return;
         
         var key = $"{x},{y}";
@@ -266,7 +307,7 @@
         // Přidání události podle typu bloku
         if (block.Type == MapBlockType.BlueCrystal)
         {
-            // Automaticky 2 události: dotyk (+1) a validní přesun (+1)
+            // Automaticky přidáme 2 události: dotyk (+1) a validní přesun (+1)
             var touchEvent = new ScoringEvent
             {
                 Id = _nextEventId++,
@@ -345,6 +386,126 @@
         
         StateHasChanged();
     }
+            Type = _currentBlockForModal.Type,
+            FirstTouched = firstTouch,
+            ValidMove = validMove,
+            ExcessiveMove = excessiveMove,
+            TouchCount = 1
+        };
+        
+        _blockManipulations[key] = manipulation;
+        
+        if (!_isRepeatManipulation)
+        {
+            _lastManipulatedBlock = key;
+        }
+        
+        CloseManipulationModal();
+        RecalculateScore();
+    }
+
+    private void AddSulfurManipulation(string key, MapBlock block)
+    {
+        var manipulation = new BlockManipulation
+        {
+            Type = block.Type,
+            FirstTouched = false,
+            ValidMove = false,
+            ExcessiveMove = false,
+            TouchCount = 1
+        };
+        
+        _blockManipulations[key] = manipulation;
+        _hasAnySulfurTouch = true;
+    }
+
+    private void RemoveManipulation(string key, MapBlock block)
+    {
+        _blockManipulations.Remove(key);
+        
+        if (_lastManipulatedBlock == key)
+        {
+            _lastManipulatedBlock = null;
+        }
+        
+        // Check if any sulfur is still touched
+        _hasAnySulfurTouch = _blockManipulations.Any(m => m.Value.Type == MapBlockType.YellowSulfur);
+    }
+
+    private void RecalculateScore()
+    {
+        _scoreBreakdown.Clear();
+        int score = 0;
+        
+        // Count blue crystals
+        int crystalFirstTouches = 0;
+        int crystalValidMoves = 0;
+        int crystalExcessiveMoves = 0;
+        
+        // Count yellow sulfur
+        int sulfurDisruptions = 0;
+        
+        foreach (var kvp in _blockManipulations)
+        {
+            var manipulation = kvp.Value;
+            
+            if (manipulation.Type == MapBlockType.BlueCrystal)
+            {
+                if (manipulation.FirstTouched)
+                {
+                    crystalFirstTouches++;
+                    score += 1; // +1 for first touch
+                }
+                
+                if (manipulation.ValidMove)
+                {
+                    crystalValidMoves++;
+                    score += 1; // +1 for valid move (140-280mm)
+                }
+                
+                if (manipulation.ExcessiveMove)
+                {
+                    crystalExcessiveMoves++;
+                    score -= 2; // -2 for excessive move (>280mm)
+                }
+            }
+            else if (manipulation.Type == MapBlockType.YellowSulfur)
+            {
+                sulfurDisruptions++;
+                score -= 1; // -1 for any sulfur disruption (>140mm)
+            }
+        }
+        
+        // Bonus for no sulfur touch
+        if (!_hasAnySulfurTouch && _blockManipulations.Any(m => m.Value.Type == MapBlockType.BlueCrystal))
+        {
+            score += 2;
+            _scoreBreakdown["Bonus za opatrnost (bez dotyku síry)"] = 2;
+        }
+        
+        // Build breakdown
+        if (crystalFirstTouches > 0)
+        {
+            _scoreBreakdown[$"Dotyk krystalů ({crystalFirstTouches}×)"] = crystalFirstTouches;
+        }
+        
+        if (crystalValidMoves > 0)
+        {
+            _scoreBreakdown[$"Validní přesuny krystalů ({crystalValidMoves}×)"] = crystalValidMoves;
+        }
+        
+        if (crystalExcessiveMoves > 0)
+        {
+            _scoreBreakdown[$"Přílišné posuny krystalů ({crystalExcessiveMoves}×)"] = -(crystalExcessiveMoves * 2);
+        }
+        
+        if (sulfurDisruptions > 0)
+        {
+            _scoreBreakdown[$"Narušení síry ({sulfurDisruptions}×)"] = -sulfurDisruptions;
+        }
+        
+        _currentScore = score;
+    }
 
     private string GetBlockClass(MapBlock? block)
     {
@@ -363,7 +524,7 @@
     {
         return type switch
         {
-            MapBlockType.Rock => "🪨",
+            MapBlockType.Rock => "�",
             MapBlockType.BlueCrystal => "💎",
             MapBlockType.YellowSulfur => "🟡",
             _ => ""
@@ -372,7 +533,7 @@
 
     private async Task SubmitScore()
     {
-        if (string.IsNullOrEmpty(_selectedTeamId) || _scoringEvents.Count == 0) return;
+        if (string.IsNullOrEmpty(_selectedTeamId) || _currentScore == 0) return;
         
         try
         {
@@ -380,23 +541,10 @@
             _statusMessage = "Odesílám hodnocení...";
             StateHasChanged();
             
-            // Build breakdown from events
-            var scoreBreakdown = new Dictionary<string, int>();
-            var crystalTouches = _scoringEvents.Count(e => e.Description.Contains("Dotyk krystalu"));
-            var validMoves = _scoringEvents.Count(e => e.Description.Contains("Validní přesun"));
-            var sulfurHits = _scoringEvents.Count(e => e.Description.Contains("Narušení síry"));
-            
-            if (crystalTouches > 0)
-                scoreBreakdown[$"Dotyk krystalů ({crystalTouches}×)"] = crystalTouches;
-            if (validMoves > 0)
-                scoreBreakdown[$"Validní přesuny ({validMoves}×)"] = validMoves;
-            if (sulfurHits > 0)
-                scoreBreakdown[$"Narušení síry ({sulfurHits}×)"] = -sulfurHits;
-            
             var refereeScore = new RefereeScore
             {
                 RefereeId = UserSession.UserId ?? "referee1",
-                ScoreBreakdown = scoreBreakdown,
+                ScoreBreakdown = new Dictionary<string, int>(_scoreBreakdown),
                 TotalScore = _currentScore,
                 SubmittedAt = DateTime.UtcNow
             };
@@ -430,7 +578,14 @@
         }
     }
 
+    private string FormatTime(int seconds)
+    {
+        var ts = TimeSpan.FromSeconds(seconds);
+        return $"{ts.Minutes:D2}:{ts.Seconds:D2}";
+    }
+
     public void Dispose()
     {
+        _timer?.Dispose();
     }
 }

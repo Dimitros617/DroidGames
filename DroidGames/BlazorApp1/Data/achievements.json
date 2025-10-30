@@ -1,1 +1,178 @@
-[]
+[
+  {
+    "Id": "quiz-first-blood",
+    "Name": "První krev",
+    "Description": "Zodpověz svou první otázku správně",
+    "Icon": "workspace_premium",
+    "Rarity": "Common",
+    "IsHidden": false,
+    "Condition": {
+      "Type": "QuizFirstCorrect",
+      "Parameters": {}
+    }
+  },
+  {
+    "Id": "quiz-rookie",
+    "Name": "Nováček",
+    "Description": "Zodpověz 5 otázek správně",
+    "Icon": "military_tech",
+    "Rarity": "Common",
+    "IsHidden": false,
+    "Condition": {
+      "Type": "QuizCorrectAnswers",
+      "Parameters": {
+        "count": 5
+      }
+    }
+  },
+  {
+    "Id": "quiz-scholar",
+    "Name": "Učenec",
+    "Description": "Zodpověz 10 otázek správně",
+    "Icon": "school",
+    "Rarity": "Rare",
+    "IsHidden": false,
+    "Condition": {
+      "Type": "QuizCorrectAnswers",
+      "Parameters": {
+        "count": 10
+      }
+    }
+  },
+  {
+    "Id": "quiz-master",
+    "Name": "Mistr vědomostí",
+    "Description": "Zodpověz všech 20 otázek správně",
+    "Icon": "emoji_events",
+    "Rarity": "Epic",
+    "IsHidden": false,
+    "Condition": {
+      "Type": "QuizCompleteAll",
+      "Parameters": {
+        "totalQuestions": 20
+      }
+    }
+  },
+  {
+    "Id": "quiz-hat-trick",
+    "Name": "Hattrick",
+    "Description": "Zodpověz 3 otázky v řadě správně",
+    "Icon": "whatshot",
+    "Rarity": "Common",
+    "IsHidden": false,
+    "Condition": {
+      "Type": "QuizConsecutiveCorrect",
+      "Parameters": {
+        "streak": 3
+      }
+    }
+  },
+  {
+    "Id": "quiz-on-fire",
+    "Name": "V plamenech",
+    "Description": "Zodpověz 5 otázek v řadě správně",
+    "Icon": "local_fire_department",
+    "Rarity": "Rare",
+    "IsHidden": false,
+    "Condition": {
+      "Type": "QuizConsecutiveCorrect",
+      "Parameters": {
+        "streak": 5
+      }
+    }
+  },
+  {
+    "Id": "quiz-unstoppable",
+    "Name": "Nezastavitelný",
+    "Description": "Zodpověz 10 otázek v řadě správně",
+    "Icon": "diamond",
+    "Rarity": "Epic",
+    "IsHidden": false,
+    "Condition": {
+      "Type": "QuizConsecutiveCorrect",
+      "Parameters": {
+        "streak": 10
+      }
+    }
+  },
+  {
+    "Id": "quiz-godlike",
+    "Name": "Božský",
+    "Description": "Zodpověz všech 20 otázek v řadě správně bez jediné chyby",
+    "Icon": "auto_awesome",
+    "Rarity": "Legendary",
+    "IsHidden": true,
+    "Condition": {
+      "Type": "QuizNoMistakes",
+      "Parameters": {
+        "totalQuestions": 20
+      }
+    }
+  },
+  {
+    "Id": "quiz-speed-demon",
+    "Name": "Rychlík",
+    "Description": "Zodpověz otázku do 5 sekund",
+    "Icon": "bolt",
+    "Rarity": "Rare",
+    "IsHidden": false,
+    "Condition": {
+      "Type": "QuizSpeedDemon",
+      "Parameters": {
+        "maxSeconds": 5
+      }
+    }
+  },
+  {
+    "Id": "quiz-perfectionist",
+    "Name": "Perfekcionista",
+    "Description": "Dosáhni 100% úspěšnosti",
+    "Icon": "stars",
+    "Rarity": "Epic",
+    "IsHidden": false,
+    "Condition": {
+      "Type": "QuizMastermind",
+      "Parameters": {
+        "successRate": 100.0
+      }
+    }
+  },
+  {
+    "Id": "quiz-ace",
+    "Name": "Eso",
+    "Description": "Dosáhni alespoň 90% úspěšnosti",
+    "Icon": "grade",
+    "Rarity": "Rare",
+    "IsHidden": false,
+    "Condition": {
+      "Type": "QuizMastermind",
+      "Parameters": {
+        "successRate": 90.0
+      }
+    }
+  },
+  {
+    "Id": "quiz-night-owl",
+    "Name": "Noční sova",
+    "Description": "Zodpověz otázku mezi 23:00 a 05:00",
+    "Icon": "bedtime",
+    "Rarity": "Common",
+    "IsHidden": false,
+    "Condition": {
+      "Type": "QuizNightOwl",
+      "Parameters": {}
+    }
+  },
+  {
+    "Id": "quiz-early-bird",
+    "Name": "Ranní ptáče",
+    "Description": "Zodpověz otázku mezi 05:00 a 07:00",
+    "Icon": "wb_sunny",
+    "Rarity": "Common",
+    "IsHidden": false,
+    "Condition": {
+      "Type": "QuizEarlyBird",
+      "Parameters": {}
+    }
+  }
+]
