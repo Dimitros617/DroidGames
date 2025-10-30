@@ -10,9 +10,9 @@ Console.WriteLine("[DEBUG] Program.cs START");
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Enable detailed logging for SignalR debugging
-builder.Logging.AddFilter("Microsoft.AspNetCore.SignalR", LogLevel.Debug);
-builder.Logging.AddFilter("Microsoft.AspNetCore.Http.Connections", LogLevel.Debug);
+// REMOVED - detailed SignalR logging causing too much output
+// builder.Logging.AddFilter("Microsoft.AspNetCore.SignalR", LogLevel.Debug);
+// builder.Logging.AddFilter("Microsoft.AspNetCore.Http.Connections", LogLevel.Debug);
 
 Console.WriteLine("[DEBUG] Builder created");
 
@@ -22,11 +22,21 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 Console.WriteLine("[DEBUG] Razor components added");
 
-// SignalR with detailed logging
+// SignalR with security best practices
 builder.Services.AddSignalR(options =>
 {
-    options.EnableDetailedErrors = true;
-    options.MaximumReceiveMessageSize = null;
+    // Security: Only show detailed errors in Development
+    options.EnableDetailedErrors = builder.Environment.IsDevelopment();
+    
+    // Connection timeouts to prevent zombie connections
+    options.ClientTimeoutInterval = TimeSpan.FromSeconds(30); // Client must ping every 30s
+    options.HandshakeTimeout = TimeSpan.FromSeconds(15); // Max handshake time
+    options.KeepAliveInterval = TimeSpan.FromSeconds(15); // Server pings client
+    
+    // Security: Prevent flooding and DoS
+    options.MaximumParallelInvocationsPerClient = 1; // One call at a time per client
+    options.MaximumReceiveMessageSize = 128 * 1024; // 128 KB limit (enough for Blazor, prevents DoS)
+    options.StreamBufferCapacity = 10; // Limit stream buffer
 });
 builder.Services.AddResponseCompression(opts =>
 {
@@ -101,16 +111,37 @@ Console.WriteLine("[DEBUG] Background services registered");
 
 // HTTP Context
 builder.Services.AddHttpContextAccessor();
+
+// User session management with proper cleanup
 builder.Services.AddScoped<UserSession>();
+
+// Circuit handler for WebSocket lifecycle monitoring
+builder.Services.AddScoped<Microsoft.AspNetCore.Components.Server.Circuits.CircuitHandler, CircuitHandlerService>();
 
 // CORS for ESP32 API
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("ESP32Policy", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        // TODO: Replace with actual ESP32 IP address before production!
+        // SECURITY: AllowAnyOrigin is dangerous - only for development
+        if (builder.Environment.IsDevelopment())
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        }
+        else
+        {
+            // Production: Specify exact ESP32 IP
+            policy.WithOrigins(
+                "http://192.168.1.100", // Replace with your ESP32 IP
+                "http://10.0.0.100"     // Add more IPs if needed
+            )
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+        }
     });
 });
 

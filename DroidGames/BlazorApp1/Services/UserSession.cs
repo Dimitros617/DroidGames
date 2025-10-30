@@ -3,11 +3,12 @@ using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 namespace BlazorApp1.Services;
 
-public class UserSession
+public class UserSession : IDisposable
 {
     private readonly ProtectedSessionStorage _sessionStorage;
     private User? _currentUser;
     private bool _isInitialized = false;
+    private bool _disposed = false;
     private TaskCompletionSource<bool>? _initializationTcs;
 
     public UserSession(ProtectedSessionStorage sessionStorage)
@@ -123,4 +124,26 @@ public class UserSession
     }
 
     private void NotifyStateChanged() => OnChange?.Invoke();
+
+    // IDisposable implementation - cleanup resources when circuit is disposed
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            _currentUser = null;
+            _isInitialized = false;
+            
+            // Unsubscribe all event handlers to prevent memory leaks
+            if (OnChange != null)
+            {
+                foreach (var d in OnChange.GetInvocationList())
+                {
+                    OnChange -= (Action)d;
+                }
+            }
+            
+            _disposed = true;
+            Console.WriteLine("[UserSession] Disposed - cleaned up resources");
+        }
+    }
 }

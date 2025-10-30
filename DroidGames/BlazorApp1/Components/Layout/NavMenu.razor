@@ -99,16 +99,33 @@
 @code {
     protected override void OnInitialized()
     {
-        NavigationManager.LocationChanged += OnLocationChanged;
-        UserSession.OnChange += StateHasChanged;
+        try
+        {
+            NavigationManager.LocationChanged += OnLocationChanged;
+            UserSession.OnChange += StateHasChanged;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR NavMenu.OnInitialized] {ex.Message}");
+            Console.WriteLine($"[ERROR StackTrace] {ex.StackTrace}");
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await UserSession.InitializeAsync();
-            StateHasChanged();
+            try
+            {
+                await UserSession.InitializeAsync();
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR NavMenu.OnAfterRenderAsync] {ex.Message}");
+                Console.WriteLine($"[ERROR StackTrace] {ex.StackTrace}");
+                // Pokračujeme i když inicializace selže - uživatel nebude přihlášen
+            }
         }
     }
 
