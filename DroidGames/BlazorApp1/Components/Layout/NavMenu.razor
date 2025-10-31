@@ -7,7 +7,7 @@
         <!-- Public Links -->
         <li>
             <NavLink href="" Match="NavLinkMatch.All">
-                �eb���ek
+                Žebříček
             </NavLink>
         </li>
         <li>
@@ -44,7 +44,7 @@
         {
             <li>
                 <NavLink href="referee/scoring">
-                    Bodov�n�
+                    Bodování
                 </NavLink>
             </li>
         }
@@ -53,12 +53,12 @@
         {
             <li>
                 <NavLink href="headref/control">
-                    Ovl�d�n�
+                    Ovládání
                 </NavLink>
             </li>
             <li>
                 <NavLink href="admin/referee-approval">
-                    Schvalov�n�
+                    Schvalování
                 </NavLink>
             </li>
         }
@@ -85,7 +85,7 @@
             <li>
                 <a href="/logout" class="nav-logout">
                     <span class="material-symbols-outlined">logout</span>
-                    <span>Odhl�sit</span>
+                    <span>Odhlásit</span>
                 </a>
             </li>
         }
@@ -94,7 +94,7 @@
             <li>
                 <NavLink href="login">
                     <span class="material-symbols-outlined">login</span>
-                    <span>P�ihl�sit se</span>
+                    <span>Přihlásit se</span>
                 </NavLink>
             </li>
         }
@@ -129,7 +129,7 @@
             {
                 Console.WriteLine($"[ERROR NavMenu.OnAfterRenderAsync] {ex.Message}");
                 Console.WriteLine($"[ERROR StackTrace] {ex.StackTrace}");
-                // Pokra�ujeme i kdy� inicializace sel�e - u�ivatel nebude p�ihl�en
+                // Pokračujeme i když inicializace selže - uživatel nebude přihlášen
             }
         }
     }
@@ -143,12 +143,12 @@
     {
         return role switch
         {
-            BlazorApp1.Models.UserRole.Team => "T�m",
-            BlazorApp1.Models.UserRole.Referee => "Rozhod��",
-            BlazorApp1.Models.UserRole.HeadReferee => "Hlavn� rozhod��",
+            BlazorApp1.Models.UserRole.Team => "Tým",
+            BlazorApp1.Models.UserRole.Referee => "Rozhodčí",
+            BlazorApp1.Models.UserRole.HeadReferee => "Hlavní rozhodčí",
             BlazorApp1.Models.UserRole.Production => "Produkce",
-            BlazorApp1.Models.UserRole.Admin => "Administr�tor",
-            _ => "N�v�t�vn�k"
+            BlazorApp1.Models.UserRole.Admin => "Administrátor",
+            _ => "Návštěvník"
         };
     }
 

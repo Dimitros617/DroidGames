@@ -174,5 +174,134 @@
       "Type": "QuizEarlyBird",
       "Parameters": {}
     }
+  },
+  {
+    "Id": "first-crystal-touch",
+    "Name": "První kontakt",
+    "Description": "První dotyk krystalu v celé soutěži",
+    "Icon": "stars",
+    "Rarity": "Legendary",
+    "IsHidden": false,
+    "Condition": {
+      "Type": "FirstCrystalTouch",
+      "Parameters": {}
+    }
+  },
+  {
+    "Id": "first-sulfur-hit",
+    "Name": "Průkopník",
+    "Description": "První narušení síry v celé soutěži",
+    "Icon": "science",
+    "Rarity": "Rare",
+    "IsHidden": false,
+    "Condition": {
+      "Type": "FirstSulfurHit",
+      "Parameters": {}
+    }
+  },
+  {
+    "Id": "three-crystals-row",
+    "Name": "Krystalová série",
+    "Description": "Dotkni se 3 krystalů za sebou bez narušení síry",
+    "Icon": "casino",
+    "Rarity": "Rare",
+    "IsHidden": false,
+    "Condition": {
+      "Type": "ThreeCrystalsInRow",
+      "Parameters": {}
+    }
+  },
+  {
+    "Id": "all-crystals-touched",
+    "Name": "Sběratel krystalů",
+    "Description": "Dotkni se všech krystalů v jednom kole",
+    "Icon": "workspace_premium",
+    "Rarity": "Epic",
+    "IsHidden": false,
+    "Condition": {
+      "Type": "AllCrystalsTouched",
+      "Parameters": {}
+    }
+  },
+  {
+    "Id": "all-sulfurs-cleared",
+    "Name": "Čistič síry",
+    "Description": "Narušení všech sír v jednom kole",
+    "Icon": "cleaning_services",
+    "Rarity": "Epic",
+    "IsHidden": false,
+    "Condition": {
+      "Type": "AllSulfursCleared",
+      "Parameters": {}
+    }
+  },
+  {
+    "Id": "perfect-run",
+    "Name": "Perfektní jízda",
+    "Description": "Pouze krystaly, žádná síra",
+    "Icon": "verified",
+    "Rarity": "Epic",
+    "IsHidden": false,
+    "Condition": {
+      "Type": "PerfectRun",
+      "Parameters": {}
+    }
+  },
+  {
+    "Id": "speed-demon",
+    "Name": "Rychlý démon",
+    "Description": "Kolo dokončeno rychle - méně než 10 tahů",
+    "Icon": "speed",
+    "Rarity": "Rare",
+    "IsHidden": false,
+    "Condition": {
+      "Type": "SpeedDemon",
+      "Parameters": {
+        "maxMoves": 10
+      }
+    }
+  },
+  {
+    "Id": "minimal-moves",
+    "Name": "Efektivní stratég",
+    "Description": "Vysoké skóre s malým počtem tahů - alespoň 5 krystalů do 12 tahů",
+    "Icon": "psychology",
+    "Rarity": "Rare",
+    "IsHidden": false,
+    "Condition": {
+      "Type": "MinimalMovesEfficient",
+      "Parameters": {
+        "minCrystals": 5,
+        "maxMoves": 12
+      }
+    }
+  },
+  {
+    "Id": "no-sulfur-damage",
+    "Name": "Bez poškození",
+    "Description": "Dokončení kola bez narušení síry - alespoň 5 tahů",
+    "Icon": "health_and_safety",
+    "Rarity": "Rare",
+    "IsHidden": false,
+    "Condition": {
+      "Type": "NoSulfurDamage",
+      "Parameters": {
+        "minMoves": 5
+      }
+    }
+  },
+  {
+    "Id": "crystal-master",
+    "Name": "Crystal Master",
+    "Description": "Více než 10 krystalů v jednom kole",
+    "Icon": "diamond",
+    "Rarity": "Epic",
+    "IsHidden": false,
+    "Condition": {
+      "Type": "CrystalMaster",
+      "Parameters": {
+        "minCrystals": 10
+      }
+    }
   }
 ]

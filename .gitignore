@@ -365,3 +365,7 @@ FodyWeavers.xsd
 /appsettings.Development.json
 /appsettings.Development.json
 /appsettings.Development.json
+
+# DroidGames runtime data files (lowercase 'data' directory)
+DroidGames/BlazorApp1/data/
+!DroidGames/BlazorApp1/Data/

@@ -15,6 +15,18 @@ public enum AchievementConditionType
     ExactScore,
     MinimalMoves,
     
+    // Evaluation-based achievements (from referee scoring)
+    FirstCrystalTouch,          // První dotyk krystalu v celé soutěži
+    FirstSulfurHit,             // První narušení síry v celé soutěži
+    ThreeCrystalsInRow,         // 3 krystaly dotknuté za sebou
+    AllCrystalsTouched,         // Dotknutí všech krystalů v kole
+    AllSulfursCleared,          // Odsunuti všech sír v kole
+    PerfectRun,                 // Perfektní jízda - pouze krystaly
+    SpeedDemon,                 // Rychlé dokončení kola
+    MinimalMovesEfficient,      // Vysoké skóre s malým počtem tahů
+    NoSulfurDamage,             // Žádné narušení síry v kole
+    CrystalMaster,              // Více než 10 krystalů v jednom kole
+    
     // Quiz-based achievements
     QuizFirstCorrect,           // První správná odpověď
     QuizCorrectAnswers,         // X správných odpovědí celkem

@@ -12,14 +12,14 @@
 @implements IDisposable
 @rendermode InteractiveServer
 
-<PageTitle>DROID GAMES 2026 - LIVE V�SLEDKY</PageTitle>
+<PageTitle>DROID GAMES 2026 - LIVE VÝSLEDKY</PageTitle>
 
 <!-- Hero Section -->
 <div class="hero-section">
     <div class="hero-content">
         <img src="/graphic/DroidGames_logo_barva_v1.png" alt="Droid Games 2026" class="hero-logo" />
-        <h1 class="hero-title">?? DROID GAMES 2026</h1>
-        <p class="hero-subtitle">Sout� v robotice | Centrum Robotiky Plze�</p>
+    <h1 class="hero-title">🤖 DROID GAMES 2026</h1>
+    <p class="hero-subtitle">Soutěž v robotice | Centrum Robotiky Plzeň</p>
         
         @if (_settings != null)
         {
@@ -51,7 +51,7 @@
         <div class="status-card error">
             <h2>
                 <span class="material-symbols-outlined">error</span>
-                Chyba p�i na��t�n�
+                Chyba při načítání
             </h2>
             <pre class="error-message">@_error</pre>
             <button class="btn-retry" @onclick="ReloadData">
@@ -69,7 +69,7 @@
                 <div class="current-match-card">
                     <h3 class="match-title">
                         <span class="material-symbols-outlined pulse">sports_esports</span>
-                        Aktu�ln� z�pas
+                        Aktuální zápas
                     </h3>
                     
                     <div class="match-teams">
@@ -87,59 +87,59 @@
                     <!-- Timer Display nebo Status Display -->
                     @if (_currentGameStatus == BlazorApp1.Models.GameStatus.RoundInProgress)
                     {
-                        <!-- Zobrazit �asova� kdy� b�� j�zda -->
+                        <!-- Zobrazit časovač když běží jízda -->
                         <div class="timer-display timer-@(_timerStatus.ToString().ToLower())">
                             <div class="timer-value">@FormatTime(_timerRemaining)</div>
                             <div class="timer-status">
                                 <span class="status-dot running"></span>
-                                <text>J�zda prob�h�!</text>
+                                <text>Jízda probíhá!</text>
                             </div>
                         </div>
                     }
                     else if (_currentGameStatus == BlazorApp1.Models.GameStatus.WaitingForScoring)
                     {
-                        <!-- Zobrazit "�ek� se na hodnocen�" -->
+                        <!-- Zobrazit "Čeká se na hodnocení" -->
                         <div class="game-status-display waiting-scoring">
-                            <div class="status-icon">?</div>
-                            <div class="status-text-large">�ek� se na v�sledky...</div>
-                            <div class="status-subtext">Rozhod�� pr�v� vyhodnocuj� j�zdu</div>
+                            <div class="status-icon">⏳</div>
+                            <div class="status-text-large">Čeká se na výsledky...</div>
+                            <div class="status-subtext">Rozhodčí právě vyhodnocují jízdu</div>
                         </div>
                     }
                     else if (_currentGameStatus == BlazorApp1.Models.GameStatus.PreparingNextRound)
                     {
-                        <!-- Zobrazit "P��prava dal�� j�zdy" -->
+                        <!-- Zobrazit "Příprava další jízdy" -->
                         <div class="game-status-display preparing-next">
-                            <div class="status-icon">??</div>
-                            <div class="status-text-large">P�ipravujeme dal�� j�zdu</div>
-                            <div class="status-subtext">V�sledky budou brzy zve�ejn�ny</div>
+                            <div class="status-icon">🛠️</div>
+                            <div class="status-text-large">Připravujeme další jízdu</div>
+                            <div class="status-subtext">Výsledky budou brzy zveřejněny</div>
                         </div>
                     }
                     else if (_currentGameStatus == BlazorApp1.Models.GameStatus.Break)
                     {
-                        <!-- Zobrazit "P�est�vka" -->
+                        <!-- Zobrazit "Přestávka" -->
                         <div class="game-status-display break-status">
-                            <div class="status-icon">?</div>
-                            <div class="status-text-large">P�est�vka</div>
-                            <div class="status-subtext">Sout� pokra�uje brzy</div>
+                            <div class="status-icon">☕</div>
+                            <div class="status-text-large">Přestávka</div>
+                            <div class="status-subtext">Soutěž pokračuje brzy</div>
                         </div>
                     }
                     else if (_currentGameStatus == BlazorApp1.Models.GameStatus.Finished)
                     {
-                        <!-- Zobrazit "Ukon�eno" -->
+                        <!-- Zobrazit "Ukončeno" -->
                         <div class="game-status-display finished-status">
-                            <div class="status-icon">??</div>
-                            <div class="status-text-large">Sout� ukon�ena</div>
-                            <div class="status-subtext">D�kujeme za ��ast!</div>
+                            <div class="status-icon">🏁</div>
+                            <div class="status-text-large">Soutěž ukončena</div>
+                            <div class="status-subtext">Děkujeme za účast!</div>
                         </div>
                     }
                     else
                     {
-                        <!-- Default - P��prava -->
+                        <!-- Default - Příprava -->
                         <div class="timer-display timer-stopped">
                             <div class="timer-value">@FormatTime(_timerRemaining)</div>
                             <div class="timer-status">
                                 <span class="status-dot stopped"></span>
-                                <text>P�ipraveno</text>
+                                <text>Připraveno</text>
                             </div>
                         </div>
                     }
@@ -152,7 +152,7 @@
                 <div class="next-match-info">
                     <p class="next-match-label">
                         <span class="material-symbols-outlined rotating-hourglass">hourglass_empty</span>
-                        N�sleduj�c�:
+                        Následující:
                     </p>
                     <p class="next-match-teams">
                         <span class="next-team">@_nextTeamA.Name</span>
@@ -166,8 +166,8 @@
             <div class="leaderboard-section">
                 <h2 class="section-title">
                     <span class="material-symbols-outlined">leaderboard</span>
-                    Live �eb���ek
-                    <span class="live-indicator" title="Automatick� aktualizace aktivn�">
+                    Live žebříček
+                    <span class="live-indicator" title="Automatická aktualizace aktivní">
                         <span class="live-dot"></span> LIVE
                     </span>
                 </h2>
@@ -186,15 +186,15 @@
                                 <div class="team-position">
                                     @if (position == 1)
                                     {
-                                        <span class="medal">??</span>
+                                        <span class="medal">🥇</span>
                                     }
                                     else if (position == 2)
                                     {
-                                        <span class="medal">??</span>
+                                        <span class="medal">🥈</span>
                                     }
                                     else if (position == 3)
                                     {
-                                        <span class="medal">??</span>
+                                        <span class="medal">🥉</span>
                                     }
                                     else
                                     {
@@ -204,7 +204,7 @@
                                 
                                 <div class="team-details">
                                     <div class="team-name">@entry.TeamName</div>
-                                    <div class="team-school">@entry.CompletedRounds kol dokon�eno</div>
+                                    <div class="team-school">@entry.CompletedRounds kol dokončeno</div>
                                 </div>
                                 
                                 @if (positionChange != 0)
@@ -216,19 +216,19 @@
                                         }
                                         else
                                         {
-                                            <span class="change-arrow down">�@Math.Abs(positionChange)</span>
+                                            <span class="change-arrow down">↓@Math.Abs(positionChange)</span>
                                         }
                                     </div>
                                 }
                                 
                                 <div class="team-score-display">
                                     <div class="score-number">@entry.TotalScore</div>
-                                    <div class="score-label">bod�</div>
+                                    <div class="score-label">bodů</div>
                                 </div>
                                 
-                                <!-- Achievement badges - TODO: na��st z TeamAchievements -->
+                                <!-- Achievement badges - TODO: načíst z TeamAchievements -->
                                 <div class="achievement-badges">
-                                    <span class="rounds-badge">? @entry.CompletedRounds</span>
+                                    <span class="rounds-badge">🏁 @entry.CompletedRounds</span>
                                 </div>
                             </div>
                         }
@@ -237,18 +237,18 @@
                     <!-- Statistics -->
                     <div class="stats-bar">
                         <div class="stat-item">
-                            <span class="stat-icon">??</span>
-                            <span class="stat-label">Pr�m�r:</span>
-                            <span class="stat-value">@GetAverageScore() bod�</span>
+                            <span class="stat-icon">📊</span>
+                            <span class="stat-label">Průměr:</span>
+                            <span class="stat-value">@GetAverageScore() bodů</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-icon">??</span>
-                            <span class="stat-label">Nejlep��:</span>
-                            <span class="stat-value">@GetTopScore() bod�</span>
+                            <span class="stat-icon">🏆</span>
+                            <span class="stat-label">Nejlepší:</span>
+                            <span class="stat-value">@GetTopScore() bodů</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-icon">??</span>
-                            <span class="stat-label">T�m�:</span>
+                            <span class="stat-icon">👥</span>
+                            <span class="stat-label">Týmů:</span>
                             <span class="stat-value">@_leaderboard.Count</span>
                         </div>
                     </div>
@@ -257,7 +257,7 @@
                 {
                     <div class="empty-state">
                         <span class="material-symbols-outlined">emoji_events</span>
-                        <p>�eb���ek bude zve�ejn�n po za��tku sout�e</p>
+                        <p>Žebříček bude zveřejněn po začátku soutěže</p>
                     </div>
                 }
             </div>
@@ -538,16 +538,16 @@
         
         try
         {
-            AddDebugLog("Na��t�m data...");
+            AddDebugLog("Načítám data...");
             
             // Load leaderboard from FinalRoundScores
             _leaderboard = await FinalScoreService.GetDetailedLeaderboardAsync();
-            AddDebugLog($"Na�teno {_leaderboard?.Count ?? 0} t�m� v �eb���ku");
+            AddDebugLog($"Načteno {_leaderboard?.Count ?? 0} týmů v žebříčku");
             
             // Load settings
             var allSettings = await SettingsRepository.GetAllAsync();
             _settings = allSettings.FirstOrDefault() ?? new BlazorApp1.Models.CompetitionSettings();
-            AddDebugLog($"Aktu�ln� kolo: {_settings.CurrentRound}, Status: {_settings.Status}");
+            AddDebugLog($"Aktuální kolo: {_settings.CurrentRound}, Status: {_settings.Status}");
             
             // Load current game status
             _currentGameStatus = GameStatusService.GetCurrentStatus();
@@ -582,11 +582,11 @@
             UpdatePositionTracking();
             
             _isLoading = false;
-            AddDebugLog("Na��t�n� dokon�eno");
+            AddDebugLog("Načítání dokončeno");
         }
         catch (Exception ex)
         {
-            _error = $"Typ: {ex.GetType().Name}\nZpr�va: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}";
+            _error = $"Typ: {ex.GetType().Name}\nZpráva: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}";
             AddDebugLog($"CHYBA: {ex.GetType().Name} - {ex.Message}");
             _isLoading = false;
         }
@@ -676,10 +676,10 @@
     {
         return status switch
         {
-            BlazorApp1.Models.CompetitionStatus.NotStarted => "P��prava",
-            BlazorApp1.Models.CompetitionStatus.InProgress => "Prob�h�",
+            BlazorApp1.Models.CompetitionStatus.NotStarted => "Příprava",
+            BlazorApp1.Models.CompetitionStatus.InProgress => "Probíhá",
             BlazorApp1.Models.CompetitionStatus.Paused => "Pauza",
-            BlazorApp1.Models.CompetitionStatus.Finished => "Ukon�eno",
+            BlazorApp1.Models.CompetitionStatus.Finished => "Ukončeno",
             _ => status.ToString()
         };
     }

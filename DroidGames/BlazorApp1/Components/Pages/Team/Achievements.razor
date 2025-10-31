@@ -187,9 +187,11 @@
             var teams = await TeamService.GetAllTeamsAsync();
             _currentTeam = teams.FirstOrDefault(t => t.Id == UserSession.CurrentUser?.TeamId);
             
+            // Load unlocked achievements from TeamAchievement repository (unified source)
             if (_currentTeam != null)
             {
-                _unlockedAchievementIds = _currentTeam.UnlockedAchievements.ToHashSet();
+                var teamAchievements = await AchievementService.GetTeamAchievementsAsync(_currentTeam.Id);
+                _unlockedAchievementIds = teamAchievements.Select(ta => ta.AchievementId).ToHashSet();
             }
 
             // Calculate stats
