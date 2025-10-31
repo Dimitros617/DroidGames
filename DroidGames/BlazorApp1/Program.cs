@@ -75,6 +75,14 @@ builder.Services.AddSingleton<IRepository<FunFact>>(sp =>
 builder.Services.AddSingleton<IRepository<User>>(sp => 
     new JsonRepository<User>(dataPath, "users.json"));
 
+// FinalRoundScore repository
+builder.Services.AddSingleton<IRepository<FinalRoundScore>>(sp => 
+    new JsonRepository<FinalRoundScore>(dataPath, "final-round-scores.json"));
+
+// RoundOrder repository
+builder.Services.AddSingleton<IRepository<RoundOrder>>(sp => 
+    new JsonRepository<RoundOrder>(dataPath, "round-orders.json"));
+
 // Settings repository - needed for Home.razor
 builder.Services.AddSingleton<IRepository<CompetitionSettings>>(sp => 
     new JsonRepository<CompetitionSettings>(dataPath, "settings.json"));
@@ -100,9 +108,13 @@ builder.Services.AddSingleton<IQuizService, QuizService>();
 builder.Services.AddSingleton<IReminderService, ReminderService>();
 builder.Services.AddSingleton<IFunFactService, FunFactService>();
 builder.Services.AddSingleton<IAuthService, AuthService>();
+builder.Services.AddSingleton<IGameStatusService, GameStatusService>(); // MUST be before TimerService
 builder.Services.AddSingleton<ITimerService, TimerService>();
 builder.Services.AddSingleton<IDiplomaService, DiplomaService>();
+builder.Services.AddSingleton<IFinalScoreService, FinalScoreService>();
 builder.Services.AddSingleton<IScoreNotificationService, ScoreNotificationService>();
+builder.Services.AddSingleton<IAchievementEvaluationService, AchievementEvaluationService>();
+builder.Services.AddSingleton<IScoreFinalizationService, ScoreFinalizationService>();
 
 // Background services
 Console.WriteLine("[DEBUG] Registering background services...");

@@ -1,4 +1,4 @@
-Ôªø@implements IDisposable
+@implements IDisposable
 @inject NavigationManager NavigationManager
 @inject BlazorApp1.Services.UserSession UserSession
 
@@ -7,7 +7,7 @@
         <!-- Public Links -->
         <li>
             <NavLink href="" Match="NavLinkMatch.All">
-                ≈Ωeb≈ô√≠ƒçek
+                éeb¯ÌËek
             </NavLink>
         </li>
         <li>
@@ -39,7 +39,7 @@
         {
             <li>
                 <NavLink href="referee/scoring">
-                    Bodov√°n√≠
+                    Bodov·nÌ
                 </NavLink>
             </li>
         }
@@ -48,12 +48,12 @@
         {
             <li>
                 <NavLink href="headref/control">
-                    Ovl√°d√°n√≠
+                    Ovl·d·nÌ
                 </NavLink>
             </li>
             <li>
                 <NavLink href="admin/referee-approval">
-                    Schvalov√°n√≠
+                    Schvalov·nÌ
                 </NavLink>
             </li>
         }
@@ -80,7 +80,7 @@
             <li>
                 <a href="/logout" class="nav-logout">
                     <span class="material-symbols-outlined">logout</span>
-                    <span>Odhl√°sit</span>
+                    <span>Odhl·sit</span>
                 </a>
             </li>
         }
@@ -89,7 +89,7 @@
             <li>
                 <NavLink href="login">
                     <span class="material-symbols-outlined">login</span>
-                    <span>P≈ôihl√°sit se</span>
+                    <span>P¯ihl·sit se</span>
                 </NavLink>
             </li>
         }
@@ -124,7 +124,7 @@
             {
                 Console.WriteLine($"[ERROR NavMenu.OnAfterRenderAsync] {ex.Message}");
                 Console.WriteLine($"[ERROR StackTrace] {ex.StackTrace}");
-                // Pokraƒçujeme i kdy≈æ inicializace sel≈æe - u≈æivatel nebude p≈ôihl√°≈°en
+                // PokraËujeme i kdyû inicializace selûe - uûivatel nebude p¯ihl·öen
             }
         }
     }
@@ -138,12 +138,12 @@
     {
         return role switch
         {
-            BlazorApp1.Models.UserRole.Team => "T√Ωm",
-            BlazorApp1.Models.UserRole.Referee => "Rozhodƒç√≠",
-            BlazorApp1.Models.UserRole.HeadReferee => "Hlavn√≠ rozhodƒç√≠",
+            BlazorApp1.Models.UserRole.Team => "T˝m",
+            BlazorApp1.Models.UserRole.Referee => "RozhodËÌ",
+            BlazorApp1.Models.UserRole.HeadReferee => "HlavnÌ rozhodËÌ",
             BlazorApp1.Models.UserRole.Production => "Produkce",
-            BlazorApp1.Models.UserRole.Admin => "Administr√°tor",
-            _ => "N√°v≈°tƒõvn√≠k"
+            BlazorApp1.Models.UserRole.Admin => "Administr·tor",
+            _ => "N·vötÏvnÌk"
         };
     }
 

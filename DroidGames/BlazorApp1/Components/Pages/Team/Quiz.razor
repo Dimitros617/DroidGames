@@ -1,4 +1,4 @@
-Ôªø@page "/team/quiz"
+@page "/team/quiz"
 @using BlazorApp1.Models
 @using BlazorApp1.Services
 @using BlazorApp1.Components.Shared
@@ -7,20 +7,20 @@
 @inject UserSession UserSession
 @rendermode InteractiveServer
 
-<PageTitle>Kv√≠z - DroidGames</PageTitle>
+<PageTitle>KvÌz - DroidGames</PageTitle>
 
 <AuthGuard RequiredRole="UserRole.Team">
     <div class="quiz-page">
         <h1>
             <span class="material-symbols-outlined">quiz</span>
-            Kv√≠z
+            KvÌz
         </h1>
 
         @if (_loading)
         {
             <div class="loading">
                 <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Naƒç√≠t√°n√≠...</span>
+                    <span class="visually-hidden">NaËÌt·nÌ...</span>
                 </div>
             </div>
         }
@@ -31,34 +31,34 @@
                 <div class="stat-card">
                     <span class="material-symbols-outlined">analytics</span>
                     <div class="stat-content">
-                        <div class="stat-label">Celkov√° √∫spƒõ≈°nost</div>
+                        <div class="stat-label">Celkov· ˙spÏönost</div>
                         <div class="stat-value">@(_progress.SuccessRate.ToString("F1"))%</div>
                     </div>
                 </div>
                 <div class="stat-card success">
                     <span class="material-symbols-outlined">check_circle</span>
                     <div class="stat-content">
-                        <div class="stat-label">Spr√°vnƒõ</div>
+                        <div class="stat-label">Spr·vnÏ</div>
                         <div class="stat-value">@_progress.CorrectAnswers</div>
                     </div>
                 </div>
                 <div class="stat-card error">
                     <span class="material-symbols-outlined">cancel</span>
                     <div class="stat-content">
-                        <div class="stat-label">≈†patnƒõ</div>
+                        <div class="stat-label">äpatnÏ</div>
                         <div class="stat-value">@_progress.IncorrectAnswers</div>
                     </div>
                 </div>
                 <div class="stat-card info">
                     <span class="material-symbols-outlined">quiz</span>
                     <div class="stat-content">
-                        <div class="stat-label">Zodpovƒõzeno</div>
+                        <div class="stat-label">ZodpovÏzeno</div>
                         <div class="stat-value">@_progress.AnsweredQuestionIds.Count / @_allStatuses.Count</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Mystery Box pro n√°hodnou ot√°zku - 3D Flip -->
+            <!-- Mystery Box pro n·hodnou ot·zku - 3D Flip -->
             <div class="mystery-box-section mb-4">
                 <div class="mystery-box-container" @onclick="OpenRandomQuestionWithAnimation">
                     <div class="mystery-box @(_isShaking ? "shake" : "") @(_isFlipping ? "flip" : "")">
@@ -69,23 +69,23 @@
                                     <span class="material-symbols-outlined mystery-icon">casino</span>
                                     <span class="material-symbols-outlined mystery-icon-sparkle">auto_awesome</span>
                                 </div>
-                                <h3 class="mystery-title">N√°hodn√° ot√°zka</h3>
+                                <h3 class="mystery-title">N·hodn· ot·zka</h3>
                                 <p class="mystery-subtitle">
                                     @if (_unansweredCount > 0)
                                     {
-                                        <span>Klikni a zkus ≈°tƒõst√≠!</span>
-                                        <span class="mystery-badge">@_unansweredCount nezodpovƒõzen√Ωch</span>
+                                        <span>Klikni a zkus ötÏstÌ!</span>
+                                        <span class="mystery-badge">@_unansweredCount nezodpovÏzen˝ch</span>
                                     }
                                     else
                                     {
-                                        <span class="text-success">‚ú® V≈°echny ot√°zky zodpovƒõzeny!</span>
+                                        <span class="text-success">? Vöechny ot·zky zodpovÏzeny!</span>
                                     }
                                 </p>
                                 @if (_unansweredCount > 0)
                                 {
                                     <div class="mystery-hint">
                                         <span class="material-symbols-outlined">touch_app</span>
-                                        Klikni mƒõ!
+                                        Klikni mÏ!
                                     </div>
                                 }
                             </div>
@@ -113,46 +113,46 @@
                             }
                             else
                             {
-                                <div class="preview-loading">Naƒç√≠t√°m ot√°zku...</div>
+                                <div class="preview-loading">NaËÌt·m ot·zku...</div>
                             }
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- M≈ô√≠≈æka v≈°ech ot√°zek -->
+            <!-- M¯Ìûka vöech ot·zek -->
             <h2 class="section-title mb-3">
                 <span class="material-symbols-outlined">grid_view</span>
-                V≈°echny ot√°zky
+                Vöechny ot·zky
             </h2>
             <div class="questions-grid">
                 @foreach (var status in _allStatuses)
                 {
                     <div class="question-card @GetStateClass(status.State)" @onclick="() => OpenQuestion(status.Question)">
-                        <div class="question-number">Ot√°zka #@(_allStatuses.IndexOf(status) + 1)</div>
+                        <div class="question-number">Ot·zka #@(_allStatuses.IndexOf(status) + 1)</div>
                         <div class="question-text">@status.Question.Question</div>
                         <div class="question-status">
                             @if (status.State == QuizQuestionState.Unanswered)
                             {
                                 <span class="material-symbols-outlined status-icon unanswered">help_outline</span>
-                                <span class="status-text">Nezodpovƒõzeno</span>
+                                <span class="status-text">NezodpovÏzeno</span>
                             }
                             else if (status.State == QuizQuestionState.Correct)
                             {
                                 <span class="material-symbols-outlined status-icon correct">check_circle</span>
-                                <span class="status-text">Spr√°vnƒõ</span>
+                                <span class="status-text">Spr·vnÏ</span>
                             }
                             else
                             {
                                 <span class="material-symbols-outlined status-icon incorrect">cancel</span>
-                                <span class="status-text">≈†patnƒõ (@status.TotalAttempts pokus≈Ø)</span>
+                                <span class="status-text">äpatnÏ (@status.TotalAttempts pokus˘)</span>
                             }
                         </div>
                         @if (status.TotalAttempts > 0)
                         {
                             <div class="attempts-info">
                                 <small>
-                                    @status.CorrectAttempts spr√°vnƒõ / @status.IncorrectAttempts ≈°patnƒõ
+                                    @status.CorrectAttempts spr·vnÏ / @status.IncorrectAttempts öpatnÏ
                                 </small>
                             </div>
                         }
@@ -161,7 +161,7 @@
             </div>
         }
 
-        <!-- Modal pro ot√°zku -->
+        <!-- Modal pro ot·zku -->
         @if (_selectedQuestion != null)
         {
             <QuizQuestionModal 

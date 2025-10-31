@@ -251,9 +251,9 @@
         {
             case AchievementConditionType.ConsistentScores:
                 // Could calculate variance in scores
-                if (_currentTeam.Rounds.Count >= 3)
+                if (_currentTeam.Rides.Count >= 3)
                 {
-                    var scores = _currentTeam.Rounds.Select(r => (double)(r.FinalScore ?? 0)).ToList();
+                    var scores = _currentTeam.Rides.Select(r => (double)(r.FinalScore ?? 0)).ToList();
                     var avg = scores.Average();
                     var variance = scores.Sum(s => Math.Pow(s - avg, 2)) / scores.Count;
                     var consistency = Math.Max(0, 100 - (int)(variance / 10));
@@ -263,7 +263,7 @@
                 
             case AchievementConditionType.PositionImprovement:
                 // Track position changes
-                return _currentTeam.Rounds.Count >= 2 ? 50 : 0;
+                return _currentTeam.Rides.Count >= 2 ? 50 : 0;
                 
             default:
                 // For other types, simple binary: 0% or would need unlock

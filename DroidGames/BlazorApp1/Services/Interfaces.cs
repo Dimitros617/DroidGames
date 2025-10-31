@@ -72,3 +72,13 @@ public interface IDiplomaService
     Task<byte[]> GenerateBulkDiplomasAsync(string teamId);
     Task<byte[]> GenerateAllTeamsDiplomasAsync();
 }
+
+public interface IFinalScoreService
+{
+    Task<List<FinalRoundScore>> GetAllScoresAsync();
+    Task<List<FinalRoundScore>> GetTeamScoresAsync(string teamId);
+    Task<FinalRoundScore?> GetTeamRoundScoreAsync(string teamId, int roundNumber);
+    Task<FinalRoundScore> SaveFinalScoreAsync(FinalRoundScore score);
+    Task<Dictionary<string, int>> GetLeaderboardAsync();
+    Task<List<LeaderboardEntry>> GetDetailedLeaderboardAsync();
+}

@@ -194,4 +194,22 @@ public class JsonRepository<T> : IRepository<T> where T : class
         var json = JsonSerializer.Serialize(_cache, _jsonOptions);
         await File.WriteAllTextAsync(_filePath, json);
     }
+
+    /// <summary>
+    /// Update singleton settings (for types without Id property like CompetitionSettings)
+    /// </summary>
+    public async Task UpdateSingletonAsync(T entity)
+    {
+        await _lock.WaitAsync();
+        try
+        {
+            _cache.Clear();
+            _cache.Add(entity);
+            await SaveAsync();
+        }
+        finally
+        {
+            _lock.Release();
+        }
+    }
 }

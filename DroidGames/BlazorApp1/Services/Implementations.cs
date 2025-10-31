@@ -43,7 +43,7 @@ public class TeamService : ITeamService
         var teams = await _repository.GetAllAsync();
         foreach (var team in teams)
         {
-            team.TotalScore = team.Rounds
+            team.TotalScore = team.Rides
                 .Where(r => r.IsApproved && r.FinalScore.HasValue)
                 .Sum(r => r.FinalScore!.Value);
         }
@@ -72,7 +72,7 @@ public class ScoreService : IScoreService
         var team = await _teamRepository.GetByIdAsync(teamId);
         if (team == null) return;
 
-        var round = team.Rounds.FirstOrDefault(r => r.RoundNumber == roundNumber);
+        var round = team.Rides.FirstOrDefault(r => r.RoundNumber == roundNumber);
         if (round == null)
         {
             // Vytvoříme nové kolo, pokud neexistuje
@@ -81,7 +81,7 @@ public class ScoreService : IScoreService
                 RoundNumber = roundNumber,
                 RefereeScores = new Dictionary<string, RefereeScore>()
             };
-            team.Rounds.Add(round);
+            team.Rides.Add(round);
         }
         
         round.RefereeScores[score.RefereeId] = score;
@@ -93,7 +93,7 @@ public class ScoreService : IScoreService
         var team = await _teamRepository.GetByIdAsync(teamId);
         if (team == null) return;
 
-        var round = team.Rounds.FirstOrDefault(r => r.RoundNumber == roundNumber);
+        var round = team.Rides.FirstOrDefault(r => r.RoundNumber == roundNumber);
         if (round != null)
         {
             round.FinalScore = finalScore;
@@ -177,7 +177,7 @@ public class AchievementService : IAchievementService
             bool shouldUnlock = achievement.Condition.Type switch
             {
                 AchievementConditionType.FirstPoints => 
-                    team.Rounds.Any(r => r.FinalScore > 0),
+                    team.Rides.Any(r => r.FinalScore > 0),
                 _ => false
             };
 
@@ -529,26 +529,32 @@ public class AuthService : IAuthService
 public class TimerService : ITimerService
 {
     private readonly CompetitionSettings _settings;
+    private readonly IGameStatusService _gameStatusService;
     private DateTime? _startTime;
 
-    public TimerService(CompetitionSettings settings)
+    public TimerService(CompetitionSettings settings, IGameStatusService gameStatusService)
     {
         Console.WriteLine("[DEBUG] TimerService created");
         _settings = settings;
+        _gameStatusService = gameStatusService;
     }
 
-    public Task StartAsync()
+    public async Task StartAsync()
     {
         _settings.TimerStatus = TimerStatus.Running;
         _settings.TimerStartedAt = DateTime.UtcNow;
         _startTime = DateTime.UtcNow;
-        return Task.CompletedTask;
+        
+        // Automaticky změnit stav hry na "Probíhá jízda"
+        await _gameStatusService.SetGameStatusAsync(GameStatus.RoundInProgress);
     }
 
-    public Task StopAsync()
+    public async Task StopAsync()
     {
         _settings.TimerStatus = TimerStatus.Stopped;
-        return Task.CompletedTask;
+        
+        // Automaticky změnit stav na "Čeká se na hodnocení"
+        await _gameStatusService.SetGameStatusAsync(GameStatus.WaitingForScoring);
     }
 
     public Task ResetAsync()

@@ -32,7 +32,7 @@
                 Tým nebyl nalezen
             </div>
         }
-        else if (!_team.Rounds.Any())
+        else if (!_team.Rides.Any())
         {
             <div class="empty-state">
                 <span class="material-symbols-outlined">insights</span>
@@ -117,7 +117,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var round in _team.Rounds.OrderBy(r => r.RoundNumber))
+                            @foreach (var round in _team.Rides.OrderBy(r => r.RoundNumber))
                             {
                                 var roundScore = round.FinalScore ?? 0;
                                 var avgInRound = _averageScoresByRound.GetValueOrDefault(round.RoundNumber, 0);
@@ -167,7 +167,7 @@
                             {
                                 <li>
                                     <strong>Nejlepší výkon:</strong> Kolo @_bestRounds.First() 
-                                    (@_team.Rounds.First(r => r.RoundNumber == _bestRounds.First()).FinalScore bodů)
+                                    (@_team.Rides.First(r => r.RoundNumber == _bestRounds.First()).FinalScore bodů)
                                 </li>
                             }
                             @if (_avgScore > _globalAverage)
@@ -195,7 +195,7 @@
                             {
                                 <li>
                                     <strong>Nejslabší kolo:</strong> Kolo @_worstRounds.First() 
-                                    (@_team.Rounds.First(r => r.RoundNumber == _worstRounds.First()).FinalScore bodů)
+                                    (@_team.Rides.First(r => r.RoundNumber == _worstRounds.First()).FinalScore bodů)
                                 </li>
                             }
                             @if (_avgScore < _globalAverage)
@@ -247,52 +247,52 @@
             var allTeams = await TeamService.GetAllTeamsAsync();
             _team = allTeams.FirstOrDefault(t => t.Id == UserSession.CurrentUser?.TeamId);
 
-            if (_team == null || !_team.Rounds.Any()) return;
+            if (_team == null || !_team.Rides.Any()) return;
 
             // Basic calculations
-            _avgScore = _team.Rounds.Average(r => r.FinalScore) ?? 0;
-            _bestScore = _team.Rounds.Max(r => r.FinalScore) ?? 0;
+            _avgScore = _team.Rides.Average(r => r.FinalScore) ?? 0;
+            _bestScore = _team.Rides.Max(r => r.FinalScore) ?? 0;
 
             // Calculate trend (last 3 rounds vs first 3 rounds)
-            if (_team.Rounds.Count >= 3)
+            if (_team.Rides.Count >= 3)
             {
-                var firstThree = _team.Rounds.OrderBy(r => r.RoundNumber).Take(3).Average(r => r.FinalScore) ?? 0;
-                var lastThree = _team.Rounds.OrderByDescending(r => r.RoundNumber).Take(3).Average(r => r.FinalScore) ?? 0;
+                var firstThree = _team.Rides.OrderBy(r => r.RoundNumber).Take(3).Average(r => r.FinalScore) ?? 0;
+                var lastThree = _team.Rides.OrderByDescending(r => r.RoundNumber).Take(3).Average(r => r.FinalScore) ?? 0;
                 _trend = lastThree - firstThree;
             }
 
             // Calculate global average
-            var allRounds = allTeams.SelectMany(t => t.Rounds).ToList();
+            var allRounds = allTeams.SelectMany(t => t.Rides).ToList();
             if (allRounds.Any())
             {
                 _globalAverage = allRounds.Average(r => r.FinalScore) ?? 0;
             }
 
             // Calculate consistency (lower standard deviation = more consistent)
-            if (_team.Rounds.Count > 1)
+            if (_team.Rides.Count > 1)
             {
-                var scores = _team.Rounds.Select(r => (double)(r.FinalScore ?? 0)).ToList();
+                var scores = _team.Rides.Select(r => (double)(r.FinalScore ?? 0)).ToList();
                 var stdDev = Math.Sqrt(scores.Average(v => Math.Pow(v - _avgScore, 2)));
                 _consistency = 1.0 - Math.Min(1.0, stdDev / Math.Max(1, _avgScore));
             }
 
             // Find best and worst rounds
-            _bestRounds = _team.Rounds
+            _bestRounds = _team.Rides
                 .Where(r => r.FinalScore == _bestScore)
                 .Select(r => r.RoundNumber)
                 .ToList();
 
-            var worstScore = _team.Rounds.Min(r => r.FinalScore) ?? 0;
-            _worstRounds = _team.Rounds
+            var worstScore = _team.Rides.Min(r => r.FinalScore) ?? 0;
+            _worstRounds = _team.Rides
                 .Where(r => r.FinalScore == worstScore)
                 .Select(r => r.RoundNumber)
                 .ToList();
 
             // Calculate average and winner scores by round
-            foreach (var roundNumber in _team.Rounds.Select(r => r.RoundNumber).Distinct())
+            foreach (var roundNumber in _team.Rides.Select(r => r.RoundNumber).Distinct())
             {
                 var roundScores = allTeams
-                    .SelectMany(t => t.Rounds)
+                    .SelectMany(t => t.Rides)
                     .Where(r => r.RoundNumber == roundNumber)
                     .Select(r => r.FinalScore)
                     .ToList();

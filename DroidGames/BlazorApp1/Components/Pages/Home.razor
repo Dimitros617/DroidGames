@@ -1,19 +1,23 @@
-Ôªø@page "/"
+@page "/"
 @inject BlazorApp1.Services.ITeamService TeamService
+@inject BlazorApp1.Services.IFinalScoreService FinalScoreService
+@inject BlazorApp1.Services.IScoreNotificationService ScoreNotificationService
 @inject BlazorApp1.Services.ITimerService TimerService
+@inject BlazorApp1.Services.IGameStatusService GameStatusService
 @inject BlazorApp1.Data.IRepository<BlazorApp1.Models.CompetitionSettings> SettingsRepository
 @inject BlazorApp1.Services.UserSession UserSession
 @inject NavigationManager Navigation
+@implements IDisposable
 @rendermode InteractiveServer
 
-<PageTitle>DROID GAMES 2026 - LIVE V√ùSLEDKY</PageTitle>
+<PageTitle>DROID GAMES 2026 - LIVE V›SLEDKY</PageTitle>
 
 <!-- Hero Section -->
 <div class="hero-section">
     <div class="hero-content">
         <img src="/graphic/DroidGames_logo_barva_v1.png" alt="Droid Games 2026" class="hero-logo" />
-        <h1 class="hero-title">üèÜ DROID GAMES 2026</h1>
-        <p class="hero-subtitle">Soutƒõ≈æ v robotice | Centrum Robotiky Plze≈à</p>
+        <h1 class="hero-title">?? DROID GAMES 2026</h1>
+        <p class="hero-subtitle">SoutÏû v robotice | Centrum Robotiky PlzeÚ</p>
         
         @if (_settings != null)
         {
@@ -45,7 +49,7 @@
         <div class="status-card error">
             <h2>
                 <span class="material-symbols-outlined">error</span>
-                Chyba p≈ôi naƒç√≠t√°n√≠
+                Chyba p¯i naËÌt·nÌ
             </h2>
             <pre class="error-message">@_error</pre>
             <button class="btn-retry" @onclick="ReloadData">
@@ -63,7 +67,7 @@
                 <div class="current-match-card">
                     <h3 class="match-title">
                         <span class="material-symbols-outlined pulse">sports_esports</span>
-                        Aktu√°ln√≠ z√°pas
+                        Aktu·lnÌ z·pas
                     </h3>
                     
                     <div class="match-teams">
@@ -78,27 +82,65 @@
                         </div>
                     </div>
                     
-                    <!-- Timer Display -->
-                    <div class="timer-display timer-@(_timerStatus.ToString().ToLower())">
-                        <div class="timer-value">@FormatTime(_timerRemaining)</div>
-                        <div class="timer-status">
-                            @if (_timerStatus == BlazorApp1.Models.TimerStatus.Running)
-                            {
+                    <!-- Timer Display nebo Status Display -->
+                    @if (_currentGameStatus == BlazorApp1.Models.GameStatus.RoundInProgress)
+                    {
+                        <!-- Zobrazit ËasovaË kdyû bÏûÌ jÌzda -->
+                        <div class="timer-display timer-@(_timerStatus.ToString().ToLower())">
+                            <div class="timer-value">@FormatTime(_timerRemaining)</div>
+                            <div class="timer-status">
                                 <span class="status-dot running"></span>
-                                <text>Bƒõ≈æ√≠</text>
-                            }
-                            else if (_timerStatus == BlazorApp1.Models.TimerStatus.Paused)
-                            {
-                                <span class="status-dot paused"></span>
-                                <text>Pauza</text>
-                            }
-                            else
-                            {
-                                <span class="status-dot stopped"></span>
-                                <text>P≈ôipraveno</text>
-                            }
+                                <text>JÌzda probÌh·!</text>
+                            </div>
                         </div>
-                    </div>
+                    }
+                    else if (_currentGameStatus == BlazorApp1.Models.GameStatus.WaitingForScoring)
+                    {
+                        <!-- Zobrazit "»ek· se na hodnocenÌ" -->
+                        <div class="game-status-display waiting-scoring">
+                            <div class="status-icon">?</div>
+                            <div class="status-text-large">»ek· se na v˝sledky...</div>
+                            <div class="status-subtext">RozhodËÌ pr·vÏ vyhodnocujÌ jÌzdu</div>
+                        </div>
+                    }
+                    else if (_currentGameStatus == BlazorApp1.Models.GameStatus.PreparingNextRound)
+                    {
+                        <!-- Zobrazit "P¯Ìprava dalöÌ jÌzdy" -->
+                        <div class="game-status-display preparing-next">
+                            <div class="status-icon">??</div>
+                            <div class="status-text-large">P¯ipravujeme dalöÌ jÌzdu</div>
+                            <div class="status-subtext">V˝sledky budou brzy zve¯ejnÏny</div>
+                        </div>
+                    }
+                    else if (_currentGameStatus == BlazorApp1.Models.GameStatus.Break)
+                    {
+                        <!-- Zobrazit "P¯est·vka" -->
+                        <div class="game-status-display break-status">
+                            <div class="status-icon">?</div>
+                            <div class="status-text-large">P¯est·vka</div>
+                            <div class="status-subtext">SoutÏû pokraËuje brzy</div>
+                        </div>
+                    }
+                    else if (_currentGameStatus == BlazorApp1.Models.GameStatus.Finished)
+                    {
+                        <!-- Zobrazit "UkonËeno" -->
+                        <div class="game-status-display finished-status">
+                            <div class="status-icon">??</div>
+                            <div class="status-text-large">SoutÏû ukonËena</div>
+                            <div class="status-subtext">DÏkujeme za ˙Ëast!</div>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Default - P¯Ìprava -->
+                        <div class="timer-display timer-stopped">
+                            <div class="timer-value">@FormatTime(_timerRemaining)</div>
+                            <div class="timer-status">
+                                <span class="status-dot stopped"></span>
+                                <text>P¯ipraveno</text>
+                            </div>
+                        </div>
+                    }
                 </div>
             }
 
@@ -108,7 +150,7 @@
                 <div class="next-match-info">
                     <p class="next-match-label">
                         <span class="material-symbols-outlined rotating-hourglass">hourglass_empty</span>
-                        N√°sleduj√≠c√≠:
+                        N·sledujÌcÌ:
                     </p>
                     <p class="next-match-teams">
                         <span class="next-team">@_nextTeamA.Name</span>
@@ -122,35 +164,35 @@
             <div class="leaderboard-section">
                 <h2 class="section-title">
                     <span class="material-symbols-outlined">leaderboard</span>
-                    Live ≈Ωeb≈ô√≠ƒçek
-                    <span class="live-indicator" title="Automatick√© aktualizace aktivn√≠">
+                    Live éeb¯ÌËek
+                    <span class="live-indicator" title="AutomatickÈ aktualizace aktivnÌ">
                         <span class="live-dot"></span> LIVE
                     </span>
                 </h2>
                 
-                @if (_teams != null && _teams.Any())
+                @if (_leaderboard != null && _leaderboard.Any())
                 {
                     <div class="teams-list">
-                        @foreach (var (team, index) in _teams.Select((t, i) => (t, i)))
+                        @foreach (var (entry, index) in _leaderboard.Select((e, i) => (e, i)))
                         {
-                            var position = index + 1;
+                            var position = entry.Position;
                             var medalClass = position <= 3 ? $"medal-{position}" : "";
-                            var positionChange = GetPositionChange(team.Id);
+                            var positionChange = GetPositionChange(entry.TeamId);
                             
                             <div class="team-row @medalClass @GetPositionChangeClass(positionChange)" 
                                  style="animation-delay: @(index * 0.05)s">
                                 <div class="team-position">
                                     @if (position == 1)
                                     {
-                                        <span class="medal">ü•á</span>
+                                        <span class="medal">??</span>
                                     }
                                     else if (position == 2)
                                     {
-                                        <span class="medal">ü•à</span>
+                                        <span class="medal">??</span>
                                     }
                                     else if (position == 3)
                                     {
-                                        <span class="medal">ü•â</span>
+                                        <span class="medal">??</span>
                                     }
                                     else
                                     {
@@ -159,8 +201,8 @@
                                 </div>
                                 
                                 <div class="team-details">
-                                    <div class="team-name">@team.Name</div>
-                                    <div class="team-school">@team.School</div>
+                                    <div class="team-name">@entry.TeamName</div>
+                                    <div class="team-school">@entry.CompletedRounds kol dokonËeno</div>
                                 </div>
                                 
                                 @if (positionChange != 0)
@@ -168,34 +210,24 @@
                                     <div class="position-change">
                                         @if (positionChange > 0)
                                         {
-                                            <span class="change-arrow up">‚Üë@Math.Abs(positionChange)</span>
+                                            <span class="change-arrow up">^@Math.Abs(positionChange)</span>
                                         }
                                         else
                                         {
-                                            <span class="change-arrow down">‚Üì@Math.Abs(positionChange)</span>
+                                            <span class="change-arrow down">°@Math.Abs(positionChange)</span>
                                         }
                                     </div>
                                 }
                                 
                                 <div class="team-score-display">
-                                    <div class="score-number">@team.TotalScore</div>
-                                    <div class="score-label">bod≈Ø</div>
+                                    <div class="score-number">@entry.TotalScore</div>
+                                    <div class="score-label">bod˘</div>
                                 </div>
                                 
-                                <!-- Achievement badges -->
-                                @if (team.UnlockedAchievements?.Count > 0)
-                                {
-                                    <div class="achievement-badges">
-                                        @foreach (var achievement in team.UnlockedAchievements.Take(3))
-                                        {
-                                            <span class="achievement-icon" title="Achievement">üèÜ</span>
-                                        }
-                                        @if (team.UnlockedAchievements.Count > 3)
-                                        {
-                                            <span class="achievement-more">+@(team.UnlockedAchievements.Count - 3)</span>
-                                        }
-                                    </div>
-                                }
+                                <!-- Achievement badges - TODO: naËÌst z TeamAchievements -->
+                                <div class="achievement-badges">
+                                    <span class="rounds-badge">? @entry.CompletedRounds</span>
+                                </div>
                             </div>
                         }
                     </div>
@@ -203,19 +235,19 @@
                     <!-- Statistics -->
                     <div class="stats-bar">
                         <div class="stat-item">
-                            <span class="stat-icon">üìä</span>
-                            <span class="stat-label">Pr≈Ømƒõr:</span>
-                            <span class="stat-value">@GetAverageScore() bod≈Ø</span>
+                            <span class="stat-icon">??</span>
+                            <span class="stat-label">Pr˘mÏr:</span>
+                            <span class="stat-value">@GetAverageScore() bod˘</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-icon">üî•</span>
-                            <span class="stat-label">Nejlep≈°√≠:</span>
-                            <span class="stat-value">@GetTopScore() bod≈Ø</span>
+                            <span class="stat-icon">??</span>
+                            <span class="stat-label">NejlepöÌ:</span>
+                            <span class="stat-value">@GetTopScore() bod˘</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-icon">üë•</span>
-                            <span class="stat-label">T√Ωm≈Ø:</span>
-                            <span class="stat-value">@_teams.Count</span>
+                            <span class="stat-icon">??</span>
+                            <span class="stat-label">T˝m˘:</span>
+                            <span class="stat-value">@_leaderboard.Count</span>
                         </div>
                     </div>
                 }
@@ -223,7 +255,7 @@
                 {
                     <div class="empty-state">
                         <span class="material-symbols-outlined">emoji_events</span>
-                        <p>≈Ωeb≈ô√≠ƒçek bude zve≈ôejnƒõn po zaƒç√°tku soutƒõ≈æe</p>
+                        <p>éeb¯ÌËek bude zve¯ejnÏn po zaË·tku soutÏûe</p>
                     </div>
                 }
             </div>
@@ -246,7 +278,7 @@
 @code {
     private bool _isLoading = true;
     private string? _error = null;
-    private List<BlazorApp1.Models.Team>? _teams = null;
+    private List<BlazorApp1.Models.LeaderboardEntry>? _leaderboard = null;
     private BlazorApp1.Models.CompetitionSettings? _settings = null;
     private BlazorApp1.Models.Team? _currentTeamA = null;
     private BlazorApp1.Models.Team? _currentTeamB = null;
@@ -254,6 +286,7 @@
     private BlazorApp1.Models.Team? _nextTeamB = null;
     private int _timerRemaining = 90;
     private BlazorApp1.Models.TimerStatus _timerStatus = BlazorApp1.Models.TimerStatus.Stopped;
+    private BlazorApp1.Models.GameStatus _currentGameStatus = BlazorApp1.Models.GameStatus.Preparation;
     private string _debugLog = "";
     
     // Position tracking for animations
@@ -261,7 +294,73 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Subscribe to GameStatus changes
+        GameStatusService.OnGameStatusChanged += HandleGameStatusChanged;
+        
+        // Subscribe to score updates
+        ScoreNotificationService.OnRoundCompleted += HandleRoundCompleted;
+        
         await LoadData();
+    }
+    
+    private async Task HandleGameStatusChanged(BlazorApp1.Models.GameStatus newStatus)
+    {
+        await InvokeAsync(() =>
+        {
+            Console.WriteLine($"[Home] Game status changed to: {newStatus}");
+            _currentGameStatus = newStatus;
+            StateHasChanged();
+        });
+    }
+    
+    private async Task HandleRoundCompleted(string teamId, BlazorApp1.Models.RoundCompletedNotification notification)
+    {
+        await InvokeAsync(async () =>
+        {
+            Console.WriteLine($"[Home] Round completed for team {teamId}, reloading leaderboard...");
+            AddDebugLog($"Round completed: Team={teamId}, Score={notification.TotalScore}");
+            
+            // Reload leaderboard
+            await ReloadLeaderboard();
+        });
+    }
+    
+    private async Task ReloadLeaderboard()
+    {
+        try
+        {
+            var oldLeaderboard = _leaderboard?.ToList() ?? new List<BlazorApp1.Models.LeaderboardEntry>();
+            
+            // Load new leaderboard
+            _leaderboard = await FinalScoreService.GetDetailedLeaderboardAsync();
+            
+            // Update previous positions from old leaderboard
+            foreach (var entry in _leaderboard)
+            {
+                var oldEntry = oldLeaderboard.FirstOrDefault(e => e.TeamId == entry.TeamId);
+                if (oldEntry != null)
+                {
+                    entry.PreviousPosition = oldEntry.Position;
+                }
+                else
+                {
+                    entry.PreviousPosition = entry.Position; // New team
+                }
+            }
+            
+            AddDebugLog($"Leaderboard reloaded: {_leaderboard.Count} teams");
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            AddDebugLog($"Error reloading leaderboard: {ex.Message}");
+        }
+    }
+    
+    public void Dispose()
+    {
+        GameStatusService.OnGameStatusChanged -= HandleGameStatusChanged;
+        ScoreNotificationService.OnRoundCompleted -= HandleRoundCompleted;
     }
 
     private async Task LoadData()
@@ -272,16 +371,20 @@
         
         try
         {
-            AddDebugLog("Naƒç√≠t√°m data...");
+            AddDebugLog("NaËÌt·m data...");
             
-            // Load teams and leaderboard
-            _teams = await TeamService.GetLeaderboardAsync();
-            AddDebugLog($"Naƒçteno {_teams?.Count ?? 0} t√Ωm≈Ø");
+            // Load leaderboard from FinalRoundScores
+            _leaderboard = await FinalScoreService.GetDetailedLeaderboardAsync();
+            AddDebugLog($"NaËteno {_leaderboard?.Count ?? 0} t˝m˘ v ûeb¯ÌËku");
             
             // Load settings
             var allSettings = await SettingsRepository.GetAllAsync();
             _settings = allSettings.FirstOrDefault() ?? new BlazorApp1.Models.CompetitionSettings();
-            AddDebugLog($"Aktu√°ln√≠ kolo: {_settings.CurrentRound}, Status: {_settings.Status}");
+            AddDebugLog($"Aktu·lnÌ kolo: {_settings.CurrentRound}, Status: {_settings.Status}");
+            
+            // Load current game status
+            _currentGameStatus = GameStatusService.GetCurrentStatus();
+            AddDebugLog($"Game status: {_currentGameStatus}");
             
             // Load current match teams
             if (!string.IsNullOrEmpty(_settings.CurrentTeamAId))
@@ -312,11 +415,11 @@
             UpdatePositionTracking();
             
             _isLoading = false;
-            AddDebugLog("Naƒç√≠t√°n√≠ dokonƒçeno");
+            AddDebugLog("NaËÌt·nÌ dokonËeno");
         }
         catch (Exception ex)
         {
-            _error = $"Typ: {ex.GetType().Name}\nZpr√°va: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}";
+            _error = $"Typ: {ex.GetType().Name}\nZpr·va: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}";
             AddDebugLog($"CHYBA: {ex.GetType().Name} - {ex.Message}");
             _isLoading = false;
         }
@@ -331,25 +434,27 @@
 
     private void UpdatePositionTracking()
     {
-        if (_teams == null) return;
+        if (_leaderboard == null) return;
         
         _previousPositions.Clear();
-        for (int i = 0; i < _teams.Count; i++)
+        foreach (var entry in _leaderboard)
         {
-            _previousPositions[_teams[i].Id] = i + 1;
+            _previousPositions[entry.TeamId] = entry.Position;
         }
     }
     
     private int GetPositionChange(string teamId)
     {
-        if (!_previousPositions.ContainsKey(teamId) || _teams == null)
+        if (!_previousPositions.ContainsKey(teamId) || _leaderboard == null)
             return 0;
         
-        var currentPosition = _teams.FindIndex(t => t.Id == teamId) + 1;
+        var currentEntry = _leaderboard.FirstOrDefault(e => e.TeamId == teamId);
+        if (currentEntry == null) return 0;
+        
         var previousPosition = _previousPositions[teamId];
         
         // Positive = moved up, Negative = moved down
-        return previousPosition - currentPosition;
+        return previousPosition - currentEntry.Position;
     }
     
     private string GetPositionChangeClass(int change)
@@ -370,24 +475,24 @@
     {
         return status switch
         {
-            BlazorApp1.Models.CompetitionStatus.NotStarted => "P≈ô√≠prava",
-            BlazorApp1.Models.CompetitionStatus.InProgress => "Prob√≠h√°",
+            BlazorApp1.Models.CompetitionStatus.NotStarted => "P¯Ìprava",
+            BlazorApp1.Models.CompetitionStatus.InProgress => "ProbÌh·",
             BlazorApp1.Models.CompetitionStatus.Paused => "Pauza",
-            BlazorApp1.Models.CompetitionStatus.Finished => "Ukonƒçeno",
+            BlazorApp1.Models.CompetitionStatus.Finished => "UkonËeno",
             _ => status.ToString()
         };
     }
     
     private double GetAverageScore()
     {
-        if (_teams == null || !_teams.Any()) return 0;
-        return Math.Round(_teams.Average(t => t.TotalScore), 1);
+        if (_leaderboard == null || !_leaderboard.Any()) return 0;
+        return Math.Round(_leaderboard.Average(e => e.TotalScore), 1);
     }
     
     private int GetTopScore()
     {
-        if (_teams == null || !_teams.Any()) return 0;
-        return _teams.Max(t => t.TotalScore);
+        if (_leaderboard == null || !_leaderboard.Any()) return 0;
+        return _leaderboard.Max(e => e.TotalScore);
     }
 
     private void AddDebugLog(string message)

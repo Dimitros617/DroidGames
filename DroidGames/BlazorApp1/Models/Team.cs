@@ -9,7 +9,7 @@ public class Team
     public string PinCode { get; set; } = string.Empty;
     public string? RobotPhotoUrl { get; set; }
     public string? RobotDescription { get; set; }
-    public List<RoundParticipation> Rounds { get; set; } = new();
+    public List<RoundParticipation> Rides { get; set; } = new();
     public List<string> UnlockedAchievements { get; set; } = new();
     public int TotalScore { get; set; }
     public int CurrentPosition { get; set; }

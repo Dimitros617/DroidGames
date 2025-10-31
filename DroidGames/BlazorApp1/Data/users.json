@@ -24,6 +24,14 @@
     "CreatedAt": "2026-01-15T08:00:00Z"
   },
   {
+    "Id": "referee-2",
+    "Username": "rozhod2",
+    "PasswordHash": "cm96aG9kMTIz",
+    "Role": "Referee",
+    "TeamId": null,
+    "CreatedAt": "2026-01-15T08:00:00Z"
+  },
+  {
     "Id": "production-1",
     "Username": "rezie",
     "PasswordHash": "cmV6aWUxMjM=",

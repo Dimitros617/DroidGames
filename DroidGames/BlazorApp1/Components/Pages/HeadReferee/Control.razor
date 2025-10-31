@@ -1,0 +1,527 @@
+@page "/headref/control"
+@using BlazorApp1.Models
+@using BlazorApp1.Data
+@using BlazorApp1.Services
+@inject IRepository<CompetitionSettings> SettingsRepository
+@inject IRepository<Team> TeamRepository
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Ovládání soutěže - Hlavní rozhodčí | Droid Games</PageTitle>
+
+<div class="control-panel">
+    <div class="page-header">
+        <h1>
+            <span class="material-symbols-outlined">settings</span>
+            Ovládání soutěže
+        </h1>
+    </div>
+
+    @if (_loading)
+    {
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Načítání nastavení...</p>
+        </div>
+    }
+    else if (_settings == null)
+    {
+        <div class="error-message">
+            <span class="material-symbols-outlined">error</span>
+            <h3>Chyba načítání nastavení</h3>
+        </div>
+    }
+    else
+    {
+        <div class="control-grid">
+            <!-- Levý sloupec - Nastavení -->
+            <div class="settings-column">
+                <!-- Globální stav soutěže -->
+                <div class="control-card">
+                    <div class="card-header">
+                        <span class="material-symbols-outlined">sports_score</span>
+                        <h2>Stav soutěže</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>
+                                <span class="material-symbols-outlined">flag</span>
+                                Aktuální stav soutěže
+                            </label>
+                            <select class="form-control" @bind="_settings.Status">
+                                @foreach (CompetitionStatus status in Enum.GetValues(typeof(CompetitionStatus)))
+                                {
+                                    <option value="@status">@GetCompetitionStatusText(status)</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="status-indicator @GetCompetitionStatusClass(_settings.Status)">
+                            <span class="status-dot"></span>
+                            <span>@GetCompetitionStatusText(_settings.Status)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nastavení kola -->
+                <div class="control-card">
+                    <div class="card-header">
+                        <span class="material-symbols-outlined">repeat</span>
+                        <h2>Nastavení kola</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>
+                                <span class="material-symbols-outlined">123</span>
+                                Aktuální kolo
+                            </label>
+                            <div class="number-input">
+                                <button class="btn-number" @onclick="() => ChangeRound(-1)" disabled="@(_settings.CurrentRound <= 1)">
+                                    <span class="material-symbols-outlined">remove</span>
+                                </button>
+                                <input type="number" class="form-control text-center" @bind="_settings.CurrentRound" min="1" max="@_settings.TotalRounds" />
+                                <button class="btn-number" @onclick="() => ChangeRound(1)" disabled="@(_settings.CurrentRound >= _settings.TotalRounds)">
+                                    <span class="material-symbols-outlined">add</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <span class="material-symbols-outlined">collections</span>
+                                Celkový počet kol
+                            </label>
+                            <input type="number" class="form-control" @bind="_settings.TotalRounds" min="1" max="10" />
+                        </div>
+
+                        <div class="round-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: @((_settings.CurrentRound / (double)_settings.TotalRounds) * 100)%"></div>
+                            </div>
+                            <span class="progress-label">Kolo @_settings.CurrentRound z @_settings.TotalRounds</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Časové nastavení -->
+                <div class="control-card">
+                    <div class="card-header">
+                        <span class="material-symbols-outlined">timer</span>
+                        <h2>Časové nastavení</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>
+                                <span class="material-symbols-outlined">directions_run</span>
+                                Doba jízdy (sekundy)
+                            </label>
+                            <div class="time-preset">
+                                <button class="btn-preset @(_settings.RoundDurationSeconds == 60 ? "active" : "")" @onclick="() => _settings.RoundDurationSeconds = 60">60s</button>
+                                <button class="btn-preset @(_settings.RoundDurationSeconds == 90 ? "active" : "")" @onclick="() => _settings.RoundDurationSeconds = 90">90s</button>
+                                <button class="btn-preset @(_settings.RoundDurationSeconds == 120 ? "active" : "")" @onclick="() => _settings.RoundDurationSeconds = 120">120s</button>
+                                <button class="btn-preset @(_settings.RoundDurationSeconds == 180 ? "active" : "")" @onclick="() => _settings.RoundDurationSeconds = 180">180s</button>
+                            </div>
+                            <input type="number" class="form-control" @bind="_settings.RoundDurationSeconds" min="30" max="300" />
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <span class="material-symbols-outlined">hourglass_empty</span>
+                                Doba přípravy (sekundy)
+                            </label>
+                            <input type="number" class="form-control" @bind="_settings.PreparationDurationSeconds" min="10" max="120" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Limity soutěže -->
+                <div class="control-card">
+                    <div class="card-header">
+                        <span class="material-symbols-outlined">group</span>
+                        <h2>Limity</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>
+                                <span class="material-symbols-outlined">groups</span>
+                                Maximum týmů
+                            </label>
+                            <input type="number" class="form-control" @bind="_settings.MaxTeams" min="1" max="50" />
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <span class="material-symbols-outlined">school</span>
+                                Maximum týmů ze školy
+                            </label>
+                            <input type="number" class="form-control" @bind="_settings.MaxTeamsPerSchool" min="1" max="10" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tlačítka akcí -->
+                <div class="action-buttons">
+                    <button class="btn btn-primary" @onclick="SaveSettings" disabled="@_saving">
+                        @if (_saving)
+                        {
+                            <div class="btn-spinner"></div>
+                        }
+                        else
+                        {
+                            <span class="material-symbols-outlined">save</span>
+                        }
+                        Uložit nastavení
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pravý sloupec - Výběr týmů -->
+            <div class="teams-column">
+                <div class="control-card teams-card">
+                    <div class="card-header">
+                        <span class="material-symbols-outlined">groups</span>
+                        <h2>Výběr týmů pro kolo @_settings.CurrentRound</h2>
+                    </div>
+                    <div class="card-body">
+                        <!-- Aktuální zápas -->
+                        <div class="current-match">
+                            <div class="match-header">
+                                <span class="material-symbols-outlined">sports_kabaddi</span>
+                                <h3>Aktuální zápas</h3>
+                            </div>
+                            
+                            <div class="match-teams">
+                                <div class="team-select">
+                                    <label>
+                                        <span class="material-symbols-outlined">workspace_premium</span>
+                                        Tým A (stůl A)
+                                    </label>
+                                    <select class="form-control team-dropdown" @bind="_settings.CurrentTeamAId">
+                                        <option value="">-- Vyberte tým --</option>
+                                        @foreach (var team in _availableTeams)
+                                        {
+                                            <option value="@team.Id">@team.Name (@team.School)</option>
+                                        }
+                                    </select>
+                                    @if (!string.IsNullOrEmpty(_settings.CurrentTeamAId))
+                                    {
+                                        var teamA = _availableTeams.FirstOrDefault(t => t.Id == _settings.CurrentTeamAId);
+                                        if (teamA != null)
+                                        {
+                                            <div class="team-info-card">
+                                                <div class="team-name">@teamA.Name</div>
+                                                <div class="team-details">
+                                                    <span>@teamA.School</span>
+                                                    <span>•</span>
+                                                    <span>@teamA.TotalScore bodů</span>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+
+                                <div class="vs-divider">
+                                    <span class="material-symbols-outlined">swords</span>
+                                    <span>VS</span>
+                                </div>
+
+                                <div class="team-select">
+                                    <label>
+                                        <span class="material-symbols-outlined">workspace_premium</span>
+                                        Tým B (stůl B)
+                                    </label>
+                                    <select class="form-control team-dropdown" @bind="_settings.CurrentTeamBId">
+                                        <option value="">-- Vyberte tým --</option>
+                                        @foreach (var team in _availableTeams)
+                                        {
+                                            <option value="@team.Id">@team.Name (@team.School)</option>
+                                        }
+                                    </select>
+                                    @if (!string.IsNullOrEmpty(_settings.CurrentTeamBId))
+                                    {
+                                        var teamB = _availableTeams.FirstOrDefault(t => t.Id == _settings.CurrentTeamBId);
+                                        if (teamB != null)
+                                        {
+                                            <div class="team-info-card">
+                                                <div class="team-name">@teamB.Name</div>
+                                                <div class="team-details">
+                                                    <span>@teamB.School</span>
+                                                    <span>•</span>
+                                                    <span>@teamB.TotalScore bodů</span>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Další zápas -->
+                        <div class="next-match">
+                            <div class="match-header">
+                                <span class="material-symbols-outlined">schedule</span>
+                                <h3>Další zápas</h3>
+                            </div>
+                            
+                            <div class="match-teams compact">
+                                <div class="team-select">
+                                    <label>Tým A</label>
+                                    <select class="form-control" @bind="_settings.NextTeamAId">
+                                        <option value="">-- Vyberte tým --</option>
+                                        @foreach (var team in _availableTeams)
+                                        {
+                                            <option value="@team.Id">@team.Name</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="team-select">
+                                    <label>Tým B</label>
+                                    <select class="form-control" @bind="_settings.NextTeamBId">
+                                        <option value="">-- Vyberte tým --</option>
+                                        @foreach (var team in _availableTeams)
+                                        {
+                                            <option value="@team.Id">@team.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tabulka všech týmů -->
+                        <div class="all-teams-section">
+                            <div class="section-header">
+                                <h3>
+                                    <span class="material-symbols-outlined">format_list_bulleted</span>
+                                    Všechny týmy
+                                </h3>
+                                <button class="btn btn-sm btn-primary" @onclick="SelectNextPair">
+                                    <span class="material-symbols-outlined">skip_next</span>
+                                    Vybrat další dvojici
+                                </button>
+                            </div>
+
+                            <div class="teams-table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Tým</th>
+                                            <th>Škola</th>
+                                            <th>Jízdy</th>
+                                            <th>Skóre</th>
+                                            <th>Akce</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (int i = 0; i < _availableTeams.Count; i++)
+                                        {
+                                            var team = _availableTeams[i];
+                                            var isCurrentA = team.Id == _settings.CurrentTeamAId;
+                                            var isCurrentB = team.Id == _settings.CurrentTeamBId;
+                                            var isCurrent = isCurrentA || isCurrentB;
+                                            var index = i;
+
+                                            <tr class="@(isCurrent ? "current-team" : "") @(isCurrentA ? "team-a" : "") @(isCurrentB ? "team-b" : "")">
+                                                <td>@(i + 1)</td>
+                                                <td class="team-name">
+                                                    @team.Name
+                                                    @if (isCurrent)
+                                                    {
+                                                        <span class="badge-current">
+                                                            @(isCurrentA ? "A" : "B")
+                                                        </span>
+                                                    }
+                                                </td>
+                                                <td>@team.School</td>
+                                                <td>@team.Rides.Count / @_settings.TotalRounds</td>
+                                                <td class="team-score">@team.TotalScore</td>
+                                                <td>
+                                                    <button class="btn-icon" @onclick="() => SetAsTeamA(team.Id)" title="Nastavit jako Tým A">
+                                                        <span class="material-symbols-outlined">looks_one</span>
+                                                    </button>
+                                                    <button class="btn-icon" @onclick="() => SetAsTeamB(team.Id)" title="Nastavit jako Tým B">
+                                                        <span class="material-symbols-outlined">looks_two</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (_showSuccess)
+    {
+        <div class="toast-notification success">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span>Nastavení úspěšně uloženo!</span>
+        </div>
+    }
+
+    @if (_showError)
+    {
+        <div class="toast-notification error">
+            <span class="material-symbols-outlined">error</span>
+            <span>Chyba při ukládání nastavení</span>
+        </div>
+    }
+</div>
+
+@code {
+    private CompetitionSettings? _settings;
+    private List<Team> _availableTeams = new();
+    private bool _loading = true;
+    private bool _saving = false;
+    private bool _showSuccess = false;
+    private bool _showError = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        _loading = true;
+
+        try
+        {
+            var allSettings = await SettingsRepository.GetAllAsync();
+            _settings = allSettings.FirstOrDefault();
+
+            var allTeams = await TeamRepository.GetAllAsync();
+            _availableTeams = allTeams.OrderBy(t => t.Name).ToList();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void ChangeRound(int delta)
+    {
+        if (_settings == null) return;
+        
+        var newRound = _settings.CurrentRound + delta;
+        if (newRound >= 1 && newRound <= _settings.TotalRounds)
+        {
+            _settings.CurrentRound = newRound;
+        }
+    }
+
+    private async Task SaveSettings()
+    {
+        if (_settings == null) return;
+
+        _saving = true;
+        _showSuccess = false;
+        _showError = false;
+
+        try
+        {
+            await SettingsRepository.UpdateSingletonAsync(_settings);
+            
+            _showSuccess = true;
+            _ = Task.Delay(3000).ContinueWith(_ => 
+            {
+                _showSuccess = false;
+                InvokeAsync(StateHasChanged);
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] Control.SaveSettings failed: {ex}");
+            _showError = true;
+            _ = Task.Delay(3000).ContinueWith(_ => 
+            {
+                _showError = false;
+                InvokeAsync(StateHasChanged);
+            });
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private void SelectNextPair()
+    {
+        if (_settings == null || !_availableTeams.Any()) return;
+
+        // Najdi týmy, které ještě nemají kompletní počet jízd
+        var teamsNeedingRides = _availableTeams
+            .Where(t => t.Rides.Count < _settings.TotalRounds)
+            .OrderBy(t => t.Rides.Count)
+            .ThenBy(t => t.Name)
+            .ToList();
+
+        if (teamsNeedingRides.Count >= 2)
+        {
+            _settings.CurrentTeamAId = teamsNeedingRides[0].Id;
+            _settings.CurrentTeamBId = teamsNeedingRides[1].Id;
+
+            if (teamsNeedingRides.Count >= 4)
+            {
+                _settings.NextTeamAId = teamsNeedingRides[2].Id;
+                _settings.NextTeamBId = teamsNeedingRides[3].Id;
+            }
+            else if (teamsNeedingRides.Count >= 3)
+            {
+                _settings.NextTeamAId = teamsNeedingRides[2].Id;
+                _settings.NextTeamBId = null;
+            }
+        }
+        else if (teamsNeedingRides.Count == 1)
+        {
+            // Lichý počet - tým jede sám
+            _settings.CurrentTeamAId = teamsNeedingRides[0].Id;
+            _settings.CurrentTeamBId = null;
+        }
+    }
+
+    private void SetAsTeamA(string teamId)
+    {
+        if (_settings != null)
+        {
+            _settings.CurrentTeamAId = teamId;
+        }
+    }
+
+    private void SetAsTeamB(string teamId)
+    {
+        if (_settings != null)
+        {
+            _settings.CurrentTeamBId = teamId;
+        }
+    }
+
+    private string GetCompetitionStatusText(CompetitionStatus status)
+    {
+        return status switch
+        {
+            CompetitionStatus.NotStarted => "Nezahájeno",
+            CompetitionStatus.InProgress => "Probíhá",
+            CompetitionStatus.Paused => "Pozastaveno",
+            CompetitionStatus.Finished => "Ukončeno",
+            _ => status.ToString()
+        };
+    }
+
+    private string GetCompetitionStatusClass(CompetitionStatus status)
+    {
+        return status switch
+        {
+            CompetitionStatus.NotStarted => "status-preparation",
+            CompetitionStatus.InProgress => "status-inprogress",
+            CompetitionStatus.Paused => "status-break",
+            CompetitionStatus.Finished => "status-finished",
+            _ => ""
+        };
+    }
+}

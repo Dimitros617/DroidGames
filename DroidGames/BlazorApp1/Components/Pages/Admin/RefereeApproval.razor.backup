@@ -5,13 +5,10 @@
 @inject IMapService MapService
 @inject IScoreService ScoreService
 @inject IAuthService AuthService
-@inject IFinalScoreService FinalScoreService
 @inject IScoreNotificationService ScoreNotificationService
-@inject IAchievementEvaluationService AchievementEvaluationService
-@inject IGameStatusService GameStatusService
+@inject IScoreFinalizationService ScoreFinalizationService
 @inject CompetitionSettings Settings
 @inject NavigationManager Navigation
-@inject UserSession UserSession
 @implements IDisposable
 
 <PageTitle>Schvalování hodnocení - Admin</PageTitle>
@@ -97,7 +94,7 @@
                                         <th>Rozhodčí</th>
                                         <th>💎 Krystaly</th>
                                         <th>🟡 Síra</th>
-                                        <th>🎁 Bonusy</th>
+                                        <th>🤝 Bonus</th>
                                         <th>📊 Celkem</th>
                                         <th>Status</th>
                                         <th>Akce</th>
@@ -117,9 +114,9 @@
                                                 <span class="expand-icon">@(isExpanded ? "▼" : "▶")</span>
                                                 <strong>@referee.Username</strong>
                                             </td>
-                                            <td class="score-cell">@(hasScore ? breakdown.CrystalPoints : "-")</td>
-                                            <td class="score-cell">@(hasScore ? breakdown.SulfurPenalty : "-")</td>
-                                            <td class="score-cell">@(hasScore ? breakdown.BonusPoints : "-")</td>
+                                            <td class="score-cell">@(hasScore ? breakdown.GetValueOrDefault("crystal", 0) : "-")</td>
+                                            <td class="score-cell">@(hasScore ? breakdown.GetValueOrDefault("sulfur", 0) : "-")</td>
+                                            <td class="score-cell">@(hasScore ? breakdown.GetValueOrDefault("coop", 0) : "-")</td>
                                             <td class="score-cell total"><strong>@(hasScore ? score!.TotalScore : "-")</strong></td>
                                             <td class="status-cell">
                                                 @if (!hasScore)
@@ -144,19 +141,18 @@
                                                 }
                                             </td>
                                             <td class="action-cell" @onclick:stopPropagation="true">
-                                                @if (hasScore && score!.IsSubmitted && !score.IsApproved && !score.IsRejected)
+                                                @if (hasScore && score!.IsSubmitted && !score.IsApproved)
                                                 {
+                                                    <button class="btn btn-sm btn-approve" @onclick="() => ApproveScore(team.Id, referee.Id)">
+                                                        ✅ Schválit
+                                                    </button>
                                                     <button class="btn btn-sm btn-reject" @onclick="() => ShowRejectDialog(team.Id, referee.Id)">
                                                         ↩️ Vrátit
                                                     </button>
                                                 }
-                                                else if (hasScore && score!.IsRejected)
+                                                else if (hasScore && score!.IsSubmitted)
                                                 {
-                                                    <span class="text-muted">Čeká na opravu</span>
-                                                }
-                                                else if (hasScore && score!.IsApproved)
-                                                {
-                                                    <span class="text-success">✓ Hotovo</span>
+                                                    <span class="text-muted">Hotovo</span>
                                                 }
                                                 else
                                                 {
@@ -208,67 +204,8 @@
                                     }
                                 </tbody>
                             </table>
-                            
-                            <!-- Výsledek porovnání -->
-                            @{
-                                var comparison = CompareTeamScores(team.Id);
-                            }
-                            @if (comparison.AllSubmitted)
-                            {
-                                <div class="comparison-result @(comparison.AllMatch ? "match" : "mismatch")">
-                                    @if (comparison.AllMatch)
-                                    {
-                                        <div class="match-message">
-                                            ✅ <strong>Všechna hodnocení se shodují!</strong>
-                                            <div class="match-details">
-                                                <span>💎 Krystaly: @comparison.CrystalPoints</span>
-                                                <span>🟡 Síra: @comparison.SulfurPenalty</span>
-                                                <span>🎁 Bonusy: @comparison.BonusPoints</span>
-                                                <span class="total">📊 Celkem: @comparison.TotalScore</span>
-                                            </div>
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <div class="mismatch-message">
-                                            ⚠️ <strong>Hodnocení se neshodují!</strong>
-                                            <p>Zkontrolujte jednotlivá hodnocení a vraťte nesprávná k opravě.</p>
-                                            @if (comparison.Differences.Any())
-                                            {
-                                                <ul class="differences-list">
-                                                    @foreach (var diff in comparison.Differences)
-                                                    {
-                                                        <li>@diff</li>
-                                                    }
-                                                </ul>
-                                            }
-                                        </div>
-                                    }
-                                </div>
-                            }
                         </div>
                     }
-                    
-                    <!-- Globální schválení pro celou dvojici -->
-                    <div class="global-approval-section">
-                        @{
-                            var canApprove = CanApproveRound();
-                        }
-                        @if (canApprove)
-                        {
-                            <button class="btn btn-lg btn-approve-all" @onclick="ApproveRound">
-                                ✅ Schválit kolo pro oba týmy
-                            </button>
-                            <p class="help-text">✓ Všechna hodnocení jsou odeslaná a shodují se v bodech</p>
-                        }
-                        else
-                        {
-                            <button class="btn btn-lg btn-approve-all" disabled>
-                                ✅ Schválit kolo pro oba týmy
-                            </button>
-                            <p class="help-text error">⚠️ Nelze schválit - hodnocení se neshodují nebo nejsou všechna odeslaná</p>
-                        }
-                    </div>
                     
                     <div class="next-pair-section">
                         <button class="btn btn-lg btn-next" 
@@ -278,7 +215,7 @@
                         </button>
                         @if (!AllScoresApproved())
                         {
-                            <p class="help-text">⚠️ Musíte schválit kolo před přechodem na další dvojici</p>
+                            <p class="help-text">⚠️ Musíte schválit všechna hodnocení před přechodem na další dvojici</p>
                         }
                     </div>
                 }
@@ -336,26 +273,6 @@
     
     private HashSet<string> _expandedRows = new();
 
-    // Helper class pro porovnání hodnocení
-    public class ScoreComparison
-    {
-        public bool AllSubmitted { get; set; }
-        public bool AllMatch { get; set; }
-        public int CrystalPoints { get; set; }
-        public int SulfurPenalty { get; set; }
-        public int BonusPoints { get; set; }
-        public int TotalScore { get; set; }
-        public List<string> Differences { get; set; } = new();
-    }
-    
-    // Helper class pro rozložení bodů
-    public class ScoreBreakdownData
-    {
-        public int CrystalPoints { get; set; }
-        public int SulfurPenalty { get; set; }
-        public int BonusPoints { get; set; }
-    }
-
     protected override async Task OnInitializedAsync()
     {
         await LoadData();
@@ -388,6 +305,12 @@
             await ReloadTeamData(teamId);
             StateHasChanged();
         });
+    }
+
+    private Task InitializeSignalR()
+    {
+        // No longer needed - using service events instead
+        return Task.CompletedTask;
     }
 
     private async Task ReloadTeamData(string teamId)
@@ -444,277 +367,20 @@
         }
     }
 
-    private (bool HasScore, RefereeScore? Score, ScoreBreakdownData Breakdown) GetRefereeScoreForTeam(string teamId, string refereeId)
+    private (bool HasScore, RefereeScore? Score, Dictionary<string, int> Breakdown) GetRefereeScoreForTeam(string teamId, string refereeId)
     {
         var team = _allTeams.FirstOrDefault(t => t.Id == teamId);
-        if (team == null) return (false, null, new ScoreBreakdownData());
+        if (team == null) return (false, null, new());
         
-        var round = team.Rides.FirstOrDefault(r => r.RoundNumber == _currentRoundNumber);
-        if (round == null) return (false, null, new ScoreBreakdownData());
+        var round = team.Rounds.FirstOrDefault(r => r.RoundNumber == _currentRoundNumber);
+        if (round == null) return (false, null, new());
         
         if (round.RefereeScores.TryGetValue(refereeId, out var score))
         {
-            var breakdown = ParseScoreBreakdown(score);
-            return (true, score, breakdown);
+            return (true, score, score.ScoreBreakdown);
         }
         
-        return (false, null, new ScoreBreakdownData());
-    }
-    
-    /// <summary>
-    /// Rozloží ScoreBreakdown na strukturované hodnoty pro krystaly, síru a bonusy
-    /// </summary>
-    private ScoreBreakdownData ParseScoreBreakdown(RefereeScore score)
-    {
-        var result = new ScoreBreakdownData();
-        
-        foreach (var entry in score.ScoreBreakdown)
-        {
-            var key = entry.Key.ToLower();
-            var value = entry.Value;
-            
-            if (key.Contains("krystal") || key.Contains("crystal"))
-            {
-                result.CrystalPoints += value;
-            }
-            else if (key.Contains("sír") || key.Contains("sulfur"))
-            {
-                result.SulfurPenalty += value;
-            }
-            else
-            {
-                // Vše ostatní jsou bonusy (validní přesuny, první dotyk, shromaždiště...)
-                result.BonusPoints += value;
-            }
-        }
-        
-        return result;
-    }
-
-    /// <summary>
-    /// Porovná hodnocení všech rozhodčích pro daný tým
-    /// </summary>
-    private ScoreComparison CompareTeamScores(string teamId)
-    {
-        var comparison = new ScoreComparison();
-        var team = _allTeams.FirstOrDefault(t => t.Id == teamId);
-        if (team == null) return comparison;
-        
-        var round = team.Rides.FirstOrDefault(r => r.RoundNumber == _currentRoundNumber);
-        if (round == null) return comparison;
-        
-        // Získat všechna odeslaná hodnocení
-        var submittedScores = new List<(RefereeScore Score, ScoreBreakdownData Breakdown)>();
-        
-        foreach (var referee in _allReferees)
-        {
-            if (round.RefereeScores.TryGetValue(referee.Id, out var score))
-            {
-                if (!score.IsSubmitted || score.IsRejected)
-                    continue; // Skip neodeslaná nebo vrácená hodnocení
-                    
-                var breakdown = ParseScoreBreakdown(score);
-                submittedScores.Add((score, breakdown));
-            }
-        }
-        
-        // Zkontrolovat, zda jsou všechna hodnocení odeslaná
-        comparison.AllSubmitted = submittedScores.Count == _allReferees.Count;
-        
-        if (submittedScores.Count == 0)
-        {
-            return comparison;
-        }
-        
-        // První hodnocení jako referenční
-        var reference = submittedScores[0];
-        comparison.CrystalPoints = reference.Breakdown.CrystalPoints;
-        comparison.SulfurPenalty = reference.Breakdown.SulfurPenalty;
-        comparison.BonusPoints = reference.Breakdown.BonusPoints;
-        comparison.TotalScore = reference.Score.TotalScore;
-        
-        // Porovnat s ostatními
-        comparison.AllMatch = true;
-        
-        for (int i = 1; i < submittedScores.Count; i++)
-        {
-            var current = submittedScores[i];
-            
-            if (current.Breakdown.CrystalPoints != comparison.CrystalPoints)
-            {
-                comparison.AllMatch = false;
-                comparison.Differences.Add($"Krystaly: {comparison.CrystalPoints} vs {current.Breakdown.CrystalPoints}");
-            }
-            
-            if (current.Breakdown.SulfurPenalty != comparison.SulfurPenalty)
-            {
-                comparison.AllMatch = false;
-                comparison.Differences.Add($"Síra: {comparison.SulfurPenalty} vs {current.Breakdown.SulfurPenalty}");
-            }
-            
-            if (current.Breakdown.BonusPoints != comparison.BonusPoints)
-            {
-                comparison.AllMatch = false;
-                comparison.Differences.Add($"Bonusy: {comparison.BonusPoints} vs {current.Breakdown.BonusPoints}");
-            }
-            
-            if (current.Score.TotalScore != comparison.TotalScore)
-            {
-                comparison.AllMatch = false;
-                comparison.Differences.Add($"Celkem: {comparison.TotalScore} vs {current.Score.TotalScore}");
-            }
-        }
-        
-        return comparison;
-    }
-
-    private bool CanApproveRound()
-    {
-        // Zkontrolovat oba týmy v aktuální dvojici
-        foreach (var team in _currentTeamPair)
-        {
-            var comparison = CompareTeamScores(team.Id);
-            
-            if (!comparison.AllSubmitted || !comparison.AllMatch)
-            {
-                return false;
-            }
-        }
-        
-        return true;
-    }
-
-    private async Task ApproveRound()
-    {
-        if (!CanApproveRound())
-        {
-            ShowMessage("❌ Nelze schválit - hodnocení se neshodují nebo nejsou všechna odeslaná", true);
-            return;
-        }
-        
-        try
-        {
-            Console.WriteLine($"[ApproveRound] Starting approval for round {_currentRoundNumber}");
-            
-            foreach (var team in _currentTeamPair)
-            {
-                await ApproveTeamRound(team.Id);
-            }
-            
-            // Změnit stav hry na "Příprava další jízdy"
-            await GameStatusService.SetGameStatusAsync(GameStatus.PreparingNextRound);
-            
-            ShowMessage($"✅ Kolo {_currentRoundNumber} schváleno pro oba týmy!", false);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[ApproveRound] Error: {ex.Message}");
-            ShowMessage($"❌ Chyba při schvalování: {ex.Message}", true);
-        }
-    }
-
-    private async Task ApproveTeamRound(string teamId)
-    {
-        var team = await TeamService.GetTeamByIdAsync(teamId);
-        if (team == null) return;
-        
-        var round = team.Rides.FirstOrDefault(r => r.RoundNumber == _currentRoundNumber);
-        if (round == null) return;
-        
-        // Označit všechna hodnocení jako schválená
-        var adminId = UserSession.UserId ?? "admin";
-        
-        foreach (var referee in _allReferees)
-        {
-            if (round.RefereeScores.TryGetValue(referee.Id, out var score))
-            {
-                score.IsApproved = true;
-                score.ApprovedAt = DateTime.UtcNow;
-                score.ApprovedByRefereeId = adminId;
-            }
-        }
-        
-        // Označit celé kolo jako schválené
-        round.IsApproved = true;
-        
-        await TeamService.UpdateTeamAsync(team);
-        
-        // Vzít první hodnocení jako referenční (všechna jsou shodná)
-        var firstScore = round.RefereeScores.Values.First();
-        var breakdown = ParseScoreBreakdown(firstScore);
-        
-        // Vytvořit finální záznam
-        var finalScore = new FinalRoundScore
-        {
-            TeamId = teamId,
-            RoundNumber = _currentRoundNumber,
-            CrystalTouches = firstScore.Events.Count(e => e.Description.Contains("Dotyk krystalu")),
-            CrystalPoints = breakdown.CrystalPoints,
-            SulfurHits = firstScore.Events.Count(e => e.Description.Contains("Narušení síry")),
-            SulfurPenalty = breakdown.SulfurPenalty,
-            ValidMoves = firstScore.Events.Count(e => e.Description.Contains("Validní přesun")),
-            BonusPoints = breakdown.BonusPoints,
-            TotalScore = firstScore.TotalScore,
-            ApprovedAt = DateTime.UtcNow,
-            ApprovedBy = adminId,
-            MapConfigurationId = round.MapConfigurationId,
-            Events = firstScore.Events
-        };
-        
-        // Rozložit bonusy do detailu
-        foreach (var entry in firstScore.ScoreBreakdown)
-        {
-            var key = entry.Key.ToLower();
-            if (!key.Contains("krystal") && !key.Contains("sír") && !key.Contains("crystal") && !key.Contains("sulfur"))
-            {
-                finalScore.BonusBreakdown[entry.Key] = entry.Value;
-            }
-        }
-        
-        await FinalScoreService.SaveFinalScoreAsync(finalScore);
-        
-        Console.WriteLine($"[ApproveTeamRound] Final score saved for team {teamId}, round {_currentRoundNumber}: {finalScore.TotalScore} points");
-        
-        // Odeslat notifikaci o dokončení jízdy
-        var roundCompletedNotification = new RoundCompletedNotification
-        {
-            TeamId = teamId,
-            RoundNumber = _currentRoundNumber,
-            CrystalPoints = breakdown.CrystalPoints,
-            SulfurPenalty = breakdown.SulfurPenalty,
-            BonusPoints = breakdown.BonusPoints,
-            TotalScore = firstScore.TotalScore,
-            CompletedAt = DateTime.UtcNow
-        };
-        
-        await ScoreNotificationService.NotifyRoundCompleted(teamId, roundCompletedNotification);
-        
-        // Vyhodnotit achievementy
-        var unlockedAchievements = await AchievementEvaluationService.EvaluateRoundAchievementsAsync(teamId, _currentRoundNumber);
-        
-        // Odeslat notifikace o achievementech (postupně s malým zpožděním pro efekt)
-        if (unlockedAchievements != null && unlockedAchievements.Any())
-        {
-            foreach (var achievement in unlockedAchievements)
-            {
-                var achievementNotification = new AchievementUnlockedNotification
-                {
-                    TeamId = teamId,
-                    AchievementId = achievement.Id,
-                    AchievementName = achievement.Name,
-                    AchievementDescription = achievement.Description,
-                    Icon = achievement.Icon,
-                    Rarity = achievement.Rarity,
-                    Points = 0, // Achievementy nedávají přímé body
-                    UnlockedAt = DateTime.UtcNow
-                };
-                
-                await ScoreNotificationService.NotifyAchievementUnlocked(teamId, achievementNotification);
-                
-                // Malé zpoždění mezi achievementy pro lepší vizuální efekt
-                await Task.Delay(500);
-            }
-        }
+        return (false, null, new());
     }
 
     private string GetRowClass(RefereeScore? score)
@@ -730,13 +396,58 @@
     {
         foreach (var team in _currentTeamPair)
         {
-            var round = team.Rides.FirstOrDefault(r => r.RoundNumber == _currentRoundNumber);
-            if (round == null || !round.IsApproved)
+            foreach (var referee in _allReferees)
             {
-                return false;
+                var scoreData = GetRefereeScoreForTeam(team.Id, referee.Id);
+                if (!scoreData.HasScore || !scoreData.Score!.IsApproved)
+                {
+                    return false;
+                }
             }
         }
         return true;
+    }
+
+    private async Task ApproveScore(string teamId, string refereeId)
+    {
+        try
+        {
+            var team = _allTeams.FirstOrDefault(t => t.Id == teamId);
+            if (team == null) return;
+            
+            var round = team.Rounds.FirstOrDefault(r => r.RoundNumber == _currentRoundNumber);
+            if (round == null) return;
+            
+            if (round.RefereeScores.TryGetValue(refereeId, out var score))
+            {
+                score.IsSubmitted = true; // MUST stay submitted
+                score.IsApproved = true;
+                score.IsRejected = false;
+                score.ApprovedAt = DateTime.UtcNow;
+                score.ApprovedByRefereeId = "admin"; // TODO: Get actual admin ID
+                
+                await TeamService.UpdateTeamAsync(team);
+                
+                // Send real-time notification
+                await ScoreNotificationService.NotifyScoreApprovalChanged(teamId, refereeId);
+                
+                // Finalizace - vypočítat finální skóre, vyhodnotit achievementy, notifikovat tým
+                await ScoreFinalizationService.FinalizeApprovedScoreAsync(teamId, _currentRoundNumber, "admin");
+                
+                _statusMessage = $"✅ Hodnocení schváleno!";
+                _isError = false;
+                StateHasChanged();
+                
+                await Task.Delay(2000);
+                _statusMessage = string.Empty;
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = $"❌ Chyba: {ex.Message}";
+            _isError = true;
+        }
     }
 
     private void ShowRejectDialog(string teamId, string refereeId)
@@ -762,7 +473,7 @@
             var team = _allTeams.FirstOrDefault(t => t.Id == _rejectTeamId);
             if (team == null) return;
             
-            var round = team.Rides.FirstOrDefault(r => r.RoundNumber == _currentRoundNumber);
+            var round = team.Rounds.FirstOrDefault(r => r.RoundNumber == _currentRoundNumber);
             if (round == null) return;
             
             if (round.RefereeScores.TryGetValue(_rejectRefereeId, out var score))
@@ -777,13 +488,20 @@
                 // Send real-time notification
                 await ScoreNotificationService.NotifyScoreApprovalChanged(_rejectTeamId, _rejectRefereeId);
                 
-                ShowMessage("↩️ Hodnocení vráceno k opravě!", false);
+                _statusMessage = $"↩️ Hodnocení vráceno k opravě!";
+                _isError = false;
                 _showRejectDialog = false;
+                StateHasChanged();
+                
+                await Task.Delay(2000);
+                _statusMessage = string.Empty;
+                StateHasChanged();
             }
         }
         catch (Exception ex)
         {
-            ShowMessage($"❌ Chyba: {ex.Message}", true);
+            _statusMessage = $"❌ Chyba: {ex.Message}";
+            _isError = true;
         }
     }
 
@@ -796,7 +514,7 @@
         
         if (_currentTeamPair.Count == 0)
         {
-            ShowMessage("🎉 Všechny dvojice dokončeny!", false);
+            _statusMessage = "🎉 Všechny dvojice dokončeny!";
             _currentPairIndex = 0;
             LoadCurrentTeamPair();
         }
@@ -877,6 +595,7 @@
         }, null, 0, 1000);
     }
     
+    // Accordion methods
     private bool IsRowExpanded(string teamId, string refereeId)
     {
         return _expandedRows.Contains($"{teamId}_{refereeId}");
@@ -913,22 +632,7 @@
         return "";
     }
     
-    private void ShowMessage(string message, bool isError)
-    {
-        _statusMessage = message;
-        _isError = isError;
-        StateHasChanged();
-        
-        Task.Delay(3000).ContinueWith(_ =>
-        {
-            InvokeAsync(() =>
-            {
-                _statusMessage = string.Empty;
-                StateHasChanged();
-            });
-        });
-    }
-    
+    // Cleanup
     public void Dispose()
     {
         _timer?.Dispose();
@@ -938,4 +642,3 @@
         ScoreNotificationService.OnScoreApprovalChanged -= HandleScoreApprovalChanged;
     }
 }
-

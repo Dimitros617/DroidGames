@@ -1,19 +1,18 @@
 [
   {
-    "CurrentRound": 2,
-    "Status": 1,
+    "CurrentRound": 1,
+    "Status": "NotStarted",
+    "GameStatus": "Preparation",
     "RoundDurationSeconds": 90,
     "PreparationDurationSeconds": 60,
     "TotalRounds": 5,
     "MaxTeams": 16,
     "MaxTeamsPerSchool": 3,
-    "TimerStartedAt": null,
     "TimerRemainingSeconds": 90,
-    "TimerStatus": 0,
-    "CurrentTeamAId": "team-1",
-    "CurrentTeamBId": "team-2",
-    "NextTeamAId": "team-3",
-    "NextTeamBId": "team-test",
+    "TimerStatus": "Stopped",
+    "CurrentTeamAId": "team-3",
+    "CurrentTeamBId": "team-1",
+    "NextTeamAId": "team-2",
     "HardwareApiKey": "droid-games-2026-secret-key"
   }
 ]

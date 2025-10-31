@@ -1,0 +1,343 @@
+@page "/admin/teams/{teamId}/edit"
+@using BlazorApp1.Models
+@using BlazorApp1.Data
+@inject IRepository<Team> TeamRepository
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Upravit tým - Admin | Droid Games</PageTitle>
+
+<div class="team-edit-container">
+    @if (_loading)
+    {
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Načítání týmu...</p>
+        </div>
+    }
+    else if (_team == null)
+    {
+        <div class="error-message">
+            <span class="material-symbols-outlined">error</span>
+            <h3>Tým nenalezen</h3>
+            <button class="btn btn-primary" @onclick="GoBack">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Zpět na týmy
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="page-header">
+            <button class="btn-back" @onclick="GoBack">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </button>
+            <div class="header-content">
+                <h1>Upravit tým</h1>
+                <p class="header-subtitle">ID: @_team.Id</p>
+            </div>
+        </div>
+
+        <div class="edit-content">
+            <div class="edit-form">
+                <div class="form-section">
+                    <h2>
+                        <span class="material-symbols-outlined">edit</span>
+                        Základní informace
+                    </h2>
+
+                    <div class="form-group">
+                        <label for="teamName">
+                            <span class="material-symbols-outlined">badge</span>
+                            Název týmu
+                        </label>
+                        <input type="text" id="teamName" class="form-control" @bind="_team.Name" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="school">
+                            <span class="material-symbols-outlined">school</span>
+                            Škola
+                        </label>
+                        <input type="text" id="school" class="form-control" @bind="_team.School" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pinCode">
+                            <span class="material-symbols-outlined">pin</span>
+                            PIN kód
+                        </label>
+                        <input type="text" id="pinCode" class="form-control" @bind="_team.PinCode" maxlength="4" />
+                        <small class="form-text">4místný PIN pro přihlášení týmu</small>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>
+                        <span class="material-symbols-outlined">group</span>
+                        Členové týmu
+                    </h2>
+
+                    <div class="members-list">
+                        @for (int i = 0; i < _team.Members.Count; i++)
+                        {
+                            var index = i;
+                            <div class="member-item">
+                                <span class="member-number">@(index + 1).</span>
+                                <input type="text" class="form-control" @bind="_team.Members[index]" placeholder="Jméno člena" />
+                                <button type="button" class="btn-remove" @onclick="() => RemoveMember(index)">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </button>
+                            </div>
+                        }
+                    </div>
+
+                    <button type="button" class="btn btn-secondary" @onclick="AddMember">
+                        <span class="material-symbols-outlined">add</span>
+                        Přidat člena
+                    </button>
+                </div>
+
+                <div class="form-section">
+                    <h2>
+                        <span class="material-symbols-outlined">smart_toy</span>
+                        Robot
+                    </h2>
+
+                    <div class="form-group">
+                        <label for="robotDescription">
+                            <span class="material-symbols-outlined">description</span>
+                            Popis robota
+                        </label>
+                        <textarea id="robotDescription" class="form-control" rows="4" @bind="_team.RobotDescription" placeholder="Volitelný popis robota..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="robotPhotoUrl">
+                            <span class="material-symbols-outlined">image</span>
+                            URL fotky robota
+                        </label>
+                        <input type="text" id="robotPhotoUrl" class="form-control" @bind="_team.RobotPhotoUrl" placeholder="https://..." />
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" @onclick="GoBack" disabled="@_saving">
+                        <span class="material-symbols-outlined">cancel</span>
+                        Zrušit
+                    </button>
+                    <button type="button" class="btn btn-primary" @onclick="SaveTeam" disabled="@_saving">
+                        @if (_saving)
+                        {
+                            <div class="btn-spinner"></div>
+                        }
+                        else
+                        {
+                            <span class="material-symbols-outlined">save</span>
+                        }
+                        Uložit změny
+                    </button>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <div class="info-section">
+                    <h2>
+                        <span class="material-symbols-outlined">emoji_events</span>
+                        Statistiky (pouze pro čtení)
+                    </h2>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <span class="material-symbols-outlined">star</span>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Celkové skóre</div>
+                            <div class="stat-value">@_team.TotalScore bodů</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <span class="material-symbols-outlined">trending_up</span>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Aktuální pozice</div>
+                            <div class="stat-value">@_team.CurrentPosition.</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <span class="material-symbols-outlined">directions_run</span>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Dokončených jízd</div>
+                            <div class="stat-value">@_team.Rides.Count</div>
+                        </div>
+                    </div>
+
+                    @if (_team.Rides.Any())
+                    {
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <span class="material-symbols-outlined">trending_up</span>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Průměrné skóre</div>
+                                <div class="stat-value">@(_team.Rides.Average(r => r.FinalScore ?? 0).ToString("F1")) bodů</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <span class="material-symbols-outlined">workspace_premium</span>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Nejlepší jízda</div>
+                                <div class="stat-value">@(_team.Rides.Max(r => r.FinalScore ?? 0)) bodů</div>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <span class="material-symbols-outlined">military_tech</span>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Odemčených achievementů</div>
+                            <div class="stat-value">@_team.UnlockedAchievements.Count</div>
+                        </div>
+                    </div>
+
+                    <div class="info-meta">
+                        <div class="meta-item">
+                            <span class="material-symbols-outlined">event</span>
+                            <span>Vytvořeno: @_team.CreatedAt.ToString("dd.MM.yyyy HH:mm")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <h3>Rychlé akce</h3>
+                    <button type="button" class="action-btn" @onclick="NavigateToRides">
+                        <span class="material-symbols-outlined">list</span>
+                        <span>Zobrazit jízdy</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (_showSuccess)
+    {
+        <div class="toast-notification success">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span>Tým úspěšně uložen!</span>
+        </div>
+    }
+
+    @if (_showError)
+    {
+        <div class="toast-notification error">
+            <span class="material-symbols-outlined">error</span>
+            <span>Chyba při ukládání týmu</span>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string TeamId { get; set; } = string.Empty;
+
+    private Team? _team;
+    private bool _loading = true;
+    private bool _saving = false;
+    private bool _showSuccess = false;
+    private bool _showError = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTeam();
+    }
+
+    private async Task LoadTeam()
+    {
+        _loading = true;
+        
+        try
+        {
+            _team = await TeamRepository.GetByIdAsync(TeamId);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void AddMember()
+    {
+        if (_team != null)
+        {
+            _team.Members.Add("");
+        }
+    }
+
+    private void RemoveMember(int index)
+    {
+        if (_team != null && index >= 0 && index < _team.Members.Count)
+        {
+            _team.Members.RemoveAt(index);
+        }
+    }
+
+    private async Task SaveTeam()
+    {
+        if (_team == null) return;
+
+        _saving = true;
+        _showSuccess = false;
+        _showError = false;
+
+        try
+        {
+            // Remove empty members
+            _team.Members = _team.Members.Where(m => !string.IsNullOrWhiteSpace(m)).ToList();
+
+            await TeamRepository.UpdateAsync(_team);
+            
+            _showSuccess = true;
+            
+            // Hide success message after 3 seconds
+            _ = Task.Delay(3000).ContinueWith(_ => 
+            {
+                _showSuccess = false;
+                InvokeAsync(StateHasChanged);
+            });
+        }
+        catch
+        {
+            _showError = true;
+            
+            _ = Task.Delay(3000).ContinueWith(_ => 
+            {
+                _showError = false;
+                InvokeAsync(StateHasChanged);
+            });
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/admin/teams");
+    }
+
+    private void NavigateToRides()
+    {
+        Navigation.NavigateTo($"/admin/teams/{TeamId}/rides");
+    }
+}

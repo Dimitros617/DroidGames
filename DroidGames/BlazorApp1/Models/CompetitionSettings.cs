@@ -4,6 +4,12 @@ public class CompetitionSettings
 {
     public int CurrentRound { get; set; } = 1;
     public CompetitionStatus Status { get; set; } = CompetitionStatus.NotStarted;
+    
+    /// <summary>
+    /// Globální stav hry pro všechny klienty
+    /// </summary>
+    public GameStatus GameStatus { get; set; } = GameStatus.Preparation;
+    
     public int RoundDurationSeconds { get; set; } = 90;
     public int PreparationDurationSeconds { get; set; } = 60;
     public int TotalRounds { get; set; } = 5;

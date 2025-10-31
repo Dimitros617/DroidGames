@@ -211,14 +211,14 @@
                 _totalScore = currentTeam.TotalScore;
                 _position = currentTeam.CurrentPosition;
                 _totalTeams = teams.Count;
-                _completedRounds = currentTeam.Rounds.Count;
+                _completedRounds = currentTeam.Rides.Count;
                 _achievementCount = currentTeam.UnlockedAchievements.Count;
 
                 // Calculate average and best score
-                if (currentTeam.Rounds.Any())
+                if (currentTeam.Rides.Any())
                 {
-                    _avgScore = currentTeam.Rounds.Average(r => r.FinalScore) ?? 0;
-                    _bestScore = currentTeam.Rounds.Max(r => r.FinalScore) ?? 0;
+                    _avgScore = currentTeam.Rides.Average(r => r.FinalScore) ?? 0;
+                    _bestScore = currentTeam.Rides.Max(r => r.FinalScore) ?? 0;
                 }
 
                 // Calculate progress to TOP 3

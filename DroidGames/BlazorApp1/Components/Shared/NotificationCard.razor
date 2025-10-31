@@ -1,0 +1,69 @@
+@using BlazorApp1.Models
+
+<div class="notification-card @GetRarityClass() @(_isVisible ? "show" : "")" @onclick="Dismiss">
+    <div class="notification-header">
+        @if (!string.IsNullOrEmpty(Icon))
+        {
+            <span class="notification-icon">@Icon</span>
+        }
+        <span class="notification-title">@Title</span>
+    </div>
+    <div class="notification-body">
+        @ChildContent
+    </div>
+    @if (ShowConfetti && _isVisible)
+    {
+        <div class="confetti-container">
+            @for (int i = 0; i < 50; i++)
+            {
+                <div class="confetti" style="left: @(Random.Shared.Next(0, 100))%; animation-delay: @(Random.Shared.Next(0, 1000))ms;"></div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Icon { get; set; } = string.Empty;
+    [Parameter] public AchievementRarity Rarity { get; set; }
+    [Parameter] public bool ShowConfetti { get; set; } = false;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback OnDismiss { get; set; }
+
+    private bool _isVisible = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Malé zpoždění než se karta zobrazí (pro animaci)
+            await Task.Delay(100);
+            _isVisible = true;
+            StateHasChanged();
+
+            // Automaticky skrýt po 5 sekundách
+            await Task.Delay(5000);
+            await Dismiss();
+        }
+    }
+
+    private string GetRarityClass()
+    {
+        return Rarity switch
+        {
+            AchievementRarity.Common => "rarity-common",
+            AchievementRarity.Rare => "rarity-rare",
+            AchievementRarity.Epic => "rarity-epic",
+            AchievementRarity.Legendary => "rarity-legendary",
+            _ => "rarity-common"
+        };
+    }
+
+    private async Task Dismiss()
+    {
+        _isVisible = false;
+        StateHasChanged();
+        await Task.Delay(300); // Čekat na animaci skrytí
+        await OnDismiss.InvokeAsync();
+    }
+}

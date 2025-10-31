@@ -1,5 +1,6 @@
 @page "/admin/teams"
 @inject BlazorApp1.Services.ITeamService TeamService
+@inject NavigationManager Navigation
 @rendermode InteractiveServer
 
 <PageTitle>Správa týmů - Admin</PageTitle>
@@ -46,12 +47,15 @@
                                 <td class="team-pin">@team.PinCode</td>
                                 <td class="team-score">@team.TotalScore bodů</td>
                                 <td class="team-position">@team.CurrentPosition.</td>
-                                <td>@team.Rounds.Count</td>
+                                <td>@team.Rides.Count</td>
                                 <td class="team-actions">
-                                    <button class="btn-icon" title="Upravit">
+                                    <button class="btn-icon btn-primary" @onclick="() => NavigateToRides(team.Id)" title="Zobrazit jízdy">
+                                        <span class="material-symbols-outlined">list</span>
+                                    </button>
+                                    <button class="btn-icon btn-info" @onclick="() => NavigateToEdit(team.Id)" title="Upravit">
                                         <span class="material-symbols-outlined">edit</span>
                                     </button>
-                                    <button class="btn-icon btn-danger" title="Smazat">
+                                    <button class="btn-icon btn-danger" @onclick="() => DeleteTeam(team.Id)" title="Smazat">
                                         <span class="material-symbols-outlined">delete</span>
                                     </button>
                                 </td>
@@ -86,5 +90,21 @@
         _teams = await TeamService.GetLeaderboardAsync();
         _isLoading = false;
         StateHasChanged();
+    }
+
+    private void NavigateToRides(string teamId)
+    {
+        Navigation.NavigateTo($"/admin/teams/{teamId}/rides");
+    }
+
+    private void NavigateToEdit(string teamId)
+    {
+        Navigation.NavigateTo($"/admin/teams/{teamId}/edit");
+    }
+
+    private void DeleteTeam(string teamId)
+    {
+        // TODO: Implementovat potvrzovací dialog
+        // Zatím neimplementováno pro bezpečnost
     }
 }

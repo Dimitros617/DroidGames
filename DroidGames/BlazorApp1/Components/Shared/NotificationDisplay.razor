@@ -1,0 +1,137 @@
+@using BlazorApp1.Models
+@using BlazorApp1.Services
+@implements IDisposable
+@inject IScoreNotificationService NotificationService
+
+<div class="notification-container">
+    @foreach (var notification in _activeNotifications)
+    {
+        @if (notification.Type == NotificationType.RoundCompleted)
+        {
+            var roundData = (RoundCompletedNotification)notification.Data;
+            <NotificationCard Title="🏁 Jízda dokončena!" 
+                              Icon="🎯" 
+                              Rarity="AchievementRarity.Common"
+                              ShowConfetti="true"
+                              OnDismiss="@(() => RemoveNotification(notification))">
+                <div class="notification-body">
+                    <div><strong>Kolo:</strong> @roundData.RoundNumber</div>
+                    <div class="score-breakdown">
+                        <span class="score-label">💎 Krystaly:</span>
+                        <span class="score-dots"></span>
+                        <span class="score-value positive">+@roundData.CrystalPoints</span>
+                        
+                        <span class="score-label">⚗️ Síra:</span>
+                        <span class="score-dots"></span>
+                        <span class="score-value negative">@roundData.SulfurPenalty</span>
+                        
+                        @if (roundData.BonusPoints > 0)
+                        {
+                            <span class="score-label">⭐ Bonusy:</span>
+                            <span class="score-dots"></span>
+                            <span class="score-value positive">+@roundData.BonusPoints</span>
+                        }
+                    </div>
+                    <div class="score-total">
+                        <span>Celkem:</span>
+                        <span>@roundData.TotalScore bodů</span>
+                    </div>
+                </div>
+            </NotificationCard>
+        }
+        else if (notification.Type == NotificationType.AchievementUnlocked)
+        {
+            var achievement = (AchievementUnlockedNotification)notification.Data;
+            <NotificationCard Title="🏆 Achievement odemčen!" 
+                              Icon="@achievement.Icon" 
+                              Rarity="achievement.Rarity"
+                              ShowConfetti="true"
+                              OnDismiss="@(() => RemoveNotification(notification))">
+                <div class="notification-body">
+                    <div><strong>@achievement.AchievementName</strong></div>
+                    <div class="achievement-description">@achievement.AchievementDescription</div>
+                    <div class="achievement-rarity-badge">@achievement.Rarity.ToString()</div>
+                </div>
+            </NotificationCard>
+        }
+    }
+</div>
+
+@code {
+    private class QueuedNotification
+    {
+        public NotificationType Type { get; set; }
+        public object Data { get; set; } = null!;
+    }
+
+    private List<QueuedNotification> _activeNotifications = new();
+    private Queue<QueuedNotification> _notificationQueue = new();
+    private System.Threading.Timer? _processingTimer;
+    private readonly object _lock = new();
+
+    protected override void OnInitialized()
+    {
+        // Přihlásit se k událostem
+        NotificationService.OnRoundCompleted += HandleRoundCompleted;
+        NotificationService.OnAchievementUnlocked += HandleAchievementUnlocked;
+
+        // Spustit timer pro zpracování fronty
+        _processingTimer = new System.Threading.Timer(ProcessQueue, null, 0, 500);
+    }
+
+    private async Task HandleRoundCompleted(string teamId, RoundCompletedNotification notification)
+    {
+        lock (_lock)
+        {
+            _notificationQueue.Enqueue(new QueuedNotification
+            {
+                Type = NotificationType.RoundCompleted,
+                Data = notification
+            });
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleAchievementUnlocked(string teamId, AchievementUnlockedNotification notification)
+    {
+        lock (_lock)
+        {
+            _notificationQueue.Enqueue(new QueuedNotification
+            {
+                Type = NotificationType.AchievementUnlocked,
+                Data = notification
+            });
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void ProcessQueue(object? state)
+    {
+        lock (_lock)
+        {
+            // Zobrazovat max 3 notifikace najednou
+            if (_activeNotifications.Count < 3 && _notificationQueue.Count > 0)
+            {
+                var notification = _notificationQueue.Dequeue();
+                _activeNotifications.Add(notification);
+                InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+
+    private void RemoveNotification(QueuedNotification notification)
+    {
+        lock (_lock)
+        {
+            _activeNotifications.Remove(notification);
+        }
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NotificationService.OnRoundCompleted -= HandleRoundCompleted;
+        NotificationService.OnAchievementUnlocked -= HandleAchievementUnlocked;
+        _processingTimer?.Dispose();
+    }
+}

@@ -1,0 +1,472 @@
+.team-rides-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    gap: 1rem;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(0, 123, 255, 0.1);
+    border-top-color: #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.error-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    gap: 1rem;
+    text-align: center;
+}
+
+.error-message .material-symbols-outlined {
+    font-size: 4rem;
+    color: #dc3545;
+}
+
+.page-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.btn-back {
+    background: white;
+    border: 2px solid #dee2e6;
+    border-radius: 12px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+    background: #f8f9fa;
+    border-color: #007bff;
+    color: #007bff;
+    transform: translateX(-3px);
+}
+
+.btn-back .material-symbols-outlined {
+    font-size: 24px;
+}
+
+.header-content {
+    flex: 1;
+}
+
+.header-content h1 {
+    margin: 0 0 0.5rem 0;
+    color: #212529;
+    font-size: 2rem;
+}
+
+.team-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 0.75rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #6c757d;
+    font-size: 0.95rem;
+}
+
+.info-item .material-symbols-outlined {
+    font-size: 20px;
+}
+
+.no-rides {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    gap: 1rem;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 16px;
+    padding: 3rem;
+}
+
+.no-rides .material-symbols-outlined {
+    font-size: 4rem;
+    color: #adb5bd;
+}
+
+.no-rides h3 {
+    margin: 0;
+    color: #495057;
+}
+
+.no-rides p {
+    margin: 0;
+    color: #6c757d;
+}
+
+.rides-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.ride-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.ride-card.approved {
+    border-color: #28a745;
+}
+
+.ride-card.pending {
+    border-color: #ffc107;
+}
+
+.ride-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.ride-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.ride-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.ride-title h3 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.ride-title .material-symbols-outlined {
+    font-size: 32px;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.status-badge.approved {
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+}
+
+.status-badge.pending {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+}
+
+.status-badge .material-symbols-outlined {
+    font-size: 20px;
+}
+
+.final-score-section {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid #dee2e6;
+}
+
+.score-main {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.score-main .material-symbols-outlined {
+    font-size: 48px;
+    color: #ffc107;
+}
+
+.score-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.score-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.score-breakdown {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.score-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.score-item .material-symbols-outlined {
+    font-size: 24px;
+    color: #007bff;
+}
+
+.score-item span {
+    flex: 1;
+    color: #495057;
+}
+
+.score-item strong {
+    color: #212529;
+    font-size: 1.1rem;
+}
+
+.approval-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #28a745;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+}
+
+.approval-info .material-symbols-outlined {
+    font-size: 20px;
+}
+
+.referee-scores {
+    padding: 1.5rem;
+}
+
+.referee-scores h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 1rem 0;
+    color: #495057;
+    font-size: 1.1rem;
+}
+
+.referee-scores h4 .material-symbols-outlined {
+    color: #007bff;
+    font-size: 24px;
+}
+
+.referee-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.referee-card {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 2px solid #dee2e6;
+    transition: all 0.3s ease;
+}
+
+.referee-card.approved-ref {
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    border-color: #28a745;
+}
+
+.referee-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.referee-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.referee-name .material-symbols-outlined {
+    color: #007bff;
+    font-size: 20px;
+}
+
+.referee-name strong {
+    flex: 1;
+    color: #212529;
+}
+
+.approval-icon {
+    color: #28a745;
+}
+
+.approval-icon .material-symbols-outlined {
+    font-size: 20px;
+}
+
+.ref-score-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.detail-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: white;
+    border-radius: 6px;
+}
+
+.detail-row.total {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    font-weight: bold;
+    margin-top: 0.5rem;
+}
+
+.detail-row .material-symbols-outlined {
+    font-size: 18px;
+    color: #6c757d;
+}
+
+.detail-row.total .material-symbols-outlined {
+    color: white;
+}
+
+.detail-row span {
+    flex: 1;
+}
+
+.referee-notes {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: white;
+    border-left: 3px solid #007bff;
+    border-radius: 4px;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.referee-notes .material-symbols-outlined {
+    color: #007bff;
+    font-size: 20px;
+}
+
+.referee-notes em {
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+.timestamp {
+    margin-top: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+.timestamp .material-symbols-outlined {
+    font-size: 16px;
+}
+
+.ride-footer {
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #495057;
+}
+
+.ride-footer .material-symbols-outlined {
+    color: #007bff;
+    font-size: 20px;
+}
+
+.no-data {
+    text-align: center;
+    color: #6c757d;
+    padding: 2rem;
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .team-rides-container {
+        padding: 1rem;
+    }
+
+    .page-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .team-info {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .referee-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .score-breakdown {
+        grid-template-columns: 1fr;
+    }
+}

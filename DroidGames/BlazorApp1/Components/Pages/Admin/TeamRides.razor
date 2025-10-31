@@ -1,0 +1,241 @@
+@page "/admin/teams/{teamId}/rides"
+@using BlazorApp1.Models
+@using BlazorApp1.Data
+@using BlazorApp1.Services
+@inject IRepository<Team> TeamRepository
+@inject IRepository<FinalRoundScore> FinalScoreRepository
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Jízdy týmu - Admin | Droid Games</PageTitle>
+
+<div class="team-rides-container">
+    @if (_loading)
+    {
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Načítání jízd...</p>
+        </div>
+    }
+    else if (_team == null)
+    {
+        <div class="error-message">
+            <span class="material-symbols-outlined">error</span>
+            <h3>Tým nenalezen</h3>
+            <button class="btn btn-primary" @onclick="GoBack">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Zpět na týmy
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="page-header">
+            <button class="btn-back" @onclick="GoBack">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </button>
+            <div class="header-content">
+                <h1>Jízdy týmu @_team.Name</h1>
+                <div class="team-info">
+                    <span class="info-item">
+                        <span class="material-symbols-outlined">school</span>
+                        @_team.School
+                    </span>
+                    <span class="info-item">
+                        <span class="material-symbols-outlined">group</span>
+                        @_team.Members.Count členů
+                    </span>
+                    <span class="info-item">
+                        <span class="material-symbols-outlined">emoji_events</span>
+                        Celkem bodů: @_team.TotalScore
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        @if (!_team.Rides.Any())
+        {
+            <div class="no-rides">
+                <span class="material-symbols-outlined">directions_run</span>
+                <h3>Zatím žádné jízdy</h3>
+                <p>Tento tým ještě neabsolvoval žádnou jízdu.</p>
+            </div>
+        }
+        else
+        {
+            <div class="rides-grid">
+                @foreach (var ride in _team.Rides.OrderBy(r => r.RoundNumber))
+                {
+                    var finalScore = _finalScores.FirstOrDefault(fs => fs.TeamId == _team.Id && fs.RoundNumber == ride.RoundNumber);
+                    
+                    <div class="ride-card @(finalScore != null ? "approved" : "pending")">
+                        <div class="ride-header">
+                            <div class="ride-title">
+                                <span class="material-symbols-outlined">
+                                    @(finalScore != null ? "check_circle" : "pending")
+                                </span>
+                                <h3>Kolo @ride.RoundNumber</h3>
+                            </div>
+                            <div class="ride-status">
+                                @if (finalScore != null)
+                                {
+                                    <span class="status-badge approved">
+                                        <span class="material-symbols-outlined">verified</span>
+                                        Schváleno
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge pending">
+                                        <span class="material-symbols-outlined">schedule</span>
+                                        Čeká na schválení
+                                    </span>
+                                }
+                            </div>
+                        </div>
+
+                        @if (finalScore != null)
+                        {
+                            <div class="final-score-section">
+                                <div class="score-main">
+                                    <span class="material-symbols-outlined">star</span>
+                                    <div>
+                                        <div class="score-label">Finální skóre</div>
+                                        <div class="score-value">@finalScore.TotalScore bodů</div>
+                                    </div>
+                                </div>
+                                <div class="score-breakdown">
+                                    <div class="score-item">
+                                        <span class="material-symbols-outlined">diamond</span>
+                                        <span>Krystaly: @finalScore.CrystalTouches × @finalScore.CrystalPoints</span>
+                                        <strong>= @(finalScore.CrystalTouches * finalScore.CrystalPoints)</strong>
+                                    </div>
+                                    <div class="score-item">
+                                        <span class="material-symbols-outlined">scatter_plot</span>
+                                        <span>Síra: @finalScore.SulfurHits × @finalScore.SulfurPenalty</span>
+                                        <strong>= @(finalScore.SulfurHits * finalScore.SulfurPenalty)</strong>
+                                    </div>
+                                    <div class="score-item">
+                                        <span class="material-symbols-outlined">bolt</span>
+                                        <span>Bonusy:</span>
+                                        <strong>@finalScore.BonusPoints</strong>
+                                    </div>
+                                </div>
+                                <div class="approval-info">
+                                    <span class="material-symbols-outlined">event</span>
+                                    <span>Schváleno: @finalScore.ApprovedAt.ToString("dd.MM.yyyy HH:mm")</span>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="referee-scores">
+                            <h4>
+                                <span class="material-symbols-outlined">how_to_reg</span>
+                                Hodnocení rozhodčích
+                            </h4>
+                            
+                            @if (ride.RefereeScores.Any())
+                            {
+                                <div class="referee-grid">
+                                    @foreach (var refScoreKvp in ride.RefereeScores.OrderBy(rs => rs.Key))
+                                    {
+                                        var refScore = refScoreKvp.Value;
+                                        var refereeId = refScoreKvp.Key;
+                                        
+                                        <div class="referee-card @(refScore.IsApproved ? "approved-ref" : "")">
+                                            <div class="referee-name">
+                                                <span class="material-symbols-outlined">person</span>
+                                                <strong>@refereeId</strong>
+                                                @if (refScore.IsApproved)
+                                                {
+                                                    <span class="approval-icon" title="Schváleno rozhodčím">
+                                                        <span class="material-symbols-outlined">done</span>
+                                                    </span>
+                                                }
+                                            </div>
+                                            
+                                            <div class="ref-score-details">
+                                                @foreach (var breakdown in refScore.ScoreBreakdown.OrderBy(sb => sb.Key))
+                                                {
+                                                    <div class="detail-row">
+                                                        <span class="material-symbols-outlined">circle</span>
+                                                        <span>@breakdown.Key:</span>
+                                                        <strong>@breakdown.Value</strong>
+                                                    </div>
+                                                }
+                                                <div class="detail-row total">
+                                                    <span class="material-symbols-outlined">calculate</span>
+                                                    <span>Celkem:</span>
+                                                    <strong>@refScore.TotalScore bodů</strong>
+                                                </div>
+                                            </div>
+
+                                            @if (refScore.IsApproved && refScore.ApprovedAt.HasValue)
+                                            {
+                                                <div class="timestamp">
+                                                    <span class="material-symbols-outlined">schedule</span>
+                                                    <small>@refScore.ApprovedAt.Value.ToString("dd.MM.yyyy HH:mm")</small>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="no-data">Žádná hodnocení od rozhodčích</p>
+                            }
+                        </div>
+
+                        @if (ride.FinalScore.HasValue)
+                        {
+                            <div class="ride-footer">
+                                <span class="material-symbols-outlined">timer</span>
+                                <span>Finální skóre v databázi týmu: <strong>@ride.FinalScore bodů</strong></span>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string TeamId { get; set; } = string.Empty;
+
+    private Team? _team;
+    private List<FinalRoundScore> _finalScores = new();
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        _loading = true;
+        
+        try
+        {
+            _team = await TeamRepository.GetByIdAsync(TeamId);
+            
+            if (_team != null)
+            {
+                var allFinalScores = await FinalScoreRepository.GetAllAsync();
+                _finalScores = allFinalScores.Where(fs => fs.TeamId == TeamId).ToList();
+            }
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/admin/teams");
+    }
+}

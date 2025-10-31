@@ -317,7 +317,7 @@
                 var team = await TeamService.GetTeamByIdAsync(_selectedTeamId);
                 if (team != null)
                 {
-                    var round = team.Rounds.FirstOrDefault(r => r.RoundNumber == _currentRound?.RoundNumber);
+                    var round = team.Rides.FirstOrDefault(r => r.RoundNumber == _currentRound?.RoundNumber);
                     if (round != null && round.RefereeScores.TryGetValue(refereeId, out var score))
                     {
                         if (score.IsApproved)
@@ -405,7 +405,7 @@
             return;
         }
         
-        var round = team.Rounds.FirstOrDefault(r => r.RoundNumber == _currentRound.RoundNumber);
+        var round = team.Rides.FirstOrDefault(r => r.RoundNumber == _currentRound.RoundNumber);
         if (round == null)
         {
             Console.WriteLine($"[LoadTeamScoring] Round {_currentRound.RoundNumber} not found for team, creating new round");
@@ -415,7 +415,7 @@
                 RoundNumber = _currentRound.RoundNumber,
                 RefereeScores = new Dictionary<string, RefereeScore>()
             };
-            team.Rounds.Add(round);
+            team.Rides.Add(round);
             await TeamService.UpdateTeamAsync(team);
         }
         
@@ -512,6 +512,30 @@
             
         try
         {
+            // DŮLEŽITÉ: Zkontrolovat, zda není skóre už schválené
+            var team = await TeamService.GetTeamByIdAsync(targetTeamId);
+            if (team != null)
+            {
+                var round = team.Rides.FirstOrDefault(r => r.RoundNumber == _currentRound.RoundNumber);
+                var refereeId = UserSession.UserId ?? "referee1";
+                
+                if (round?.RefereeScores.TryGetValue(refereeId, out var existingScore) == true)
+                {
+                    // Pokud je skóre schválené nebo odesláno (čeká na schválení), nesmíme ho přepsat
+                    if (existingScore.IsApproved)
+                    {
+                        Console.WriteLine($"[AutoSave] SKIP - Score is already approved for team {targetTeamId}");
+                        return;
+                    }
+                    
+                    if (existingScore.IsSubmitted && !existingScore.IsRejected)
+                    {
+                        Console.WriteLine($"[AutoSave] SKIP - Score is submitted and awaiting approval for team {targetTeamId}");
+                        return;
+                    }
+                }
+            }
+            
             Console.WriteLine($"[AutoSave] Saving score for team {targetTeamId}... (current selected: {_selectedTeamId})");
             
             // Převést události na ScoringEventData
@@ -826,7 +850,7 @@
                 return;
             }
             
-            var round = team.Rounds.FirstOrDefault(r => r.RoundNumber == _currentRound!.RoundNumber);
+            var round = team.Rides.FirstOrDefault(r => r.RoundNumber == _currentRound!.RoundNumber);
             if (round == null)
             {
                 _statusMessage = "❌ Kolo nenalezeno!";

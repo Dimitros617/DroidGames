@@ -1,0 +1,210 @@
+/* Notification Cards */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-width: 400px;
+    pointer-events: none;
+}
+
+.notification-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    color: white;
+    cursor: pointer;
+    pointer-events: all;
+    position: relative;
+    overflow: hidden;
+    transform: translateX(450px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.notification-card.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.notification-card:hover {
+    transform: translateX(-5px) scale(1.02);
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+}
+
+.notification-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+.notification-icon {
+    font-size: 2em;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.notification-title {
+    flex: 1;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.notification-body {
+    font-size: 0.95em;
+    line-height: 1.5;
+    opacity: 0.95;
+}
+
+/* Rarity Colors */
+.notification-card.rarity-common {
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+}
+
+.notification-card.rarity-rare {
+    background: linear-gradient(135deg, #4776e6 0%, #8e54e9 100%);
+}
+
+.notification-card.rarity-epic {
+    background: linear-gradient(135deg, #b224ef 0%, #7579ff 100%);
+    animation: epic-glow 2s ease-in-out infinite;
+}
+
+.notification-card.rarity-legendary {
+    background: linear-gradient(135deg, #f857a6 0%, #ff5858 100%);
+    animation: legendary-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes epic-glow {
+    0%, 100% {
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(181, 36, 239, 0.5);
+    }
+    50% {
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 40px rgba(181, 36, 239, 0.8);
+    }
+}
+
+@keyframes legendary-pulse {
+    0%, 100% {
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(248, 87, 166, 0.6);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 60px rgba(248, 87, 166, 1);
+        transform: scale(1.02);
+    }
+}
+
+/* Confetti Animation */
+.confetti-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: #f0f;
+    top: -10px;
+    opacity: 0;
+    animation: confetti-fall 3s linear forwards;
+}
+
+.confetti:nth-child(2n) {
+    background-color: #0ff;
+}
+
+.confetti:nth-child(3n) {
+    background-color: #ff0;
+}
+
+.confetti:nth-child(4n) {
+    background-color: #0f0;
+}
+
+.confetti:nth-child(5n) {
+    width: 12px;
+    height: 12px;
+    background-color: #f00;
+}
+
+@keyframes confetti-fall {
+    to {
+        top: 110%;
+        opacity: 1;
+        transform: translateX(calc(var(--x-offset, 0px) + (sin(var(--i, 0) * 20) * 50px))) rotate(720deg);
+    }
+}
+
+/* Round Completed Card Specific Styles */
+.score-breakdown {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.score-label {
+    font-weight: 500;
+}
+
+.score-dots {
+    border-bottom: 1px dotted rgba(255, 255, 255, 0.5);
+    margin-bottom: 3px;
+}
+
+.score-value {
+    font-weight: bold;
+    text-align: right;
+}
+
+.score-value.positive {
+    color: #90ee90;
+}
+
+.score-value.negative {
+    color: #ff6b6b;
+}
+
+.score-total {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.3em;
+    font-weight: bold;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+/* Achievement Card Specific Styles */
+.achievement-description {
+    font-style: italic;
+    opacity: 0.9;
+    margin-top: 8px;
+}
+
+.achievement-rarity-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-top: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
