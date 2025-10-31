@@ -47,10 +47,10 @@ Nárok na ocenění (cena za umístění na 1. až 3. místě v každém kole) m
 
 1. Soutěžní úloha:
 
-Každému týmu bude zpřístupněn detailní popis soutěžní úlohy nejpozději 6.1.2026 na webových stránkách soutěže centrumrobotiky.eu/droidgames. V?případě nejasností či chyb v?zadání mají možnost soutěžící nejpozději 1 měsíc před konáním soutěže kontaktovat pořadatele Droid Games a vznést námitky. Pokud budou tyto námitky schváleny výborem Droid Games, budou o této změně informováni všichni zaregistrovaní soutěžící.
+Každému týmu bude zpřístupněn detailní popis soutěžní úlohy nejpozději 6.1.2026 na webových stránkách soutěže centrumrobotiky.eu/droidgames. V případě nejasností či chyb v zadání mají možnost soutěžící nejpozději 1 měsíc před konáním soutěže kontaktovat pořadatele Droid Games a vznést námitky. Pokud budou tyto námitky schváleny výborem Droid Games, budou o této změně informováni všichni zaregistrovaní soutěžící.
 2. Technické požadavky:
 
-Roboti musí být sestaveni pouze ze stavebnic LEGO®  Mindstorms®. Použití jiných materiálů nebo součástí není povoleno. S?výjimkou nelegových částí, které nemají vliv na konstrukci robota či prováděnou úlohu. (Např. nalepená samolepka školy na boku robota apod.) Při odstranění této části nesmí být vidět změna pohybu robota.  
+Roboti musí být sestaveni pouze ze stavebnic LEGO®  Mindstorms®. Použití jiných materiálů nebo součástí není povoleno. S výjimkou nelegových částí, které nemají vliv na konstrukci robota či prováděnou úlohu. (Např. nalepená samolepka školy na boku robota apod.) Při odstranění této části nesmí být vidět změna pohybu robota.  
 Maximální povolené počty jednotlivých senzorů a motorů:
                - 4 ks motorů
 
@@ -71,7 +71,7 @@ Software robota musí být naprogramován v prostředí dodávaném s LEGO®  Mi
 
 1. Hodnocení:
 
-Roboti budou hodnoceni podle předem stanovených kritérií, která budou zveřejněny společně se zadáním soutěžní úlohy. Výsledky všech soutěžních týmů budou zveřejněny nejpozději do 14 dní od proběhnutí soutěže v novinkách na webových stránkách Droid Games (centrumrobotiky.eu/droidgames). V?těchto výsledcích budou uvedeny jména týmů, název školy, bodové hodnocení a celkové umístění. 
+Roboti budou hodnoceni podle předem stanovených kritérií, která budou zveřejněny společně se zadáním soutěžní úlohy. Výsledky všech soutěžních týmů budou zveřejněny nejpozději do 14 dní od proběhnutí soutěže v novinkách na webových stránkách Droid Games (centrumrobotiky.eu/droidgames). V těchto výsledcích budou uvedeny jména týmů, název školy, bodové hodnocení a celkové umístění. 
 2. Rozhodčí:
 
 Soutěž bude řízena rozhodčími, kteří budou odpovědní za hodnocení výkonů týmů. 
