@@ -5,19 +5,21 @@
 @inject BlazorApp1.Services.ITimerService TimerService
 @inject BlazorApp1.Services.IGameStatusService GameStatusService
 @inject BlazorApp1.Data.IRepository<BlazorApp1.Models.CompetitionSettings> SettingsRepository
+@inject BlazorApp1.Data.IRepository<BlazorApp1.Models.RoundOrder> RoundOrderRepository
 @inject BlazorApp1.Services.UserSession UserSession
+@inject BlazorApp1.Services.ICompetitionNotificationService CompetitionNotificationService
 @inject NavigationManager Navigation
 @implements IDisposable
 @rendermode InteractiveServer
 
-<PageTitle>DROID GAMES 2026 - LIVE VÝSLEDKY</PageTitle>
+<PageTitle>DROID GAMES 2026 - LIVE Vï¿½SLEDKY</PageTitle>
 
 <!-- Hero Section -->
 <div class="hero-section">
     <div class="hero-content">
         <img src="/graphic/DroidGames_logo_barva_v1.png" alt="Droid Games 2026" class="hero-logo" />
         <h1 class="hero-title">?? DROID GAMES 2026</h1>
-        <p class="hero-subtitle">Soutìž v robotice | Centrum Robotiky Plzeò</p>
+        <p class="hero-subtitle">Soutï¿½ v robotice | Centrum Robotiky Plzeï¿½</p>
         
         @if (_settings != null)
         {
@@ -49,7 +51,7 @@
         <div class="status-card error">
             <h2>
                 <span class="material-symbols-outlined">error</span>
-                Chyba pøi naèítání
+                Chyba pï¿½i naï¿½ï¿½tï¿½nï¿½
             </h2>
             <pre class="error-message">@_error</pre>
             <button class="btn-retry" @onclick="ReloadData">
@@ -67,7 +69,7 @@
                 <div class="current-match-card">
                     <h3 class="match-title">
                         <span class="material-symbols-outlined pulse">sports_esports</span>
-                        Aktuální zápas
+                        Aktuï¿½lnï¿½ zï¿½pas
                     </h3>
                     
                     <div class="match-teams">
@@ -85,59 +87,59 @@
                     <!-- Timer Display nebo Status Display -->
                     @if (_currentGameStatus == BlazorApp1.Models.GameStatus.RoundInProgress)
                     {
-                        <!-- Zobrazit èasovaè když bìží jízda -->
+                        <!-- Zobrazit ï¿½asovaï¿½ kdyï¿½ bï¿½ï¿½ jï¿½zda -->
                         <div class="timer-display timer-@(_timerStatus.ToString().ToLower())">
                             <div class="timer-value">@FormatTime(_timerRemaining)</div>
                             <div class="timer-status">
                                 <span class="status-dot running"></span>
-                                <text>Jízda probíhá!</text>
+                                <text>Jï¿½zda probï¿½hï¿½!</text>
                             </div>
                         </div>
                     }
                     else if (_currentGameStatus == BlazorApp1.Models.GameStatus.WaitingForScoring)
                     {
-                        <!-- Zobrazit "Èeká se na hodnocení" -->
+                        <!-- Zobrazit "ï¿½ekï¿½ se na hodnocenï¿½" -->
                         <div class="game-status-display waiting-scoring">
                             <div class="status-icon">?</div>
-                            <div class="status-text-large">Èeká se na výsledky...</div>
-                            <div class="status-subtext">Rozhodèí právì vyhodnocují jízdu</div>
+                            <div class="status-text-large">ï¿½ekï¿½ se na vï¿½sledky...</div>
+                            <div class="status-subtext">Rozhodï¿½ï¿½ prï¿½vï¿½ vyhodnocujï¿½ jï¿½zdu</div>
                         </div>
                     }
                     else if (_currentGameStatus == BlazorApp1.Models.GameStatus.PreparingNextRound)
                     {
-                        <!-- Zobrazit "Pøíprava další jízdy" -->
+                        <!-- Zobrazit "Pï¿½ï¿½prava dalï¿½ï¿½ jï¿½zdy" -->
                         <div class="game-status-display preparing-next">
                             <div class="status-icon">??</div>
-                            <div class="status-text-large">Pøipravujeme další jízdu</div>
-                            <div class="status-subtext">Výsledky budou brzy zveøejnìny</div>
+                            <div class="status-text-large">Pï¿½ipravujeme dalï¿½ï¿½ jï¿½zdu</div>
+                            <div class="status-subtext">Vï¿½sledky budou brzy zveï¿½ejnï¿½ny</div>
                         </div>
                     }
                     else if (_currentGameStatus == BlazorApp1.Models.GameStatus.Break)
                     {
-                        <!-- Zobrazit "Pøestávka" -->
+                        <!-- Zobrazit "Pï¿½estï¿½vka" -->
                         <div class="game-status-display break-status">
                             <div class="status-icon">?</div>
-                            <div class="status-text-large">Pøestávka</div>
-                            <div class="status-subtext">Soutìž pokraèuje brzy</div>
+                            <div class="status-text-large">Pï¿½estï¿½vka</div>
+                            <div class="status-subtext">Soutï¿½ pokraï¿½uje brzy</div>
                         </div>
                     }
                     else if (_currentGameStatus == BlazorApp1.Models.GameStatus.Finished)
                     {
-                        <!-- Zobrazit "Ukonèeno" -->
+                        <!-- Zobrazit "Ukonï¿½eno" -->
                         <div class="game-status-display finished-status">
                             <div class="status-icon">??</div>
-                            <div class="status-text-large">Soutìž ukonèena</div>
-                            <div class="status-subtext">Dìkujeme za úèast!</div>
+                            <div class="status-text-large">Soutï¿½ ukonï¿½ena</div>
+                            <div class="status-subtext">Dï¿½kujeme za ï¿½ï¿½ast!</div>
                         </div>
                     }
                     else
                     {
-                        <!-- Default - Pøíprava -->
+                        <!-- Default - Pï¿½ï¿½prava -->
                         <div class="timer-display timer-stopped">
                             <div class="timer-value">@FormatTime(_timerRemaining)</div>
                             <div class="timer-status">
                                 <span class="status-dot stopped"></span>
-                                <text>Pøipraveno</text>
+                                <text>Pï¿½ipraveno</text>
                             </div>
                         </div>
                     }
@@ -150,7 +152,7 @@
                 <div class="next-match-info">
                     <p class="next-match-label">
                         <span class="material-symbols-outlined rotating-hourglass">hourglass_empty</span>
-                        Následující:
+                        Nï¿½sledujï¿½cï¿½:
                     </p>
                     <p class="next-match-teams">
                         <span class="next-team">@_nextTeamA.Name</span>
@@ -164,8 +166,8 @@
             <div class="leaderboard-section">
                 <h2 class="section-title">
                     <span class="material-symbols-outlined">leaderboard</span>
-                    Live Žebøíèek
-                    <span class="live-indicator" title="Automatické aktualizace aktivní">
+                    Live ï¿½ebï¿½ï¿½ï¿½ek
+                    <span class="live-indicator" title="Automatickï¿½ aktualizace aktivnï¿½">
                         <span class="live-dot"></span> LIVE
                     </span>
                 </h2>
@@ -202,7 +204,7 @@
                                 
                                 <div class="team-details">
                                     <div class="team-name">@entry.TeamName</div>
-                                    <div class="team-school">@entry.CompletedRounds kol dokonèeno</div>
+                                    <div class="team-school">@entry.CompletedRounds kol dokonï¿½eno</div>
                                 </div>
                                 
                                 @if (positionChange != 0)
@@ -214,17 +216,17 @@
                                         }
                                         else
                                         {
-                                            <span class="change-arrow down">¡@Math.Abs(positionChange)</span>
+                                            <span class="change-arrow down">ï¿½@Math.Abs(positionChange)</span>
                                         }
                                     </div>
                                 }
                                 
                                 <div class="team-score-display">
                                     <div class="score-number">@entry.TotalScore</div>
-                                    <div class="score-label">bodù</div>
+                                    <div class="score-label">bodï¿½</div>
                                 </div>
                                 
-                                <!-- Achievement badges - TODO: naèíst z TeamAchievements -->
+                                <!-- Achievement badges - TODO: naï¿½ï¿½st z TeamAchievements -->
                                 <div class="achievement-badges">
                                     <span class="rounds-badge">? @entry.CompletedRounds</span>
                                 </div>
@@ -236,17 +238,17 @@
                     <div class="stats-bar">
                         <div class="stat-item">
                             <span class="stat-icon">??</span>
-                            <span class="stat-label">Prùmìr:</span>
-                            <span class="stat-value">@GetAverageScore() bodù</span>
+                            <span class="stat-label">Prï¿½mï¿½r:</span>
+                            <span class="stat-value">@GetAverageScore() bodï¿½</span>
                         </div>
                         <div class="stat-item">
                             <span class="stat-icon">??</span>
-                            <span class="stat-label">Nejlepší:</span>
-                            <span class="stat-value">@GetTopScore() bodù</span>
+                            <span class="stat-label">Nejlepï¿½ï¿½:</span>
+                            <span class="stat-value">@GetTopScore() bodï¿½</span>
                         </div>
                         <div class="stat-item">
                             <span class="stat-icon">??</span>
-                            <span class="stat-label">Týmù:</span>
+                            <span class="stat-label">Tï¿½mï¿½:</span>
                             <span class="stat-value">@_leaderboard.Count</span>
                         </div>
                     </div>
@@ -255,7 +257,7 @@
                 {
                     <div class="empty-state">
                         <span class="material-symbols-outlined">emoji_events</span>
-                        <p>Žebøíèek bude zveøejnìn po zaèátku soutìže</p>
+                        <p>ï¿½ebï¿½ï¿½ï¿½ek bude zveï¿½ejnï¿½n po zaï¿½ï¿½tku soutï¿½e</p>
                     </div>
                 }
             </div>
@@ -275,6 +277,38 @@
     }
 </div>
 
+<!-- Modal: Jste na Å™adÄ› -->
+@if (_showYourTurnModal)
+{
+    <div class="your-turn-modal-overlay" @onclick="CloseYourTurnModal">
+        <div class="your-turn-modal" @onclick:stopPropagation="true">
+            <div class="modal-icon">
+                <span class="material-symbols-outlined">notifications_active</span>
+            </div>
+            <h2>ðŸŽ¯ JSTE NA Å˜ADÄš!</h2>
+            <div class="team-name-large">@_yourTurnTeamName</div>
+            <p class="position-info">
+                @if (_yourTurnPosition == 1)
+                {
+                    <text>PÅ™ipravte se na <strong>StÅ¯l A</strong></text>
+                }
+                else if (_yourTurnPosition == 2)
+                {
+                    <text>PÅ™ipravte se na <strong>StÅ¯l B</strong></text>
+                }
+                else
+                {
+                    <text>Pozice: @_yourTurnPosition</text>
+                }
+            </p>
+            <button class="btn-confirm" @onclick="CloseYourTurnModal">
+                <span class="material-symbols-outlined">check_circle</span>
+                RozumÃ­m
+            </button>
+        </div>
+    </div>
+}
+
 @code {
     private bool _isLoading = true;
     private string? _error = null;
@@ -291,6 +325,11 @@
     
     // Position tracking for animations
     private Dictionary<string, int> _previousPositions = new();
+    
+    // Modal state
+    private bool _showYourTurnModal = false;
+    private string _yourTurnTeamName = "";
+    private int _yourTurnPosition = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -300,7 +339,120 @@
         // Subscribe to score updates
         ScoreNotificationService.OnRoundCompleted += HandleRoundCompleted;
         
+        // Subscribe to competition notification events
+        CompetitionNotificationService.OnRoundChanged += HandleRoundChanged;
+        CompetitionNotificationService.OnCompetitionStatusChanged += HandleCompetitionStatusChanged;
+        CompetitionNotificationService.OnCurrentTeamsChanged += HandleCurrentTeamsChanged;
+        CompetitionNotificationService.OnNextTeamsChanged += HandleNextTeamsChanged;
+        CompetitionNotificationService.OnRoundOrderChanged += HandleRoundOrderChanged;
+        CompetitionNotificationService.OnLeaderboardUpdated += HandleLeaderboardUpdated;
+        CompetitionNotificationService.OnYourTurn += HandleYourTurn;
+        
         await LoadData();
+    }
+    
+    // Event handlers for competition notifications
+    private async Task HandleRoundChanged(int newRound)
+    {
+        await InvokeAsync(async () =>
+        {
+            Console.WriteLine($"[Home] Round changed to {newRound}");
+            AddDebugLog($"Kolo zmÄ›nÄ›no na {newRound}");
+            if (_settings != null)
+            {
+                _settings.CurrentRound = newRound;
+            }
+            await LoadData(); // Reload all data
+            StateHasChanged();
+        });
+    }
+    
+    private async Task HandleCompetitionStatusChanged(BlazorApp1.Models.CompetitionStatus newStatus)
+    {
+        await InvokeAsync(() =>
+        {
+            Console.WriteLine($"[Home] Competition status changed to {newStatus}");
+            AddDebugLog($"Stav soutÄ›Å¾e zmÄ›nÄ›n na {newStatus}");
+            if (_settings != null)
+            {
+                _settings.Status = newStatus;
+            }
+            StateHasChanged();
+            return Task.CompletedTask;
+        });
+    }
+    
+    private async Task HandleCurrentTeamsChanged(string? teamAId, string? teamBId)
+    {
+        await InvokeAsync(async () =>
+        {
+            Console.WriteLine($"[Home] Current teams changed: A={teamAId}, B={teamBId}");
+            AddDebugLog($"AktuÃ¡lnÃ­ tÃ½my zmÄ›nÄ›ny");
+            if (_settings != null)
+            {
+                _settings.CurrentTeamAId = teamAId;
+                _settings.CurrentTeamBId = teamBId;
+            }
+            await LoadCurrentTeams();
+            StateHasChanged();
+        });
+    }
+    
+    private async Task HandleNextTeamsChanged(string? teamAId, string? teamBId)
+    {
+        await InvokeAsync(async () =>
+        {
+            Console.WriteLine($"[Home] Next teams changed: A={teamAId}, B={teamBId}");
+            if (_settings != null)
+            {
+                _settings.NextTeamAId = teamAId;
+                _settings.NextTeamBId = teamBId;
+            }
+            await LoadNextTeams();
+            StateHasChanged();
+        });
+    }
+    
+    private async Task HandleRoundOrderChanged(int roundNumber)
+    {
+        await InvokeAsync(async () =>
+        {
+            Console.WriteLine($"[Home] Round order changed for round {roundNumber}");
+            AddDebugLog($"PoÅ™adÃ­ kola {roundNumber} bylo aktualizovÃ¡no");
+            await LoadData(); // Reload to get new order
+            StateHasChanged();
+        });
+    }
+    
+    private async Task HandleLeaderboardUpdated()
+    {
+        await InvokeAsync(async () =>
+        {
+            Console.WriteLine($"[Home] Leaderboard updated");
+            AddDebugLog("Å½ebÅ™Ã­Äek aktualizovÃ¡n");
+            await ReloadLeaderboard();
+            StateHasChanged();
+        });
+    }
+    
+    private async Task HandleYourTurn(string teamId, string teamName, int position)
+    {
+        await InvokeAsync(() =>
+        {
+            // Only show modal if this is the logged-in team
+            if (UserSession.IsAuthenticated && 
+                UserSession.Role == BlazorApp1.Models.UserRole.Team && 
+                UserSession.TeamId == teamId)
+            {
+                Console.WriteLine($"[Home] Your turn notification: {teamName}, position {position}");
+                AddDebugLog($"JSTE NA Å˜ADÄš! {teamName}");
+                _yourTurnTeamName = teamName;
+                _yourTurnPosition = position;
+                _showYourTurnModal = true;
+                StateHasChanged();
+            }
+            return Task.CompletedTask;
+        });
     }
     
     private async Task HandleGameStatusChanged(BlazorApp1.Models.GameStatus newStatus)
@@ -359,8 +511,23 @@
     
     public void Dispose()
     {
+        // Unsubscribe from all events
         GameStatusService.OnGameStatusChanged -= HandleGameStatusChanged;
         ScoreNotificationService.OnRoundCompleted -= HandleRoundCompleted;
+        
+        CompetitionNotificationService.OnRoundChanged -= HandleRoundChanged;
+        CompetitionNotificationService.OnCompetitionStatusChanged -= HandleCompetitionStatusChanged;
+        CompetitionNotificationService.OnCurrentTeamsChanged -= HandleCurrentTeamsChanged;
+        CompetitionNotificationService.OnNextTeamsChanged -= HandleNextTeamsChanged;
+        CompetitionNotificationService.OnRoundOrderChanged -= HandleRoundOrderChanged;
+        CompetitionNotificationService.OnLeaderboardUpdated -= HandleLeaderboardUpdated;
+        CompetitionNotificationService.OnYourTurn -= HandleYourTurn;
+    }
+    
+    private void CloseYourTurnModal()
+    {
+        _showYourTurnModal = false;
+        StateHasChanged();
     }
 
     private async Task LoadData()
@@ -371,16 +538,16 @@
         
         try
         {
-            AddDebugLog("Naèítám data...");
+            AddDebugLog("Naï¿½ï¿½tï¿½m data...");
             
             // Load leaderboard from FinalRoundScores
             _leaderboard = await FinalScoreService.GetDetailedLeaderboardAsync();
-            AddDebugLog($"Naèteno {_leaderboard?.Count ?? 0} týmù v žebøíèku");
+            AddDebugLog($"Naï¿½teno {_leaderboard?.Count ?? 0} tï¿½mï¿½ v ï¿½ebï¿½ï¿½ï¿½ku");
             
             // Load settings
             var allSettings = await SettingsRepository.GetAllAsync();
             _settings = allSettings.FirstOrDefault() ?? new BlazorApp1.Models.CompetitionSettings();
-            AddDebugLog($"Aktuální kolo: {_settings.CurrentRound}, Status: {_settings.Status}");
+            AddDebugLog($"Aktuï¿½lnï¿½ kolo: {_settings.CurrentRound}, Status: {_settings.Status}");
             
             // Load current game status
             _currentGameStatus = GameStatusService.GetCurrentStatus();
@@ -415,11 +582,11 @@
             UpdatePositionTracking();
             
             _isLoading = false;
-            AddDebugLog("Naèítání dokonèeno");
+            AddDebugLog("Naï¿½ï¿½tï¿½nï¿½ dokonï¿½eno");
         }
         catch (Exception ex)
         {
-            _error = $"Typ: {ex.GetType().Name}\nZpráva: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}";
+            _error = $"Typ: {ex.GetType().Name}\nZprï¿½va: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}";
             AddDebugLog($"CHYBA: {ex.GetType().Name} - {ex.Message}");
             _isLoading = false;
         }
@@ -430,6 +597,40 @@
     private async Task ReloadData()
     {
         await LoadData();
+    }
+    
+    private async Task LoadCurrentTeams()
+    {
+        if (_settings == null) return;
+        
+        _currentTeamA = null;
+        _currentTeamB = null;
+        
+        if (!string.IsNullOrEmpty(_settings.CurrentTeamAId))
+        {
+            _currentTeamA = await TeamService.GetTeamByIdAsync(_settings.CurrentTeamAId);
+        }
+        if (!string.IsNullOrEmpty(_settings.CurrentTeamBId))
+        {
+            _currentTeamB = await TeamService.GetTeamByIdAsync(_settings.CurrentTeamBId);
+        }
+    }
+    
+    private async Task LoadNextTeams()
+    {
+        if (_settings == null) return;
+        
+        _nextTeamA = null;
+        _nextTeamB = null;
+        
+        if (!string.IsNullOrEmpty(_settings.NextTeamAId))
+        {
+            _nextTeamA = await TeamService.GetTeamByIdAsync(_settings.NextTeamAId);
+        }
+        if (!string.IsNullOrEmpty(_settings.NextTeamBId))
+        {
+            _nextTeamB = await TeamService.GetTeamByIdAsync(_settings.NextTeamBId);
+        }
     }
 
     private void UpdatePositionTracking()
@@ -475,10 +676,10 @@
     {
         return status switch
         {
-            BlazorApp1.Models.CompetitionStatus.NotStarted => "Pøíprava",
-            BlazorApp1.Models.CompetitionStatus.InProgress => "Probíhá",
+            BlazorApp1.Models.CompetitionStatus.NotStarted => "Pï¿½ï¿½prava",
+            BlazorApp1.Models.CompetitionStatus.InProgress => "Probï¿½hï¿½",
             BlazorApp1.Models.CompetitionStatus.Paused => "Pauza",
-            BlazorApp1.Models.CompetitionStatus.Finished => "Ukonèeno",
+            BlazorApp1.Models.CompetitionStatus.Finished => "Ukonï¿½eno",
             _ => status.ToString()
         };
     }

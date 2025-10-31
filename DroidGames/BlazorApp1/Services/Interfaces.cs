@@ -82,3 +82,23 @@ public interface IFinalScoreService
     Task<Dictionary<string, int>> GetLeaderboardAsync();
     Task<List<LeaderboardEntry>> GetDetailedLeaderboardAsync();
 }
+
+public interface ICompetitionNotificationService
+{
+    Task NotifyRoundChangedAsync(int newRound);
+    Task NotifyCompetitionStatusChangedAsync(CompetitionStatus newStatus);
+    Task NotifyCurrentTeamsChangedAsync(string? teamAId, string? teamBId);
+    Task NotifyNextTeamsChangedAsync(string? teamAId, string? teamBId);
+    Task NotifyRoundOrderChangedAsync(int roundNumber);
+    Task NotifyLeaderboardUpdatedAsync();
+    Task NotifyYourTurnAsync(string teamId, string teamName, int position);
+    
+    // Events for Blazor components to subscribe to
+    event Func<int, Task>? OnRoundChanged;
+    event Func<CompetitionStatus, Task>? OnCompetitionStatusChanged;
+    event Func<string?, string?, Task>? OnCurrentTeamsChanged;
+    event Func<string?, string?, Task>? OnNextTeamsChanged;
+    event Func<int, Task>? OnRoundOrderChanged;
+    event Func<Task>? OnLeaderboardUpdated;
+    event Func<string, string, int, Task>? OnYourTurn;
+}

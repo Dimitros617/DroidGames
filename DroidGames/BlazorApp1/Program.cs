@@ -115,6 +115,7 @@ builder.Services.AddSingleton<IFinalScoreService, FinalScoreService>();
 builder.Services.AddSingleton<IScoreNotificationService, ScoreNotificationService>();
 builder.Services.AddSingleton<IAchievementEvaluationService, AchievementEvaluationService>();
 builder.Services.AddSingleton<IScoreFinalizationService, ScoreFinalizationService>();
+builder.Services.AddSingleton<ICompetitionNotificationService, CompetitionNotificationService>();
 
 // Background services
 Console.WriteLine("[DEBUG] Registering background services...");
@@ -205,6 +206,7 @@ app.MapHub<ScoreboardHub>("/scoreboardHub");
 app.MapHub<TimerHub>("/hubs/timer");
 app.MapHub<NotificationHub>("/hubs/notifications");
 app.MapHub<ProductionHub>("/hubs/production");
+app.MapHub<CompetitionHub>("/hubs/competition");
 
 // API Controllers
 app.MapControllers();

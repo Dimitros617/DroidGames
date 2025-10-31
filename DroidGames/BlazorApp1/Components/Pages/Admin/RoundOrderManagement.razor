@@ -1,9 +1,12 @@
 @page "/admin/round-order"
 @using BlazorApp1.Models
 @using BlazorApp1.Data
+@using BlazorApp1.Hubs
+@using Microsoft.AspNetCore.SignalR
 @inject IRepository<BlazorApp1.Models.RoundOrder> RoundOrderRepository
 @inject IRepository<BlazorApp1.Models.Team> TeamRepository
 @inject IRepository<CompetitionSettings> SettingsRepository
+@inject IHubContext<CompetitionHub> CompetitionHubContext
 @rendermode InteractiveServer
 
 <PageTitle>Losování pořadí kola - Admin | Droid Games</PageTitle>
@@ -281,6 +284,23 @@
             }
 
             ShowSuccess($"Pořadí kola {_currentRound} bylo potvrzeno a zveřejněno");
+            
+            // Poslat SignalR notifikaci o změně pořadí
+            Console.WriteLine($"[RoundOrderManagement] Sending OnRoundOrderChanged notification for round {_currentRound}");
+            await CompetitionHubContext.Clients.All.SendAsync("OnRoundOrderChanged", _currentRound);
+            
+            // Notifikovat první tým v pořadí, že je na řadě
+            if (_roundOrder.Any())
+            {
+                var firstOrder = _roundOrder.OrderBy(ro => ro.Position).First();
+                var firstTeam = _teams.FirstOrDefault(t => t.Id == firstOrder.TeamId);
+                if (firstTeam != null)
+                {
+                    Console.WriteLine($"[RoundOrderManagement] Notifying first team {firstTeam.Name} that it's their turn");
+                    await CompetitionHubContext.Clients.Group($"team_{firstTeam.Id}").SendAsync("OnYourTurn", firstTeam.Name, 1);
+                }
+            }
+            
             await LoadData();
         }
         catch (Exception ex)

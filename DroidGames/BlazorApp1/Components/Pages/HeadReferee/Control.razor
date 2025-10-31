@@ -4,6 +4,7 @@
 @using BlazorApp1.Services
 @inject IRepository<CompetitionSettings> SettingsRepository
 @inject IRepository<Team> TeamRepository
+@inject ICompetitionNotificationService CompetitionNotificationService
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 
@@ -425,7 +426,65 @@
 
         try
         {
+            // Uložit staré hodnoty pro porovnání
+            var allSettings = await SettingsRepository.GetAllAsync();
+            var oldSettings = allSettings.FirstOrDefault();
+            
+            var roundChanged = oldSettings != null && oldSettings.CurrentRound != _settings.CurrentRound;
+            var statusChanged = oldSettings != null && oldSettings.Status != _settings.Status;
+            var currentTeamAChanged = oldSettings != null && oldSettings.CurrentTeamAId != _settings.CurrentTeamAId;
+            var currentTeamBChanged = oldSettings != null && oldSettings.CurrentTeamBId != _settings.CurrentTeamBId;
+            var nextTeamAChanged = oldSettings != null && oldSettings.NextTeamAId != _settings.NextTeamAId;
+            var nextTeamBChanged = oldSettings != null && oldSettings.NextTeamBId != _settings.NextTeamBId;
+
+            // Uložit nastavení
             await SettingsRepository.UpdateSingletonAsync(_settings);
+            
+            // Poslat notifikace pokud se něco změnilo
+            if (roundChanged)
+            {
+                Console.WriteLine($"[Control] Round changed to {_settings.CurrentRound}, sending notification");
+                await CompetitionNotificationService.NotifyRoundChangedAsync(_settings.CurrentRound);
+            }
+
+            if (statusChanged)
+            {
+                Console.WriteLine($"[Control] Status changed to {_settings.Status}, sending notification");
+                await CompetitionNotificationService.NotifyCompetitionStatusChangedAsync(_settings.Status);
+            }
+
+            if (currentTeamAChanged || currentTeamBChanged)
+            {
+                Console.WriteLine($"[Control] Current teams changed: A={_settings.CurrentTeamAId}, B={_settings.CurrentTeamBId}");
+                await CompetitionNotificationService.NotifyCurrentTeamsChangedAsync(_settings.CurrentTeamAId, _settings.CurrentTeamBId);
+                
+                // Notifikovat týmy že jsou na řadě
+                if (!string.IsNullOrEmpty(_settings.CurrentTeamAId))
+                {
+                    var teamA = _availableTeams.FirstOrDefault(t => t.Id == _settings.CurrentTeamAId);
+                    if (teamA != null)
+                    {
+                        await CompetitionNotificationService.NotifyYourTurnAsync(teamA.Id, teamA.Name, 1);
+                        Console.WriteLine($"[Control] Notified team {teamA.Name} that it's their turn (position 1)");
+                    }
+                }
+                
+                if (!string.IsNullOrEmpty(_settings.CurrentTeamBId))
+                {
+                    var teamB = _availableTeams.FirstOrDefault(t => t.Id == _settings.CurrentTeamBId);
+                    if (teamB != null)
+                    {
+                        await CompetitionNotificationService.NotifyYourTurnAsync(teamB.Id, teamB.Name, 2);
+                        Console.WriteLine($"[Control] Notified team {teamB.Name} that it's their turn (position 2)");
+                    }
+                }
+            }
+
+            if (nextTeamAChanged || nextTeamBChanged)
+            {
+                Console.WriteLine($"[Control] Next teams changed: A={_settings.NextTeamAId}, B={_settings.NextTeamBId}");
+                await CompetitionNotificationService.NotifyNextTeamsChangedAsync(_settings.NextTeamAId, _settings.NextTeamBId);
+            }
             
             _showSuccess = true;
             _ = Task.Delay(3000).ContinueWith(_ => 

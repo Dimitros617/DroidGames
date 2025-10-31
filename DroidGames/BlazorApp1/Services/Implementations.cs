@@ -1,6 +1,7 @@
 using System;
 using BlazorApp1.Data;
 using BlazorApp1.Models;
+using Microsoft.AspNetCore.SignalR;
 
 namespace BlazorApp1.Services;
 
@@ -614,6 +615,127 @@ public class TimerBackgroundService : BackgroundService
             {
                 _logger.LogError(ex, "Error in timer background service");
             }
+        }
+    }
+}
+
+public class CompetitionNotificationService : ICompetitionNotificationService
+{
+    private readonly IHubContext<Hubs.CompetitionHub> _hubContext;
+    private readonly ILogger<CompetitionNotificationService> _logger;
+
+    public CompetitionNotificationService(
+        IHubContext<Hubs.CompetitionHub> hubContext,
+        ILogger<CompetitionNotificationService> logger)
+    {
+        _hubContext = hubContext;
+        _logger = logger;
+    }
+
+    public event Func<int, Task>? OnRoundChanged;
+    public event Func<CompetitionStatus, Task>? OnCompetitionStatusChanged;
+    public event Func<string?, string?, Task>? OnCurrentTeamsChanged;
+    public event Func<string?, string?, Task>? OnNextTeamsChanged;
+    public event Func<int, Task>? OnRoundOrderChanged;
+    public event Func<Task>? OnLeaderboardUpdated;
+    public event Func<string, string, int, Task>? OnYourTurn;
+
+    public async Task NotifyRoundChangedAsync(int newRound)
+    {
+        _logger.LogInformation("[CompetitionNotificationService] Round changed to {Round}", newRound);
+        
+        // Notify all clients via SignalR Hub
+        await _hubContext.Clients.All.SendAsync("OnRoundChanged", newRound);
+        
+        // Trigger local event for Blazor components
+        if (OnRoundChanged != null)
+        {
+            await OnRoundChanged.Invoke(newRound);
+        }
+    }
+
+    public async Task NotifyCompetitionStatusChangedAsync(CompetitionStatus newStatus)
+    {
+        _logger.LogInformation("[CompetitionNotificationService] Status changed to {Status}", newStatus);
+        
+        // Notify all clients via SignalR Hub
+        await _hubContext.Clients.All.SendAsync("OnCompetitionStatusChanged", newStatus);
+        
+        // Trigger local event for Blazor components
+        if (OnCompetitionStatusChanged != null)
+        {
+            await OnCompetitionStatusChanged.Invoke(newStatus);
+        }
+    }
+
+    public async Task NotifyCurrentTeamsChangedAsync(string? teamAId, string? teamBId)
+    {
+        _logger.LogInformation("[CompetitionNotificationService] Current teams changed: A={TeamA}, B={TeamB}", teamAId, teamBId);
+        
+        // Notify all clients via SignalR Hub
+        await _hubContext.Clients.All.SendAsync("OnCurrentTeamsChanged", teamAId, teamBId);
+        
+        // Trigger local event for Blazor components
+        if (OnCurrentTeamsChanged != null)
+        {
+            await OnCurrentTeamsChanged.Invoke(teamAId, teamBId);
+        }
+    }
+
+    public async Task NotifyNextTeamsChangedAsync(string? teamAId, string? teamBId)
+    {
+        _logger.LogInformation("[CompetitionNotificationService] Next teams changed: A={TeamA}, B={TeamB}", teamAId, teamBId);
+        
+        // Notify all clients via SignalR Hub
+        await _hubContext.Clients.All.SendAsync("OnNextTeamsChanged", teamAId, teamBId);
+        
+        // Trigger local event for Blazor components
+        if (OnNextTeamsChanged != null)
+        {
+            await OnNextTeamsChanged.Invoke(teamAId, teamBId);
+        }
+    }
+
+    public async Task NotifyRoundOrderChangedAsync(int roundNumber)
+    {
+        _logger.LogInformation("[CompetitionNotificationService] Round order changed for round {Round}", roundNumber);
+        
+        // Notify all clients via SignalR Hub
+        await _hubContext.Clients.All.SendAsync("OnRoundOrderChanged", roundNumber);
+        
+        // Trigger local event for Blazor components
+        if (OnRoundOrderChanged != null)
+        {
+            await OnRoundOrderChanged.Invoke(roundNumber);
+        }
+    }
+
+    public async Task NotifyLeaderboardUpdatedAsync()
+    {
+        _logger.LogInformation("[CompetitionNotificationService] Leaderboard updated");
+        
+        // Notify all clients via SignalR Hub
+        await _hubContext.Clients.All.SendAsync("OnLeaderboardUpdated");
+        
+        // Trigger local event for Blazor components
+        if (OnLeaderboardUpdated != null)
+        {
+            await OnLeaderboardUpdated.Invoke();
+        }
+    }
+
+    public async Task NotifyYourTurnAsync(string teamId, string teamName, int position)
+    {
+        _logger.LogInformation("[CompetitionNotificationService] Your turn: {TeamName} (teamId={TeamId}), position={Position}", 
+            teamName, teamId, position);
+        
+        // Notify specific team via SignalR Hub (group by teamId)
+        await _hubContext.Clients.Group($"team_{teamId}").SendAsync("OnYourTurn", teamName, position);
+        
+        // Trigger local event for Blazor components
+        if (OnYourTurn != null)
+        {
+            await OnYourTurn.Invoke(teamId, teamName, position);
         }
     }
 }
