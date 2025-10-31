@@ -1,0 +1,264 @@
+/* Public Round Order Page */
+.public-round-order {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px 20px;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.page-header h1 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    font-size: 3em;
+    font-weight: 900;
+    color: #000;
+    margin-bottom: 15px;
+}
+
+.page-header .material-symbols-outlined {
+    color: #fdc71d;
+    font-size: 1.2em;
+}
+
+.subtitle {
+    font-size: 1.2em;
+    color: #666;
+    margin: 0;
+}
+
+/* Round Tabs */
+.round-tabs {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+}
+
+.round-tab {
+    padding: 12px 30px;
+    border: 2px solid #e0e0e0;
+    background: white;
+    border-radius: 25px;
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.round-tab:hover {
+    border-color: #fdc71d;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(253, 199, 29, 0.2);
+}
+
+.round-tab.active {
+    background: linear-gradient(135deg, #fdc71d 0%, #faba20 100%);
+    border-color: #fdc71d;
+    color: #000;
+    box-shadow: 0 4px 15px rgba(253, 199, 29, 0.4);
+}
+
+/* Round Content */
+.round-content {
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.round-content h2 {
+    font-size: 2.2em;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* Teams List */
+.teams-list {
+    display: grid;
+    gap: 15px;
+}
+
+.team-card {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    background: white;
+    padding: 25px 30px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border-left: 5px solid #fdc71d;
+    animation: cardSlideIn 0.5s ease-out backwards;
+    transition: all 0.3s ease;
+}
+
+@keyframes cardSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.team-card:hover {
+    transform: translateX(10px) scale(1.02);
+    box-shadow: 0 8px 24px rgba(253, 199, 29, 0.25);
+}
+
+.position-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #fdc71d 0%, #faba20 100%);
+    color: #000;
+    border-radius: 50%;
+    font-size: 2em;
+    font-weight: 900;
+    box-shadow: 0 4px 12px rgba(253, 199, 29, 0.3);
+}
+
+.team-details {
+    flex: 1;
+}
+
+.team-name {
+    font-size: 1.5em;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 5px;
+}
+
+.team-school {
+    color: #666;
+    font-size: 1em;
+}
+
+.team-stats {
+    display: flex;
+    gap: 30px;
+}
+
+.stat {
+    text-align: right;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.85em;
+    color: #999;
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5em;
+    font-weight: 700;
+    color: #000;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    text-align: center;
+    padding: 80px 20px;
+}
+
+.spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #fdc71d;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 100px 20px;
+    background: #f8f9fa;
+    border-radius: 16px;
+    margin-top: 40px;
+}
+
+.empty-state .material-symbols-outlined {
+    font-size: 100px;
+    color: #ddd;
+    margin-bottom: 25px;
+}
+
+.empty-state h3 {
+    font-size: 1.8em;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 15px 0;
+}
+
+.empty-state p {
+    font-size: 1.1em;
+    color: #666;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .public-round-order {
+        padding: 40px 15px;
+    }
+
+    .page-header h1 {
+        font-size: 2em;
+    }
+
+    .round-tabs {
+        gap: 8px;
+    }
+
+    .round-tab {
+        padding: 10px 20px;
+        font-size: 1em;
+    }
+
+    .round-content h2 {
+        font-size: 1.8em;
+    }
+
+    .team-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+        padding: 20px;
+    }
+
+    .team-stats {
+        gap: 20px;
+        justify-content: center;
+    }
+}

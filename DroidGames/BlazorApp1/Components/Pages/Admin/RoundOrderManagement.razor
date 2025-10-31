@@ -1,0 +1,343 @@
+@page "/admin/round-order"
+@using BlazorApp1.Models
+@using BlazorApp1.Data
+@inject IRepository<BlazorApp1.Models.RoundOrder> RoundOrderRepository
+@inject IRepository<BlazorApp1.Models.Team> TeamRepository
+@inject IRepository<CompetitionSettings> SettingsRepository
+@rendermode InteractiveServer
+
+<PageTitle>Losování pořadí kola - Admin | Droid Games</PageTitle>
+
+<div class="round-order-admin">
+    <div class="page-header">
+        <h1>
+            <span class="material-symbols-outlined">shuffle</span>
+            Losování pořadí kola
+        </h1>
+    </div>
+
+    @if (_loading)
+    {
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Načítání...</p>
+        </div>
+    }
+    else
+    {
+        <div class="admin-panel">
+            <div class="round-selector">
+                <h3>Aktuální kolo: @_currentRound</h3>
+                @if (_roundOrder != null && _roundOrder.Any())
+                {
+                    @if (_isConfirmed)
+                    {
+                        <div class="status-badge confirmed">
+                            <span class="material-symbols-outlined">lock</span>
+                            Pořadí zamčeno a schváleno
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="status-badge draft">
+                            <span class="material-symbols-outlined">edit</span>
+                            Koncept - můžete míchát
+                        </div>
+                    }
+                }
+            </div>
+
+            <div class="action-buttons">
+                @if (_roundOrder == null || !_roundOrder.Any())
+                {
+                    <button class="btn btn-primary" @onclick="InitializeRound">
+                        <span class="material-symbols-outlined">add</span>
+                        Vložit týmy do kola @_currentRound
+                    </button>
+                }
+                else if (!_isConfirmed)
+                {
+                    <button class="btn btn-warning" @onclick="ShuffleOrder">
+                        <span class="material-symbols-outlined">shuffle</span>
+                        @if (_isShuffling)
+                        {
+                            <text>Míchám...</text>
+                        }
+                        else
+                        {
+                            <text>Zamíchat pořadí</text>
+                        }
+                    </button>
+                    <button class="btn btn-success" @onclick="ConfirmOrder">
+                        <span class="material-symbols-outlined">check_circle</span>
+                        Potvrdit a zamknout
+                    </button>
+                }
+                else
+                {
+                    <button class="btn btn-danger" @onclick="UnlockOrder">
+                        <span class="material-symbols-outlined">lock_open</span>
+                        Odemknout pro úpravy
+                    </button>
+                }
+            </div>
+        </div>
+
+        <!-- Pořadí týmů -->
+        @if (_roundOrder != null && _roundOrder.Any())
+        {
+            <div class="teams-order-list @(_isShuffling ? "shuffling" : "")">
+                @foreach (var order in _orderedTeams)
+                {
+                    var team = _teams.FirstOrDefault(t => t.Id == order.TeamId);
+                    if (team != null)
+                    {
+                        <div class="team-order-row @GetRowClass(order)" 
+                             style="animation-delay: @(order.Position * 0.05)s">
+                            <div class="position-number">
+                                <span class="position-badge">@order.Position</span>
+                            </div>
+                            <div class="team-info">
+                                <div class="team-name">@team.Name</div>
+                                <div class="team-school">@team.School</div>
+                            </div>
+                            @if (_isConfirmed)
+                            {
+                                <div class="status-icon">
+                                    <span class="material-symbols-outlined">check_circle</span>
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <span class="material-symbols-outlined">info</span>
+                <p>Kolo @_currentRound nemá zatím přiřazené pořadí týmů.</p>
+                <p>Klikněte na tlačítko "Vložit týmy do kola" pro inicializaci.</p>
+            </div>
+        }
+
+        <!-- Toast notifications -->
+        @if (_showSuccess)
+        {
+            <div class="toast toast-success">
+                <span class="material-symbols-outlined">check_circle</span>
+                @_successMessage
+            </div>
+        }
+        @if (_showError)
+        {
+            <div class="toast toast-error">
+                <span class="material-symbols-outlined">error</span>
+                @_errorMessage
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private bool _loading = true;
+    private bool _isShuffling = false;
+    private int _currentRound = 1;
+    private List<BlazorApp1.Models.Team> _teams = new();
+    private List<BlazorApp1.Models.RoundOrder> _roundOrder = new();
+    private List<BlazorApp1.Models.RoundOrder> _orderedTeams => _roundOrder.OrderBy(ro => ro.Position).ToList();
+    private bool _isConfirmed = false;
+    
+    private bool _showSuccess = false;
+    private bool _showError = false;
+    private string _successMessage = "";
+    private string _errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        _loading = true;
+        StateHasChanged();
+        
+        try
+        {
+            // Load settings to get current round
+            var settings = await SettingsRepository.GetAllAsync();
+            var currentSettings = settings.FirstOrDefault();
+            if (currentSettings != null)
+            {
+                _currentRound = currentSettings.CurrentRound;
+            }
+
+            // Load all teams
+            _teams = await TeamRepository.GetAllAsync();
+
+            // Load round orders for current round
+            var allOrders = await RoundOrderRepository.GetAllAsync();
+            _roundOrder = allOrders.Where(ro => ro.RoundNumber == _currentRound).ToList();
+            
+            // Check if any order is confirmed (all should have same confirmation state)
+            _isConfirmed = _roundOrder.Any() && _roundOrder.All(ro => ro.IsConfirmed);
+            
+            Console.WriteLine($"[LoadData] Loaded {_roundOrder.Count} round orders for round {_currentRound}");
+            Console.WriteLine($"[LoadData] IsConfirmed: {_isConfirmed}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[LoadData ERROR] {ex.Message}");
+            ShowError($"Chyba při načítání: {ex.Message}");
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task InitializeRound()
+    {
+        try
+        {
+            // Create round orders for all teams
+            var position = 1;
+            foreach (var team in _teams.OrderBy(t => t.Name))
+            {
+                var roundOrder = new BlazorApp1.Models.RoundOrder
+                {
+                    RoundNumber = _currentRound,
+                    TeamId = team.Id,
+                    Position = position++,
+                    IsConfirmed = false,
+                    IsPublic = false
+                };
+                await RoundOrderRepository.AddAsync(roundOrder);
+            }
+
+            ShowSuccess($"Týmy byly vloženy do kola {_currentRound}");
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            ShowError($"Chyba při inicializaci: {ex.Message}");
+        }
+    }
+
+    private async Task ShuffleOrder()
+    {
+        _isShuffling = true;
+        StateHasChanged();
+        
+        try
+        {
+            // Animace míchání - několik iterací
+            var random = new Random();
+            
+            for (int i = 0; i < 10; i++)
+            {
+                // Náhodně zamíchej pozice
+                var shuffled = _roundOrder.OrderBy(x => random.Next()).ToList();
+                for (int j = 0; j < shuffled.Count; j++)
+                {
+                    shuffled[j].Position = j + 1;
+                }
+                _roundOrder = shuffled;
+                StateHasChanged();
+                await Task.Delay(200); // Pauza mezi animacemi
+            }
+
+            // Ulož finální pořadí
+            foreach (var order in _roundOrder)
+            {
+                order.LastShuffledAt = DateTime.Now;
+                await RoundOrderRepository.UpdateAsync(order);
+            }
+
+            ShowSuccess("Pořadí bylo zamícháno");
+        }
+        catch (Exception ex)
+        {
+            ShowError($"Chyba při míchání: {ex.Message}");
+        }
+        finally
+        {
+            _isShuffling = false;
+        }
+    }
+
+    private async Task ConfirmOrder()
+    {
+        try
+        {
+            foreach (var order in _roundOrder)
+            {
+                order.IsConfirmed = true;
+                order.IsPublic = true;
+                order.ConfirmedAt = DateTime.Now;
+                await RoundOrderRepository.UpdateAsync(order);
+            }
+
+            ShowSuccess($"Pořadí kola {_currentRound} bylo potvrzeno a zveřejněno");
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            ShowError($"Chyba při potvrzování: {ex.Message}");
+        }
+    }
+
+    private async Task UnlockOrder()
+    {
+        try
+        {
+            foreach (var order in _roundOrder)
+            {
+                order.IsConfirmed = false;
+                order.IsPublic = false;
+                order.ConfirmedAt = null;
+                await RoundOrderRepository.UpdateAsync(order);
+            }
+
+            ShowSuccess($"Pořadí kola {_currentRound} bylo odemčeno pro úpravy");
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            ShowError($"Chyba při odemykání: {ex.Message}");
+        }
+    }
+
+    private string GetRowClass(RoundOrder order)
+    {
+        var classes = new List<string>();
+        if (_isConfirmed) classes.Add("confirmed");
+        return string.Join(" ", classes);
+    }
+
+    private void ShowSuccess(string message)
+    {
+        _successMessage = message;
+        _showSuccess = true;
+        _showError = false;
+        _ = Task.Delay(3000).ContinueWith(_ =>
+        {
+            _showSuccess = false;
+            InvokeAsync(StateHasChanged);
+        });
+    }
+
+    private void ShowError(string message)
+    {
+        _errorMessage = message;
+        _showError = true;
+        _showSuccess = false;
+        _ = Task.Delay(3000).ContinueWith(_ =>
+        {
+            _showError = false;
+            InvokeAsync(StateHasChanged);
+        });
+    }
+}

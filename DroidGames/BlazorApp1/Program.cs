@@ -80,8 +80,8 @@ builder.Services.AddSingleton<IRepository<FinalRoundScore>>(sp =>
     new JsonRepository<FinalRoundScore>(dataPath, "final-round-scores.json"));
 
 // RoundOrder repository
-builder.Services.AddSingleton<IRepository<RoundOrder>>(sp => 
-    new JsonRepository<RoundOrder>(dataPath, "round-orders.json"));
+builder.Services.AddSingleton<IRepository<BlazorApp1.Models.RoundOrder>>(sp => 
+    new JsonRepository<BlazorApp1.Models.RoundOrder>(dataPath, "round-orders.json"));
 
 // Settings repository - needed for Home.razor
 builder.Services.AddSingleton<IRepository<CompetitionSettings>>(sp => 

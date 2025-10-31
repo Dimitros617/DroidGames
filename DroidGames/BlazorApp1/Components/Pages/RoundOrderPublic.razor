@@ -1,0 +1,146 @@
+@page "/round-order"
+@using BlazorApp1.Models
+@using BlazorApp1.Data
+@inject IRepository<BlazorApp1.Models.RoundOrder> RoundOrderRepository
+@inject IRepository<BlazorApp1.Models.Team> TeamRepository
+@inject IRepository<CompetitionSettings> SettingsRepository
+@rendermode InteractiveServer
+
+<PageTitle>Pořadí v kolech - Droid Games</PageTitle>
+
+<div class="public-round-order">
+    <div class="page-header">
+        <h1>
+            <span class="material-symbols-outlined">format_list_numbered</span>
+            Pořadí týmů v kolech
+        </h1>
+        <p class="subtitle">Sledujte pořadí jízd v jednotlivých kolech</p>
+    </div>
+
+    @if (_loading)
+    {
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Načítání...</p>
+        </div>
+    }
+    else
+    {
+        @if (_confirmedRounds.Any())
+        {
+            <!-- Round Tabs -->
+            <div class="round-tabs">
+                @foreach (var roundNumber in _confirmedRounds.OrderBy(r => r))
+                {
+                    <button class="round-tab @(roundNumber == _selectedRound ? "active" : "")"
+                            @onclick="() => SelectRound(roundNumber)">
+                        Kolo @roundNumber
+                    </button>
+                }
+            </div>
+
+            <!-- Selected Round Content -->
+            <div class="round-content">
+                <h2>Kolo @_selectedRound</h2>
+                
+                @if (_selectedRoundOrders.Any())
+                {
+                    <div class="teams-list">
+                        @foreach (var order in _selectedRoundOrders.OrderBy(ro => ro.Position))
+                        {
+                            var team = _teams.FirstOrDefault(t => t.Id == order.TeamId);
+                            if (team != null)
+                            {
+                                <div class="team-card" style="animation-delay: @(order.Position * 0.05)s">
+                                    <div class="position-badge">
+                                        @order.Position
+                                    </div>
+                                    <div class="team-details">
+                                        <div class="team-name">@team.Name</div>
+                                        <div class="team-school">@team.School</div>
+                                    </div>
+                                    <div class="team-stats">
+                                        <div class="stat">
+                                            <span class="stat-label">Celkové skóre:</span>
+                                            <span class="stat-value">@team.TotalScore</span>
+                                        </div>
+                                        <div class="stat">
+                                            <span class="stat-label">Jízd:</span>
+                                            <span class="stat-value">@team.Rides.Count</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <span class="material-symbols-outlined">hourglass_empty</span>
+                <h3>Zatím nejsou zveřejněna žádná kola</h3>
+                <p>Pořadí týmů bude zveřejněno po jeho schválení administrátorem.</p>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private bool _loading = true;
+    private List<BlazorApp1.Models.Team> _teams = new();
+    private List<BlazorApp1.Models.RoundOrder> _allRoundOrders = new();
+    private List<int> _confirmedRounds = new();
+    private int _selectedRound = 1;
+    private List<BlazorApp1.Models.RoundOrder> _selectedRoundOrders => 
+        _allRoundOrders.Where(ro => ro.RoundNumber == _selectedRound).ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        _loading = true;
+        try
+        {
+            // Load all teams
+            _teams = await TeamRepository.GetAllAsync();
+
+            // Load all round orders
+            _allRoundOrders = await RoundOrderRepository.GetAllAsync();
+
+            // Get only confirmed and public rounds
+            _confirmedRounds = _allRoundOrders
+                .Where(ro => ro.IsConfirmed && ro.IsPublic)
+                .Select(ro => ro.RoundNumber)
+                .Distinct()
+                .OrderBy(r => r)
+                .ToList();
+
+            // Select first confirmed round or current round from settings
+            if (_confirmedRounds.Any())
+            {
+                var settings = await SettingsRepository.GetAllAsync();
+                var currentSettings = settings.FirstOrDefault();
+                var currentRound = currentSettings?.CurrentRound ?? 1;
+                
+                // Prefer current round if it's confirmed, otherwise select first confirmed
+                _selectedRound = _confirmedRounds.Contains(currentRound) 
+                    ? currentRound 
+                    : _confirmedRounds.First();
+            }
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void SelectRound(int roundNumber)
+    {
+        _selectedRound = roundNumber;
+    }
+}
