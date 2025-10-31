@@ -73,11 +73,19 @@ public class ScoreService : IScoreService
         if (team == null) return;
 
         var round = team.Rounds.FirstOrDefault(r => r.RoundNumber == roundNumber);
-        if (round != null)
+        if (round == null)
         {
-            round.RefereeScores[score.RefereeId] = score;
-            await _teamRepository.UpdateAsync(team);
+            // Vytvoříme nové kolo, pokud neexistuje
+            round = new RoundParticipation
+            {
+                RoundNumber = roundNumber,
+                RefereeScores = new Dictionary<string, RefereeScore>()
+            };
+            team.Rounds.Add(round);
         }
+        
+        round.RefereeScores[score.RefereeId] = score;
+        await _teamRepository.UpdateAsync(team);
     }
 
     public async Task ApproveScoreAsync(string teamId, int roundNumber, int finalScore)
@@ -504,6 +512,11 @@ public class AuthService : IAuthService
             Role = role
         };
         return await _userRepository.AddAsync(user);
+    }
+    
+    public async Task<List<User>> GetAllUsersAsync()
+    {
+        return await _userRepository.GetAllAsync();
     }
 
     private string HashPassword(string password) => 

@@ -102,6 +102,7 @@ builder.Services.AddSingleton<IFunFactService, FunFactService>();
 builder.Services.AddSingleton<IAuthService, AuthService>();
 builder.Services.AddSingleton<ITimerService, TimerService>();
 builder.Services.AddSingleton<IDiplomaService, DiplomaService>();
+builder.Services.AddSingleton<IScoreNotificationService, ScoreNotificationService>();
 
 // Background services
 Console.WriteLine("[DEBUG] Registering background services...");
@@ -187,11 +188,11 @@ app.UseCors("ESP32Policy");
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-// SignalR Hubs - TEMPORARILY DISABLED for debugging
-// app.MapHub<ScoreboardHub>("/hubs/scoreboard");
-// app.MapHub<TimerHub>("/hubs/timer");
-// app.MapHub<NotificationHub>("/hubs/notifications");
-// app.MapHub<ProductionHub>("/hubs/production");
+// SignalR Hubs
+app.MapHub<ScoreboardHub>("/scoreboardHub");
+app.MapHub<TimerHub>("/hubs/timer");
+app.MapHub<NotificationHub>("/hubs/notifications");
+app.MapHub<ProductionHub>("/hubs/production");
 
 // API Controllers
 app.MapControllers();

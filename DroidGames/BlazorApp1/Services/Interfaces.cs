@@ -54,6 +54,7 @@ public interface IAuthService
     Task<User?> LoginAsync(string username, string password);
     Task<User?> LoginWithPinAsync(string pin);
     Task<User> RegisterAsync(string username, string password, UserRole role);
+    Task<List<User>> GetAllUsersAsync();
 }
 
 public interface ITimerService

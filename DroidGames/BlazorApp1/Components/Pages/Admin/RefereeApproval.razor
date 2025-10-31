@@ -1,0 +1,639 @@
+@page "/admin/referee-approval"
+@using BlazorApp1.Models
+@using BlazorApp1.Services
+@inject ITeamService TeamService
+@inject IMapService MapService
+@inject IScoreService ScoreService
+@inject IAuthService AuthService
+@inject IScoreNotificationService ScoreNotificationService
+@inject CompetitionSettings Settings
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>Schvalování hodnocení - Admin</PageTitle>
+
+<BlazorApp1.Components.Shared.AuthGuard RequiredRoles="@(new[] { UserRole.Admin })">
+    <div class="admin-approval-page">
+        <div class="page-header">
+            <h1>🎯 Schvalování hodnocení rozhodčích</h1>
+            <p>Kontrola a schvalování bodování od rozhodčích</p>
+        </div>
+
+        @if (!_isInitialized)
+        {
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Načítání...</p>
+            </div>
+        }
+        else
+        {
+            <!-- Ovládání soutěže -->
+            <div class="competition-controls">
+                <h2>⏱️ Řízení kola @_currentRoundNumber</h2>
+                <div class="timer-controls">
+                    <button class="btn btn-success" @onclick="StartTimer" disabled="@(Settings.TimerStatus == TimerStatus.Running)">
+                        ▶️ Start
+                    </button>
+                    <button class="btn btn-warning" @onclick="StopTimer" disabled="@(Settings.TimerStatus != TimerStatus.Running)">
+                        ⏸️ Stop
+                    </button>
+                    <button class="btn btn-danger" @onclick="ResetTimer">
+                        🔄 Reset
+                    </button>
+                    <div class="timer-display">
+                        <span class="timer-time">@FormatTime(_remainingSeconds)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mapa -->
+            @if (_selectedMap != null)
+            {
+                <div class="map-preview">
+                    <h3>🗺️ Mapa: @_selectedMap.Name</h3>
+                    <div class="map-grid-small">
+                        @for (int y = 0; y < 6; y++)
+                        {
+                            @for (int x = 0; x < 9; x++)
+                            {
+                                var block = GetBlockAt(x, y);
+                                var cssClass = $"map-cell-small {GetBlockClass(block)}";
+                                
+                                <div class="@cssClass">
+                                    @if (block != null && block.Type != MapBlockType.Empty)
+                                    {
+                                        <span class="block-icon-small">@GetBlockIcon(block.Type)</span>
+                                    }
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Tabulka hodnocení -->
+            <div class="scoring-table-section">
+                <h2>📊 Hodnocení týmů</h2>
+                
+                @if (_currentTeamPair != null && _currentTeamPair.Count >= 2)
+                {
+                    <div class="team-pair-info">
+                        <strong>Aktuální dvojice:</strong> @_currentTeamPair[0].Name vs @_currentTeamPair[1].Name
+                    </div>
+
+                    @foreach (var team in _currentTeamPair)
+                    {
+                        <div class="team-scoring-block">
+                            <h3>🎯 @team.Name</h3>
+                            
+                            <table class="scoring-table">
+                                <thead>
+                                    <tr>
+                                        <th>Rozhodčí</th>
+                                        <th>💎 Krystaly</th>
+                                        <th>🟡 Síra</th>
+                                        <th>🤝 Bonus</th>
+                                        <th>📊 Celkem</th>
+                                        <th>Status</th>
+                                        <th>Akce</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var referee in _allReferees)
+                                    {
+                                        var scoreData = GetRefereeScoreForTeam(team.Id, referee.Id);
+                                        var hasScore = scoreData.HasScore;
+                                        var score = scoreData.Score;
+                                        var breakdown = scoreData.Breakdown;
+                                        var isExpanded = IsRowExpanded(team.Id, referee.Id);
+                                        
+                                        <tr class="@GetRowClass(score) @(isExpanded ? "expanded" : "")" @onclick="() => ToggleRowExpansion(team.Id, referee.Id)">
+                                            <td>
+                                                <span class="expand-icon">@(isExpanded ? "▼" : "▶")</span>
+                                                <strong>@referee.Username</strong>
+                                            </td>
+                                            <td class="score-cell">@(hasScore ? breakdown.GetValueOrDefault("crystal", 0) : "-")</td>
+                                            <td class="score-cell">@(hasScore ? breakdown.GetValueOrDefault("sulfur", 0) : "-")</td>
+                                            <td class="score-cell">@(hasScore ? breakdown.GetValueOrDefault("coop", 0) : "-")</td>
+                                            <td class="score-cell total"><strong>@(hasScore ? score!.TotalScore : "-")</strong></td>
+                                            <td class="status-cell">
+                                                @if (!hasScore)
+                                                {
+                                                    <span class="badge badge-not-started">Nezadáno</span>
+                                                }
+                                                else if (score!.IsApproved)
+                                                {
+                                                    <span class="badge badge-approved">✅ Schváleno</span>
+                                                }
+                                                else if (score.IsRejected)
+                                                {
+                                                    <span class="badge badge-rejected">↩️ Vráceno</span>
+                                                }
+                                                else if (score.IsSubmitted)
+                                                {
+                                                    <span class="badge badge-submitted">⏳ Čeká</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-editing">✏️ Hodnotí</span>
+                                                }
+                                            </td>
+                                            <td class="action-cell" @onclick:stopPropagation="true">
+                                                @if (hasScore && score!.IsSubmitted && !score.IsApproved)
+                                                {
+                                                    <button class="btn btn-sm btn-approve" @onclick="() => ApproveScore(team.Id, referee.Id)">
+                                                        ✅ Schválit
+                                                    </button>
+                                                    <button class="btn btn-sm btn-reject" @onclick="() => ShowRejectDialog(team.Id, referee.Id)">
+                                                        ↩️ Vrátit
+                                                    </button>
+                                                }
+                                                else if (hasScore && score!.IsSubmitted)
+                                                {
+                                                    <span class="text-muted">Hotovo</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                        
+                                        @if (isExpanded && hasScore && score!.Events.Any())
+                                        {
+                                            <tr class="detail-row">
+                                                <td colspan="7">
+                                                    <div class="events-detail">
+                                                        <h4>📋 Detail událostí rozhodčího @referee.Username</h4>
+                                                        <table class="events-table-readonly">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>#</th>
+                                                                    <th>Pozice</th>
+                                                                    <th>Typ bloku</th>
+                                                                    <th>Popis</th>
+                                                                    <th>Body</th>
+                                                                    <th>Čas</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @foreach (var evt in score.Events.OrderBy(e => e.Timestamp))
+                                                                {
+                                                                    <tr class="@GetEventRowClass(evt)">
+                                                                        <td>@evt.Id</td>
+                                                                        <td>[@evt.X, @evt.Y]</td>
+                                                                        <td>@GetBlockIconByName(evt.BlockType)</td>
+                                                                        <td>@evt.Description</td>
+                                                                        <td class="@(evt.Points >= 0 ? "points-positive" : "points-negative")">
+                                                                            @(evt.Points >= 0 ? "+" : "")@evt.Points
+                                                                        </td>
+                                                                        <td>@evt.Timestamp.ToString("HH:mm:ss")</td>
+                                                                    </tr>
+                                                                }
+                                                            </tbody>
+                                                        </table>
+                                                        <div class="events-summary">
+                                                            <strong>Celkový počet událostí:</strong> @score.Events.Count
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    
+                    <div class="next-pair-section">
+                        <button class="btn btn-lg btn-next" 
+                                @onclick="NextTeamPair"
+                                disabled="@(!AllScoresApproved())">
+                            ➡️ Další dvojice
+                        </button>
+                        @if (!AllScoresApproved())
+                        {
+                            <p class="help-text">⚠️ Musíte schválit všechna hodnocení před přechodem na další dvojici</p>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="no-teams">
+                        <p>Žádné týmy k hodnocení</p>
+                    </div>
+                }
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(_statusMessage))
+        {
+            <div class="toast @(_isError ? "error" : "success")">
+                @_statusMessage
+            </div>
+        }
+        
+        @if (_showRejectDialog)
+        {
+            <div class="dialog-overlay" @onclick="CancelReject">
+                <div class="dialog-box" @onclick:stopPropagation="true">
+                    <h3>↩️ Vrátit hodnocení</h3>
+                    <p>Důvod vrácení (volitelné):</p>
+                    <textarea class="form-control" @bind="_rejectionReason" rows="3" placeholder="Např: Chybné bodování krystalů..."></textarea>
+                    <div class="dialog-actions">
+                        <button class="btn btn-secondary" @onclick="CancelReject">Zrušit</button>
+                        <button class="btn btn-danger" @onclick="ExecuteReject">Vrátit k opravě</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</BlazorApp1.Components.Shared.AuthGuard>
+
+@code {
+    private bool _isInitialized = false;
+    private MapConfiguration? _selectedMap = null;
+    private List<Team> _allTeams = new();
+    private List<Team> _currentTeamPair = new();
+    private List<User> _allReferees = new();
+    private int _currentRoundNumber = 1;
+    private int _currentPairIndex = 0;
+    private int _remainingSeconds = 300;
+    private System.Threading.Timer? _timer;
+    
+    private string _statusMessage = string.Empty;
+    private bool _isError = false;
+    
+    private bool _showRejectDialog = false;
+    private string _rejectionReason = string.Empty;
+    private string _rejectTeamId = string.Empty;
+    private string _rejectRefereeId = string.Empty;
+    
+    private HashSet<string> _expandedRows = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+        
+        // Subscribe to real-time notifications
+        ScoreNotificationService.OnRefereeScoreUpdated += HandleRefereeScoreUpdated;
+        ScoreNotificationService.OnScoreApprovalChanged += HandleScoreApprovalChanged;
+        
+        _isInitialized = true;
+        StartTimerUpdate();
+    }
+    
+    private async Task HandleRefereeScoreUpdated(string teamId, int roundNumber, string refereeId)
+    {
+        Console.WriteLine($"[Admin] Referee {refereeId} score updated for team {teamId}, round {roundNumber}");
+        
+        await InvokeAsync(async () =>
+        {
+            await ReloadTeamData(teamId);
+            StateHasChanged();
+        });
+    }
+    
+    private async Task HandleScoreApprovalChanged(string teamId, string refereeId)
+    {
+        Console.WriteLine($"[Admin] Score approval changed for team {teamId}, referee {refereeId}");
+        
+        await InvokeAsync(async () =>
+        {
+            await ReloadTeamData(teamId);
+            StateHasChanged();
+        });
+    }
+
+    private Task InitializeSignalR()
+    {
+        // No longer needed - using service events instead
+        return Task.CompletedTask;
+    }
+
+    private async Task ReloadTeamData(string teamId)
+    {
+        var updatedTeam = await TeamService.GetTeamByIdAsync(teamId);
+        if (updatedTeam != null)
+        {
+            var index = _allTeams.FindIndex(t => t.Id == teamId);
+            if (index >= 0)
+            {
+                _allTeams[index] = updatedTeam;
+            }
+            
+            // Update current team pair if needed
+            for (int i = 0; i < _currentTeamPair.Count; i++)
+            {
+                if (_currentTeamPair[i].Id == teamId)
+                {
+                    _currentTeamPair[i] = updatedTeam;
+                    break;
+                }
+            }
+        }
+    }
+
+    private async Task LoadData()
+    {
+        _allTeams = await TeamService.GetAllTeamsAsync();
+        
+        var maps = await MapService.GetAllMapsAsync();
+        _selectedMap = maps.FirstOrDefault(m => m.IsPublished);
+        
+        // Load all users with Referee role
+        var allUsers = await AuthService.GetAllUsersAsync();
+        _allReferees = allUsers.Where(u => u.Role == UserRole.Referee).ToList();
+        
+        Console.WriteLine($"[LoadData] Loaded {_allReferees.Count} referees");
+        
+        LoadCurrentTeamPair();
+    }
+
+    private void LoadCurrentTeamPair()
+    {
+        _currentTeamPair.Clear();
+        
+        int startIndex = _currentPairIndex * 2;
+        if (startIndex < _allTeams.Count)
+        {
+            _currentTeamPair.Add(_allTeams[startIndex]);
+            if (startIndex + 1 < _allTeams.Count)
+            {
+                _currentTeamPair.Add(_allTeams[startIndex + 1]);
+            }
+        }
+    }
+
+    private (bool HasScore, RefereeScore? Score, Dictionary<string, int> Breakdown) GetRefereeScoreForTeam(string teamId, string refereeId)
+    {
+        var team = _allTeams.FirstOrDefault(t => t.Id == teamId);
+        if (team == null) return (false, null, new());
+        
+        var round = team.Rounds.FirstOrDefault(r => r.RoundNumber == _currentRoundNumber);
+        if (round == null) return (false, null, new());
+        
+        if (round.RefereeScores.TryGetValue(refereeId, out var score))
+        {
+            return (true, score, score.ScoreBreakdown);
+        }
+        
+        return (false, null, new());
+    }
+
+    private string GetRowClass(RefereeScore? score)
+    {
+        if (score == null) return "row-not-started";
+        if (score.IsApproved) return "row-approved";
+        if (score.IsRejected) return "row-rejected";
+        if (score.IsSubmitted) return "row-submitted";
+        return "row-editing";
+    }
+
+    private bool AllScoresApproved()
+    {
+        foreach (var team in _currentTeamPair)
+        {
+            foreach (var referee in _allReferees)
+            {
+                var scoreData = GetRefereeScoreForTeam(team.Id, referee.Id);
+                if (!scoreData.HasScore || !scoreData.Score!.IsApproved)
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private async Task ApproveScore(string teamId, string refereeId)
+    {
+        try
+        {
+            var team = _allTeams.FirstOrDefault(t => t.Id == teamId);
+            if (team == null) return;
+            
+            var round = team.Rounds.FirstOrDefault(r => r.RoundNumber == _currentRoundNumber);
+            if (round == null) return;
+            
+            if (round.RefereeScores.TryGetValue(refereeId, out var score))
+            {
+                score.IsApproved = true;
+                score.IsRejected = false;
+                score.ApprovedAt = DateTime.UtcNow;
+                score.ApprovedByRefereeId = "admin"; // TODO: Get actual admin ID
+                
+                await TeamService.UpdateTeamAsync(team);
+                
+                // Send real-time notification
+                await ScoreNotificationService.NotifyScoreApprovalChanged(teamId, refereeId);
+                
+                _statusMessage = $"✅ Hodnocení schváleno!";
+                _isError = false;
+                StateHasChanged();
+                
+                await Task.Delay(2000);
+                _statusMessage = string.Empty;
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = $"❌ Chyba: {ex.Message}";
+            _isError = true;
+        }
+    }
+
+    private void ShowRejectDialog(string teamId, string refereeId)
+    {
+        _rejectTeamId = teamId;
+        _rejectRefereeId = refereeId;
+        _rejectionReason = string.Empty;
+        _showRejectDialog = true;
+    }
+
+    private void CancelReject()
+    {
+        _showRejectDialog = false;
+        _rejectTeamId = string.Empty;
+        _rejectRefereeId = string.Empty;
+        _rejectionReason = string.Empty;
+    }
+
+    private async Task ExecuteReject()
+    {
+        try
+        {
+            var team = _allTeams.FirstOrDefault(t => t.Id == _rejectTeamId);
+            if (team == null) return;
+            
+            var round = team.Rounds.FirstOrDefault(r => r.RoundNumber == _currentRoundNumber);
+            if (round == null) return;
+            
+            if (round.RefereeScores.TryGetValue(_rejectRefereeId, out var score))
+            {
+                score.IsSubmitted = false;
+                score.IsApproved = false;
+                score.IsRejected = true;
+                score.RejectionReason = _rejectionReason;
+                
+                await TeamService.UpdateTeamAsync(team);
+                
+                // Send real-time notification
+                await ScoreNotificationService.NotifyScoreApprovalChanged(_rejectTeamId, _rejectRefereeId);
+                
+                _statusMessage = $"↩️ Hodnocení vráceno k opravě!";
+                _isError = false;
+                _showRejectDialog = false;
+                StateHasChanged();
+                
+                await Task.Delay(2000);
+                _statusMessage = string.Empty;
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = $"❌ Chyba: {ex.Message}";
+            _isError = true;
+        }
+    }
+
+    private async Task NextTeamPair()
+    {
+        if (!AllScoresApproved()) return;
+        
+        _currentPairIndex++;
+        LoadCurrentTeamPair();
+        
+        if (_currentTeamPair.Count == 0)
+        {
+            _statusMessage = "🎉 Všechny dvojice dokončeny!";
+            _currentPairIndex = 0;
+            LoadCurrentTeamPair();
+        }
+        
+        await Task.CompletedTask;
+    }
+
+    private MapBlock? GetBlockAt(int x, int y)
+    {
+        return _selectedMap?.Blocks.FirstOrDefault(b => b.X == x && b.Y == y);
+    }
+
+    private string GetBlockClass(MapBlock? block)
+    {
+        if (block == null) return "empty";
+        return block.Type switch
+        {
+            MapBlockType.Rock => "rock",
+            MapBlockType.BlueCrystal => "blue-crystal",
+            MapBlockType.YellowSulfur => "yellow-sulfur",
+            _ => "empty"
+        };
+    }
+
+    private string GetBlockIcon(MapBlockType type)
+    {
+        return type switch
+        {
+            MapBlockType.Rock => "🪨",
+            MapBlockType.BlueCrystal => "💎",
+            MapBlockType.YellowSulfur => "🟡",
+            _ => ""
+        };
+    }
+
+    private async Task StartTimer()
+    {
+        Settings.TimerStatus = TimerStatus.Running;
+        Settings.TimerStartedAt = DateTime.UtcNow;
+        await Task.CompletedTask;
+    }
+
+    private async Task StopTimer()
+    {
+        Settings.TimerStatus = TimerStatus.Stopped;
+        await Task.CompletedTask;
+    }
+
+    private async Task ResetTimer()
+    {
+        Settings.TimerStatus = TimerStatus.Stopped;
+        Settings.TimerRemainingSeconds = Settings.RoundDurationSeconds;
+        _remainingSeconds = Settings.RoundDurationSeconds;
+        await Task.CompletedTask;
+    }
+
+    private string FormatTime(int seconds)
+    {
+        var mins = seconds / 60;
+        var secs = seconds % 60;
+        return $"{mins:D2}:{secs:D2}";
+    }
+
+    private void StartTimerUpdate()
+    {
+        _timer = new System.Threading.Timer(_ =>
+        {
+            if (Settings.TimerStatus == TimerStatus.Running && Settings.TimerStartedAt.HasValue)
+            {
+                var elapsed = (int)(DateTime.UtcNow - Settings.TimerStartedAt.Value).TotalSeconds;
+                _remainingSeconds = Math.Max(0, Settings.RoundDurationSeconds - elapsed);
+                InvokeAsync(StateHasChanged);
+            }
+            else
+            {
+                _remainingSeconds = Settings.TimerRemainingSeconds;
+            }
+        }, null, 0, 1000);
+    }
+    
+    // Accordion methods
+    private bool IsRowExpanded(string teamId, string refereeId)
+    {
+        return _expandedRows.Contains($"{teamId}_{refereeId}");
+    }
+    
+    private void ToggleRowExpansion(string teamId, string refereeId)
+    {
+        var key = $"{teamId}_{refereeId}";
+        if (_expandedRows.Contains(key))
+        {
+            _expandedRows.Remove(key);
+        }
+        else
+        {
+            _expandedRows.Add(key);
+        }
+    }
+    
+    private string GetBlockIconByName(string blockType)
+    {
+        return blockType switch
+        {
+            "BlueCrystal" => "💎",
+            "YellowSulfur" => "🟡",
+            "Rock" => "🪨",
+            _ => "•"
+        };
+    }
+    
+    private string GetEventRowClass(ScoringEventData evt)
+    {
+        if (evt.Points > 0) return "event-positive";
+        if (evt.Points < 0) return "event-negative";
+        return "";
+    }
+    
+    // Cleanup
+    public void Dispose()
+    {
+        _timer?.Dispose();
+        
+        // Unsubscribe from events
+        ScoreNotificationService.OnRefereeScoreUpdated -= HandleRefereeScoreUpdated;
+        ScoreNotificationService.OnScoreApprovalChanged -= HandleScoreApprovalChanged;
+    }
+}

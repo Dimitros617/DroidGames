@@ -744,3 +744,43 @@
         min-width: 500px;
     }
 }
+
+/* Status Badges */
+.status-badge {
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.status-badge.awaiting {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    color: #856404;
+}
+
+.status-badge.rejected {
+    background: #f8d7da;
+    border: 2px solid #dc3545;
+    color: #721c24;
+}
+
+.status-badge .badge-icon {
+    font-size: 24px;
+}
+
+/* Read-only mode */
+.sticky-team-indicator.read-only {
+    opacity: 0.9;
+}
+
+.sticky-team-indicator.read-only::after {
+    content: "🔒";
+    position: absolute;
+    right: 20px;
+    font-size: 24px;
+}
