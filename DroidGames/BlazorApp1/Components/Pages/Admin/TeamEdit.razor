@@ -1,7 +1,9 @@
 @page "/admin/teams/{teamId}/edit"
 @using BlazorApp1.Models
 @using BlazorApp1.Data
+@using BlazorApp1.Services
 @inject IRepository<Team> TeamRepository
+@inject IAchievementService AchievementService
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 
@@ -206,7 +208,7 @@
                         </div>
                         <div class="stat-content">
                             <div class="stat-label">Odemčených achievementů</div>
-                            <div class="stat-value">@_team.UnlockedAchievements.Count</div>
+                            <div class="stat-value">@_achievementCount</div>
                         </div>
                     </div>
 
@@ -255,6 +257,7 @@
     private bool _saving = false;
     private bool _showSuccess = false;
     private bool _showError = false;
+    private int _achievementCount = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -268,6 +271,13 @@
         try
         {
             _team = await TeamRepository.GetByIdAsync(TeamId);
+            
+            // Load achievement count from unified source
+            if (_team != null)
+            {
+                var teamAchievements = await AchievementService.GetTeamAchievementsAsync(_team.Id);
+                _achievementCount = teamAchievements.Count;
+            }
         }
         finally
         {

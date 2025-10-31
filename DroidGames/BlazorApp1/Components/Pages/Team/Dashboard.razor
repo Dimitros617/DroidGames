@@ -212,7 +212,10 @@
                 _position = currentTeam.CurrentPosition;
                 _totalTeams = teams.Count;
                 _completedRounds = currentTeam.Rides.Count;
-                _achievementCount = currentTeam.UnlockedAchievements.Count;
+                
+                // Load achievement count from TeamAchievement repository (unified source)
+                var teamAchievements = await AchievementService.GetTeamAchievementsAsync(currentTeam.Id);
+                _achievementCount = teamAchievements.Count;
 
                 // Calculate average and best score
                 if (currentTeam.Rides.Any())
