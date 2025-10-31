@@ -25,30 +25,45 @@
         }
         else
         {
+            <!-- Sticky Team Indicator -->
+            @if (!string.IsNullOrEmpty(_selectedTeamId))
+            {
+                <div class="sticky-team-indicator team-@GetTeamNumber()">
+                    <div class="indicator-content">
+                        <span class="indicator-icon">@GetSelectedTeamIcon()</span>
+                        <span class="indicator-text">
+                            <strong>@GetSelectedTeamName()</strong>
+                            <small>Aktuálně bodujete</small>
+                        </span>
+                        <span class="indicator-score">@_currentScore bodů</span>
+                    </div>
+                </div>
+            }
+
             <!-- Team Selection -->
             <div class="team-selection">
                 <h2>Vyberte tým</h2>
                 <div class="team-buttons">
                     @if (_team1 != null)
                     {
-                        <button class="team-card @(_selectedTeamId == _team1.Id ? "selected" : "")"
+                        <button class="team-card @(_selectedTeamId == _team1.Id ? "selected team-a" : "")"
                                 @onclick="() => SelectTeam(_team1.Id)">
-                            <span class="team-icon" style="background: #3498db;">@_team1.Name[0]</span>
+                            <span class="team-icon" style="background: #27ae60;">@_team1.Name[0]</span>
                             <div class="team-info">
                                 <strong>@_team1.Name</strong>
-                                <small>Tým 1</small>
+                                <small>Tým A</small>
                             </div>
                         </button>
                     }
                     
                     @if (_team2 != null)
                     {
-                        <button class="team-card @(_selectedTeamId == _team2.Id ? "selected" : "")"
+                        <button class="team-card @(_selectedTeamId == _team2.Id ? "selected team-b" : "")"
                                 @onclick="() => SelectTeam(_team2.Id)">
                             <span class="team-icon" style="background: #e74c3c;">@_team2.Name[0]</span>
                             <div class="team-info">
                                 <strong>@_team2.Name</strong>
-                                <small>Tým 2</small>
+                                <small>Tým B</small>
                             </div>
                         </button>
                     }
@@ -58,20 +73,27 @@
             @if (!string.IsNullOrEmpty(_selectedTeamId) && _selectedMap != null)
             {
                 <!-- Map Grid -->
-                <div class="map-section">
+                <div class="map-section team-@GetTeamNumber()">
                     <h2>🗺️ Herní pole</h2>
                     <div class="map-container">
                         <div class="map-grid">
                             @for (int y = 0; y < 6; y++)
                             {
+                                var rowY = y; // Capture pro closure
                                 @for (int x = 0; x < 9; x++)
                                 {
-                                    var block = GetBlockAt(x, y);
-                                    var eventIds = GetBlockEventIds(x, y);
+                                    var colX = x; // Capture pro closure
+                                    var block = GetBlockAt(colX, rowY);
+                                    var eventIds = GetBlockEventIds(colX, rowY);
                                     var hasEvents = eventIds.Any();
+                                    var isSelected = _selectedBlockX == colX && _selectedBlockY == rowY;
+                                    var cssClasses = $"map-cell {GetBlockClass(block)} {(hasEvents ? "has-events" : "")} {(isSelected ? "selected-block" : "")}";
+                                    var cellKey = $"cell-{colX}-{rowY}";
                                     
-                                    <div class="map-cell @GetBlockClass(block) @(hasEvents ? "has-events" : "")"
-                                         @onclick="() => OnBlockClick(block, x, y)">
+                                    <div @key="cellKey"
+                                         class="@cssClasses"
+                                         @onclick="() => OnBlockClick(block, colX, rowY)"
+                                         title="[@colX,@rowY] Events: @eventIds.Count">
                                         
                                         @if (block != null)
                                         {
@@ -115,7 +137,8 @@
                                 <tbody>
                                     @foreach (var evt in _scoringEvents.OrderBy(e => e.Id))
                                     {
-                                        <tr>
+                                        <tr class="@(_selectedEventId == evt.Id ? "selected-event" : "")"
+                                            @onclick="() => OnEventClick(evt)">
                                             <td class="event-id"><strong>@evt.Id</strong></td>
                                             <td class="event-pos">[@evt.X, @evt.Y]</td>
                                             <td class="event-desc">@evt.Description</td>
@@ -123,7 +146,10 @@
                                                 @(evt.Points > 0 ? "+" : "")@evt.Points
                                             </td>
                                             <td class="event-actions">
-                                                <button class="btn-remove" @onclick="() => RemoveEvent(evt.Id)" title="Smazat událost">
+                                                <button class="btn-remove" 
+                                                        @onclick="async () => await ConfirmAndRemoveEvent(evt.Id)" 
+                                                        @onclick:stopPropagation="true"
+                                                        title="Smazat událost">
                                                     ❌
                                                 </button>
                                             </td>
@@ -171,6 +197,20 @@
                 @_statusMessage
             </div>
         }
+        
+        @if (_showConfirmDialog)
+        {
+            <div class="confirm-overlay" @onclick="CancelConfirm">
+                <div class="confirm-dialog" @onclick:stopPropagation="true">
+                    <h3>⚠️ Potvrzení</h3>
+                    <p>@_confirmMessage</p>
+                    <div class="confirm-actions">
+                        <button class="btn-confirm-cancel" @onclick="CancelConfirm">Zrušit</button>
+                        <button class="btn-confirm-ok" @onclick="ExecuteConfirm">@_confirmButtonText</button>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 </BlazorApp1.Components.Shared.AuthGuard>
 
@@ -187,9 +227,18 @@
     private int _nextEventId = 1;
     private Dictionary<string, List<int>> _blockEventIds = new();
     
+    private int _selectedBlockX = -1;
+    private int _selectedBlockY = -1;
+    private int _selectedEventId = -1;
+    
     private bool _isSubmitting = false;
     private string _statusMessage = string.Empty;
     private bool _isError = false;
+    
+    private bool _showConfirmDialog = false;
+    private string _confirmMessage = string.Empty;
+    private string _confirmButtonText = "OK";
+    private Action? _confirmAction = null;
 
     private class ScoringEvent
     {
@@ -232,8 +281,50 @@
 
     private void SelectTeam(string teamId)
     {
+        // Pokud už jsou nějaké události a měníme tým, potvrdit
+        if (!string.IsNullOrEmpty(_selectedTeamId) && _selectedTeamId != teamId && _scoringEvents.Any())
+        {
+            _confirmMessage = "Máte neuložené události. Opravdu chcete změnit tým? Všechny události budou ztraceny.";
+            _confirmButtonText = "Změnit tým";
+            _confirmAction = () => {
+                _selectedTeamId = teamId;
+                ResetScoring();
+            };
+            _showConfirmDialog = true;
+            StateHasChanged();
+            return;
+        }
+        
         _selectedTeamId = teamId;
         ResetScoring();
+    }
+    
+    private async Task ConfirmAndRemoveEvent(int eventId)
+    {
+        var evt = _scoringEvents.FirstOrDefault(e => e.Id == eventId);
+        if (evt == null) return;
+        
+        _confirmMessage = $"Opravdu chcete smazat událost #{eventId} ({evt.Description})?";
+        _confirmButtonText = "Smazat";
+        _confirmAction = () => RemoveEvent(eventId);
+        _showConfirmDialog = true;
+        StateHasChanged();
+        await Task.CompletedTask;
+    }
+    
+    private void ExecuteConfirm()
+    {
+        _confirmAction?.Invoke();
+        _showConfirmDialog = false;
+        _confirmAction = null;
+        StateHasChanged();
+    }
+    
+    private void CancelConfirm()
+    {
+        _showConfirmDialog = false;
+        _confirmAction = null;
+        StateHasChanged();
     }
 
     private void ResetScoring()
@@ -242,6 +333,30 @@
         _blockEventIds.Clear();
         _nextEventId = 1;
         _currentScore = 0;
+        _selectedBlockX = -1;
+        _selectedBlockY = -1;
+        _selectedEventId = -1;
+    }
+    
+    private string GetTeamNumber()
+    {
+        if (_selectedTeamId == _team1?.Id) return "a";
+        if (_selectedTeamId == _team2?.Id) return "b";
+        return "";
+    }
+    
+    private string GetSelectedTeamName()
+    {
+        if (_selectedTeamId == _team1?.Id) return _team1.Name;
+        if (_selectedTeamId == _team2?.Id) return _team2.Name;
+        return "";
+    }
+    
+    private string GetSelectedTeamIcon()
+    {
+        if (_selectedTeamId == _team1?.Id) return _team1.Name[0].ToString();
+        if (_selectedTeamId == _team2?.Id) return _team2.Name[0].ToString();
+        return "";
     }
 
     private MapBlock? GetBlockAt(int x, int y)
@@ -252,7 +367,9 @@
     private List<int> GetBlockEventIds(int x, int y)
     {
         var key = $"{x},{y}";
-        return _blockEventIds.GetValueOrDefault(key, new List<int>());
+        var result = _blockEventIds.GetValueOrDefault(key, new List<int>());
+        Console.WriteLine($"[GetBlockEventIds] [{x},{y}] key='{key}' -> {result.Count} events");
+        return result;
     }
 
     private void OnBlockClick(MapBlock? block, int x, int y)
@@ -261,23 +378,47 @@
             block.Type == MapBlockType.Empty || block.Type == MapBlockType.Rock) 
             return;
         
+        Console.WriteLine($"[OnBlockClick] Clicked on [{x},{y}] - Type: {block.Type}");
+        
+        // Zvýraznit vybraný blok
+        _selectedBlockX = x;
+        _selectedBlockY = y;
+        _selectedEventId = -1;
+        
         var key = $"{x},{y}";
         
         // Přidání události podle typu bloku
         if (block.Type == MapBlockType.BlueCrystal)
         {
-            // Automaticky 2 události: dotyk (+1) a validní přesun (+1)
-            var touchEvent = new ScoringEvent
-            {
-                Id = _nextEventId++,
-                X = x,
-                Y = y,
-                BlockType = block.Type,
-                Description = "💎 Dotyk krystalu",
-                Points = 1,
-                Timestamp = DateTime.Now
-            };
+            // Zjistit, zda už byl na této souřadnici dotyk
+            bool hadFirstTouch = _scoringEvents.Any(e => e.X == x && e.Y == y && e.Description.Contains("Dotyk krystalu"));
             
+            if (!_blockEventIds.ContainsKey(key))
+                _blockEventIds[key] = new List<int>();
+            
+            int pointsAdded = 0;
+            
+            // Přidat dotyk pouze pokud ještě nebyl
+            if (!hadFirstTouch)
+            {
+                var touchEvent = new ScoringEvent
+                {
+                    Id = _nextEventId++,
+                    X = x,
+                    Y = y,
+                    BlockType = block.Type,
+                    Description = "💎 Dotyk krystalu",
+                    Points = 1,
+                    Timestamp = DateTime.Now
+                };
+                
+                _scoringEvents.Add(touchEvent);
+                _blockEventIds[key].Add(touchEvent.Id);
+                pointsAdded += 1;
+                Console.WriteLine($"[OnBlockClick] Added touch event #{touchEvent.Id} at [{x},{y}]");
+            }
+            
+            // Vždy přidat validní přesun
             var moveEvent = new ScoringEvent
             {
                 Id = _nextEventId++,
@@ -289,16 +430,14 @@
                 Timestamp = DateTime.Now
             };
             
-            _scoringEvents.Add(touchEvent);
             _scoringEvents.Add(moveEvent);
-            
-            if (!_blockEventIds.ContainsKey(key))
-                _blockEventIds[key] = new List<int>();
-            
-            _blockEventIds[key].Add(touchEvent.Id);
             _blockEventIds[key].Add(moveEvent.Id);
+            pointsAdded += 1;
             
-            _currentScore += 2;
+            Console.WriteLine($"[OnBlockClick] Added move event #{moveEvent.Id} at [{x},{y}]");
+            Console.WriteLine($"[OnBlockClick] Total events at [{x},{y}]: {_blockEventIds[key].Count}");
+            
+            _currentScore += pointsAdded;
         }
         else if (block.Type == MapBlockType.YellowSulfur)
         {
@@ -320,9 +459,23 @@
             
             _blockEventIds[key].Add(sulfurEvent.Id);
             
+            Console.WriteLine($"[OnBlockClick] Added sulfur event #{sulfurEvent.Id} at [{x},{y}]");
+            Console.WriteLine($"[OnBlockClick] Total events at [{x},{y}]: {_blockEventIds[key].Count}");
+            
             _currentScore -= 1;
         }
         
+        Console.WriteLine($"[OnBlockClick] Total scoring events: {_scoringEvents.Count}");
+        Console.WriteLine($"[OnBlockClick] BlockEventIds keys: {string.Join(", ", _blockEventIds.Keys)}");
+        
+        StateHasChanged();
+    }
+    
+    private void OnEventClick(ScoringEvent evt)
+    {
+        _selectedEventId = evt.Id;
+        _selectedBlockX = evt.X;
+        _selectedBlockY = evt.Y;
         StateHasChanged();
     }
 
@@ -340,7 +493,16 @@
         {
             _blockEventIds[key].Remove(eventId);
             if (_blockEventIds[key].Count == 0)
+            {
                 _blockEventIds.Remove(key);
+                // Pokud byla vybraná událost smazána, zrušit výběr
+                if (_selectedEventId == eventId)
+                {
+                    _selectedBlockX = -1;
+                    _selectedBlockY = -1;
+                    _selectedEventId = -1;
+                }
+            }
         }
         
         StateHasChanged();

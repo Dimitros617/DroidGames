@@ -1,0 +1,132 @@
+1. ÚVOD A PŘÍBĚH
+V hlubokých podzemních dolech bylo objeveno vzácné naleziště modrých energetických krystalů. Tyto krystaly jsou extrémně cenné pro svou schopnost uchovávat energii. Bohužel, důl je také plný ložisek podzemní síry – žlutých, nestabilních útvarů, které vznikly tisíciletým geologickým procesem. Tyto sírové útvary jsou křehké a jejich narušení může způsobit zřícení části dolu.
+Dva týmy těžebních robotů byly vyslány do oddělených sekcí dolu. Jejich úkolem je vytěžit všechny modré krystaly ve své sekci a případně si pomoci přesunutím krystalů mezi sekcemi. Musí však dávat pozor na žlutá sírová ložiska – jejich přílišné narušení může vést ke ztrátě cenných bodů.
+Cíl soutěžní úlohy: Sestavit a naprogramovat robota, který v časovém limitu 90 sekund, společně s robotem soupeřícího týmu, získá co nejvíce bodů těžbou a manipulací s modrými krystaly, přičemž se vyhne narušení žlutých sírových ložisek.
+2. TECHNICKÉ DEFINICE
+Základní pojmy
+●	Blok: Základní jednotka hrací plochy o rozměrech 280 mm × 280 mm
+●	Původní pozice objektu: Oblast 280 mm × 280 mm, kterou objekt zabíral před zahájením jízdy
+●	Fyzický dotyk: Kontakt jakékoliv části robota s objektem trvající minimálně 0,5 sekundy
+●	Geometrický střed: Bod v přesném středu objektu při pohledu shora (140 mm od všech hran u standardních bloků)
+Měření posunutí
+Vzdálenost posunutí se měří kolmo mezi původní pozicí hrany objektu a její novou pozicí. Rozlišujeme tři kategorie:
+●	Minimální posunutí: < 140 mm (méně než polovina bloku)
+●	Validní posunutí: 140-250 mm (více než polovina, méně než celý blok, Vždy se musí posunutá pozice překrývat s původí pozicí bloku alesponň z 10%)
+●	Nadměrné posunutí: > 280 mm (více než celý blok)
+3. HRACÍ PLOCHA
+Rozměry a rozdělení
+Soutěžní plocha má celkové rozměry 2520 mm × 1680 mm a je rozdělena středovou přepážkou na dvě symetrické poloviny. Každá polovina má rozměry 1260 mm × 1680 mm (4,5 × 6 bloků). Středová přepážka je tvořena souvislou řadou dřevěných bloků o výšce 75 mm. Středová linie nemusí být vždy rovná, ale vždy bude symetrická při svislé ose.
+ 
+Obrázek 1: Ilustrační obrázek rozložení kostek (skal, síry a krystalů) na hrací ploše. (Odstíny barev jsou pouze ilustrační)
+ 
+Obrázek 2: Ilustrační obrázek rozložení kostek (skal, síry a krystalů) na hrací ploše. (Odstíny barev jsou pouze ilustrační)
+ 
+Obrázek 3: Rozložení z vrchu (Půdorys)
+
+ 
+Obrázek 4: Rozvržení ze předu (Nárys)
+Objekty na ploše
+1.	Dřevěné překážky (šedé) 
+o	Rozměry: 280 × 280 × 75 mm
+o	Nepohyblivé, představují skalní útvary
+2.	Modré energetické krystaly (3D tisk) 
+o	Rozměry: 280 × 280 × 115 mm
+o	Barva: Modrá (TODO DOPLNIT konkrétní typ filamentu a trysku a nastavení)
+o	Pohyblivé, hlavní cíl těžby
+3.	Žlutá sírová ložiska (3D tisk) 
+o	Rozměry: 280 × 280 × 115 mm
+o	Barva: Žlutá (TODO DOPLNIT konkrétní typ filamentu a trysku a nastavení)
+o	Pohyblivé, jejich narušení = penalizace
+Konfigurace mapy
+Každá polovina obsahuje 2-5 modrých krystalů a 1-5 žlutých ložisek. Rozložení je vždy středově souměrné podle geometrického středu hracího stolu. Minimálně jeden modrý krystal může být umístěn na středové linii (dostupný oběma robotům). Konfigurace se mění mezi jednotlivými koly – celkem 5 různých variant.
+4. BODOVACÍ SYSTÉM
+Získání bodů
+●	Dotyk modrého krystalu: +1 bod (první dotyk každého krystalu)
+●	Úspěšné přesunutí modrého krystalu: +1 bod (posun o 140-280 mm)
+●	Bonus za opatrnost: +2 body (žádný dotyk žlutých ložisek po celou jízdu)
+●	Přílišné přetlačení od soupeře: +2 body (pokud soupeř odtlačí ze své strany krystal nebo síru přes povolený limit, jako kompenzace jsou uděleny body. V ten moment rozhodčí zasáhne do hrací plochy za účelem narovnání daného bloku zpět na maximální povolenou hranu, a to v moment, kdy rozhodčí nebo asistent uznají za vhodné zásah provést tak aby robot na dané straně hřiště byl co nejméně ovlivněn. Kolo se nepřerušuje.)
+Ztráta bodů
+●	Přílišné posunutí modrého krystalu: -2 body (posun > 280 mm)
+●	Narušení žlutého ložiska: -1 bod (posun > 140 mm)
+●	Přílišné posunutí na protihráčovu stranu: -2 body (Posun > 280 mm)
+Podmínka validity skóre
+DŮLEŽITÉ: Robot se musí během 90 sekund dotknout alespoň poloviny modrých krystalů, které jsou dostupné v jeho polovině stolu. V případě lichého počtu krystalů se zaokrouhluje nahoru (např. 3 krystaly = nutný dotyk 2 krystalů). Nesplnění = konečné skóre 0 bodů.
+Pravidlo střídání manipulace
+Robot nesmí dvakrát za sebou tlačit stejný modrý krystal. Mezi manipulacemi musí splnit ALESPOŇ JEDNU podmínku:
+●	Přemístit se o minimálně 560 mm (2 bloky) od místa předchozí manipulace
+●	Dotknout se jiného modrého krystalu
+●	Změnit směr o 90° a přemístit se o minimálně 280 mm (1 blok)
+Porušení: druhá a další manipulace se nepočítá pro zisk bodů.
+5. SPECIÁLNÍ PRAVIDLA PRO 1. KOLO - KOOPERATIVNÍ BONUS
+"Synchronizované shromáždění" (pouze 1. kolo)
+Týmy mohou společně získat 10 bonusových bodů (5 bodů každý). Týmy se dozví své spárování 60 minut před soutěží, stejně tak jako konfiguraci mapy pro první kolo.
+Podmínky pro získání bonusu:
+1.	Fáze 1 - Průzkum: Každý robot se musí dotknout všech modrých krystalů ve své polovině
+2.	Fáze 2 - Definice shromaždiště: Před startem týmy určí dva symetrické bloky jako "shromaždiště" (zapisuje se do protokolu)
+3.	Fáze 3 - Synchronizované setkání: 
+o	Oba roboti musí být na svých shromaždištích SOUČASNĚ
+o	Více než 50 % půdorysu robota na dříve určeném bloku
+o	Setrvat na bloku nepřetržitě alespoň 3 sekundy
+Komunikace je povolena pouze před startem. Během jízdy musí roboti jednat autonomně.
+6. KONSTRUKCE ROBOTA
+Povolené stavebnice
+●	LEGO® Education Mindstorms® 8527 NXT
+●	LEGO® Mindstorms® 31313 EV3
+●	LEGO® Education 45544 Mindstorms® (+ rozšíření 45560)
+●	LEGO® Mindstorms® EV3 Home Edition 31313
+●	LEGO® Education SPIKE™ Prime Set (+ Prime Expansion Set)
+●	LEGO® Mindstorms® 51515 Robot Inventor
+Použití pouze jedné sady + oficiální rozšíření, V případě motorů a senzorů platí, maximální povolení komponenty níže. Kombinování různých typů stavebnic zakázáno.
+Maximální povolené komponenty
+Nezávisle na typu stavebnice může robot obsahovat:
+●	Řídící jednotka: 1 kus
+●	Motory: 4 servomotory celkem
+●	Senzory: 
+o	1× ultrazvukový NEBO infračervený senzor
+o	2× dotykový senzor
+o	1× barevný/světelný senzor
+o	1× gyroskopický senzor
+Rozměry
+●	Při startu: max. 280 × 280 mm (výška neomezena)
+●	Během jízdy: robot se může rozložit (změnit svoji velikost)
+Programování
+Pouze blokové programování v oficiálním prostředí LEGO. Textové jazyky, modifikovaný firmware a externí knihovny zakázány.
+7. PRŮBĚH SOUTĚŽNÍ JÍZDY
+Časový harmonogram
+●	Příprava: 60 sekund (kalibrace senzorů, výběr programu, kooperativní domluva)
+●	Jízda: 90 sekund
+Start
+Každý tým umístí robota kamkoliv ve své polovině. Oba roboti startují současně na pokyn rozhodčího stiskem tlačítka na řídící jednotce. Robot musí jednat zcela autonomně - jakékoliv ovládání v průběhu jízdy = diskvalifikace.
+Pohyb a interakce
+Roboti se mohou pohybovat po své polovině a částečně vstoupit do soupeřovy poloviny pouze při manipulaci s krystaly na středové linii (max. 50 % robota může přesáhnout). Při setkání 2 robotů u stejného krystalu na středové linii (každý robot je na své polovině) je pouze na algoritmu robota, jak daný robot bude reagovat.
+
+Ukončení jízdy
+Jízda končí po 90 sekundách nebo předčasně při:
+●	Opuštění hrací plochy (> 50 % robota mimo herní stůl)
+●	Upadnutí součásti robota na plochu herního stolu nebo herní objekty
+●	Rozpadnutí celé konstrukce robota 
+●	Porušení pravidel
+●	Rozhodnutí týmu
+8. HODNOCENÍ A SOUTĚŽNÍ SYSTÉM
+Struktura soutěže
+Soutěž sestává z 5 kol, kterými projdou všechny týmy. V každém kole soutěží dva týmy současně na dané konfiguraci mapy. Systém párování zajišťuje, že se týmy potkají s různými soupeři.
+Celkové hodnocení
+Body ze všech 5 kol se sčítají. Při shodě bodů rozhoduje postupně:
+1.	Nejvyšší bodový zisk v jednotlivém kole
+2.	Počet kol s kladným skóre
+3.	Menší počet záporných bodů
+4.	Rozstřelové kolo (nová konfigurace, bez kooperativního bonusu)
+9. ROLE ROZHODČÍCH
+Hlavní rozhodčí
+●	Zahajuje a ukončuje jízdy
+●	Konečné rozhodnutí při sporech
+●	Uděluje penalizace a diskvalifikace
+Asistenti rozhodčího
+●	Každý sleduje jednoho robota
+●	Zaznamenává dotyky a manipulace
+●	Měří posunutí bloků
+Vyhlášení výsledků
+Výsledky jsou oznámeny do 2 minut po ukončení jízdy. Protesty lze podat do 1 minuty po vyhlášení.
+10. BEZPEČNOSTNÍ PRAVIDLA
+Robot nesmí obsahovat ostré hrany nebo vystřelovat projektily. Týmy nesmí vstupovat do hrací oblasti během jízdy. Všichni účastníci musí dodržovat pokyny organizátorů a chovat se s respektem k soupeřům a jejich vybavení.
+

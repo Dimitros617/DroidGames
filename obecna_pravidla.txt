@@ -1,0 +1,118 @@
+Obecná pravidla
+
+Článek I: Účel a účastníci soutěže
+
+   1. Účel soutěže
+
+Soutěž je určena pro tříčlenné týmy z 2. stupně základních škol a odpovídajících tříd víceletých gymnázií z Plzeňského kraje. 
+Úkolem každého týmu je sestavit robota ze stavebnice LEGO Mindstorms tak, aby co nejlépe splnil zadanou soutěžní úlohu. 
+   2. Účastnické náklady:
+
+Účast v soutěži, dopravu, ubytování a další náklady spojené se soutěží si hradí sami účastníci. 
+V průběhu soutěže bude zajištěno občerstvení pro všechny účastníky soutěže. 
+   3. Týmová pravidla:
+
+         Každý účastník (soutěžící) může být členem pouze jednoho týmu, který se zúčastní soutěžního kola.
+Pokud týmy z jedné školy použijí při soutěži stejné nebo obdobné konstrukční řešení robota s různým softwarem, bude oceněn pouze jeden tým, který se umístí nejlépe. 
+Rozhodnutí o povolení použití stejného nebo obdobného konstrukčního řešení je na hlavním organizátorovi Droid Games (Centrum robotiky a jeho zástupci, dále jen organizátor). Jeho rozhodnutí je konečné a nenapadnutelné. 
+   4. Plagiátorství:
+
+V případě zřejmého nebo prokázaného plagiátorství se škola nemůže zúčastnit Droid Games v následujících třech letech.
+O posouzení plagiátorství rozhoduje výbor Droid Games v minimálním zastoupení 3/4 celkového počtu členů, dále jen výbor Droid Games. 
+Článek II: Diskvalifikace a vyloučení ze soutěže
+
+   1. Práva organizátora:
+
+Organizátor Droid Games může rozhodnout o diskvalifikaci jakéhokoliv týmu bez dalšího vysvětlení. Jeho rozhodnutí je konečné a nenapadnutelné.
+Účastník soutěže bude vyloučen v případě, že organizátor Droid Games zjistí nebo bude mít oprávněné podezření na spáchání podvodného nebo nekalého jednání, či jiného jednání, které není fair play nebo není založeno na dovednostech soutěžícího dle soutěžních pravidel. 
+   2. Maximální počet týmů:
+
+Každého kola se může zúčastnit maximálně 16 týmů. 
+Za každou organizaci, je povoleno přihlásit maximálně 3 týmy. Tak aby všechny týmy měly unikátní členy, a vlastního soutěžního robota.
+Článek III: Dokumentace a ochrana osobních údajů
+
+1. Dokumentace soutěže:
+
+Přihlášením do Droid Games každý účastník souhlasí s tím, že průběh akcí bude dokumentován ve formě fotografií a videí a může být použit pro propagační účely Droid Games a Centra robotiky (SITMP) v Plzni na webových stránkách, v televizi, v tisku i na facebookovém nebo instagramovém profilu. 
+2. Ochrana osobních údajů:
+
+Vzhledem k Nařízení EU č. 2016/679 (GDPR) nevyžadujeme, aby školy registrovaly týmy s konkrétními jmény jednotlivých členů (studentů) předem. 
+Jména účastníků budou požadována nejpozději při prezenci v den soutěže.
+Článek IV: Ocenění
+
+1. Pravidla ocenění:
+
+Nárok na ocenění (cena za umístění na 1. až 3. místě v každém kole) mají pouze členové týmů, kteří se zúčastní vlastní soutěže. 
+Článek V: Pravidla soutěže a technické specifikace
+
+1. Soutěžní úloha:
+
+Každému týmu bude zpřístupněn detailní popis soutěžní úlohy nejpozději 6.1.2026 na webových stránkách soutěže centrumrobotiky.eu/droidgames. V?případě nejasností či chyb v?zadání mají možnost soutěžící nejpozději 1 měsíc před konáním soutěže kontaktovat pořadatele Droid Games a vznést námitky. Pokud budou tyto námitky schváleny výborem Droid Games, budou o této změně informováni všichni zaregistrovaní soutěžící.
+2. Technické požadavky:
+
+Roboti musí být sestaveni pouze ze stavebnic LEGO®  Mindstorms®. Použití jiných materiálů nebo součástí není povoleno. S?výjimkou nelegových částí, které nemají vliv na konstrukci robota či prováděnou úlohu. (Např. nalepená samolepka školy na boku robota apod.) Při odstranění této části nesmí být vidět změna pohybu robota.  
+Maximální povolené počty jednotlivých senzorů a motorů:
+               - 4 ks motorů
+
+               -  1 ks senzor k detekci barev
+
+               -  1 ks senzor k měření vzdálenosti (Sonický či Infračervený)
+
+               -  2 ks senzorů dotyku
+
+               -  1 ks senzoru náklonu (nebo integrovaný senzor v „kostce“)
+
+Z důvodu nekonzistence počtu senzorů a motorů napříč povolenými typy stavebnic (Např. EV3 obsahuje 3 motory, Inventor 4 motory), je povoleno doplnit senzory či motory nad limit původních počtů ve stavebnici do povolených limitů, a však vždy pouze ze stejného typu stavebnice.
+Software robota musí být naprogramován v prostředí dodávaném s LEGO®  Mindstorms® (Bloková prostředí). Není povoleno využívat kódové programovací jazyky.
+3. Časový harmonogram:
+
+Časový harmonogram soutěže bude oznámen nejpozději měsíc před soutěží. Organizátor Droid Games je oprávněn tento harmonogram změnit. Tyto změny jsou bezvýhradní a nenapadnutelné. 
+Článek VI: Hodnocení a rozhodčí
+
+1. Hodnocení:
+
+Roboti budou hodnoceni podle předem stanovených kritérií, která budou zveřejněny společně se zadáním soutěžní úlohy. Výsledky všech soutěžních týmů budou zveřejněny nejpozději do 14 dní od proběhnutí soutěže v novinkách na webových stránkách Droid Games (centrumrobotiky.eu/droidgames). V?těchto výsledcích budou uvedeny jména týmů, název školy, bodové hodnocení a celkové umístění. 
+2. Rozhodčí:
+
+Soutěž bude řízena rozhodčími, kteří budou odpovědní za hodnocení výkonů týmů. 
+Jména rozhodčích budou zveřejněna měsíc před soutěží.
+Článek VII: Bezpečnost a pravidla chování
+
+1. Bezpečnost:
+
+Účastníci jsou povinni dodržovat všechna bezpečnostní pravidla stanovená organizátory. Jakékoliv nebezpečné chování může vést k okamžité diskvalifikaci. 
+Každý tým je odpovědný za bezpečnost svých členů a jejich vybavení. Za vybavení týmů a soutěžící nezodpovídá Centrum robotiky jako organizátor Droid Games. 
+Řád dílny Centra robotiky:
+
+Nezletilí účastníci kroužků (dále jen účastníci) mají zakázáno opustit dílnu bez svolení lektora.
+Účastníkům je zakázáno manipulovat s okny bez svolení lektora.
+V dílně je zakázáno manipulovat s elektrickými přístroji, zapínat stroje, zacházet s nástroji, nářadím, pomůckami a jiným vybavením bez svolení nebo dohledu lektora.
+U stolků s technikou je zakázáno jíst a pít.
+V případě přinesení vlastního zařízení je potřeba požádat o svolení lektora s jeho užitím.
+V dílně má každý účastník své předem určené pracovní místo, které mu určil lektor. Místo udržuje v čistotě a pořádku.
+Účastník je povinen před začátkem prováděné činnosti zkontrolovat stav pracovního místa, pracovních nástrojů, nářadí a jiných pomůcek. Veškeré závady a nedostatky, a to i během vyučování, je povinen nahlásit lektorovi.
+Účastník ručí za veškeré vybavení, které během výuky užívá. Je povinen ho užívat s maximální opatrností.
+Z dílny účastník neodnáší žádný materiál, nástroje ani nářadí bez souhlasu lektora.
+Účastník po skončení lekce uklidí pracovní místo.
+2. Pravidla chování:
+
+Účastníci se musí chovat s respektem k ostatním týmům, organizátorům a rozhodčím. 
+Jakékoliv formy nevhodného chování jsou přísně zakázány a mohou vést k vyloučení ze soutěže. Vyloučení ze soutěže musí provést výbor Droid Games.
+Článek VIII: Právní ustanovení
+
+1. Změny pravidel:
+
+Organizátoři si vyhrazují právo na změny pravidel soutěže, a to kdykoliv před či během konání soutěže.
+2. Řešení sporů:
+
+Veškeré spory vzniklé během soutěže budou řešeny výborem Droid Games.
+Rozhodnutí výboru jsou konečná a nenapadnutelná.
+Článek IX: Přihlášky a registrace
+
+   1. Podávání přihlášek:
+
+Přihlášky do soutěže musí být podány prostřednictvím oficiálního registračního formuláře, který se nachází na centrumrobotiky.eu/droidgames.
+Uzávěrka přihlášek je do 12. 12. 2025.
+   2. Potvrzení registrace:
+
+Každý tým obdrží potvrzení registrace a další pokyny nejpozději do 5. 1. 2026.
