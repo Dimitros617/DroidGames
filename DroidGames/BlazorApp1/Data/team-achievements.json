@@ -1,1 +1,13 @@
-﻿[]
+[
+  {
+    "Id": "5d34f491-6bf2-455b-8a19-d7fdf406e987",
+    "TeamId": "team-1",
+    "AchievementId": "quiz-first-blood",
+    "UnlockedAt": "2025-10-31T15:30:00.2633018Z",
+    "UnlockData": {
+      "unlockedVia": "quiz",
+      "questionId": "q7",
+      "timestamp": "2025-10-31T16:30:00.1738343+01:00"
+    }
+  }
+]

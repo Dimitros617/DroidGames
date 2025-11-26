@@ -97,5 +97,41 @@
       "q20"
     ],
     "SuccessRate": 40
+  },
+  {
+    "Id": "3c723ffd-6355-4bdb-b1e5-03afbecba932",
+    "TeamId": "team-1",
+    "Attempts": [
+      {
+        "QuestionId": "q5",
+        "SelectedAnswerIndex": 1,
+        "IsCorrect": false,
+        "TimeToAnswerMs": 5000,
+        "AttemptedAt": "2025-10-31T16:20:59.4289363+01:00"
+      },
+      {
+        "QuestionId": "q3",
+        "SelectedAnswerIndex": 0,
+        "IsCorrect": false,
+        "TimeToAnswerMs": 1000,
+        "AttemptedAt": "2025-10-31T16:21:15.1012577+01:00"
+      },
+      {
+        "QuestionId": "q7",
+        "SelectedAnswerIndex": 1,
+        "IsCorrect": true,
+        "TimeToAnswerMs": 1000,
+        "AttemptedAt": "2025-10-31T16:30:00.1738343+01:00"
+      }
+    ],
+    "CreatedAt": "2025-10-31T16:20:47.0724436+01:00",
+    "LastAttemptAt": "2025-10-31T16:30:00.1738372+01:00",
+    "TotalAttempts": 3,
+    "CorrectAnswers": 1,
+    "IncorrectAnswers": 2,
+    "AnsweredQuestionIds": [
+      "q7"
+    ],
+    "SuccessRate": 33.33333333333333
   }
 ]

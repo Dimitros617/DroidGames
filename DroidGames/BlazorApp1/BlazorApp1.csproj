@@ -11,6 +11,7 @@
     <!-- SignalR Client removed - not needed for Blazor Server, causes version conflict -->
     <PackageReference Include="QuestPDF" Version="2025.7.3" />
     <PackageReference Include="Blazored.Toast" Version="4.2.1" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.0" />
   </ItemGroup>
 
 </Project>

@@ -3,14 +3,14 @@
     "Id": "admin-1",
     "Username": "admin",
     "PasswordHash": "YWRtaW4xMjM=",
-    "Role": "Admin",
+    "Role": "HeadReferee",
     "TeamId": null,
     "CreatedAt": "2026-01-15T08:00:00Z"
   },
   {
     "Id": "headref-1",
-    "Username": "hlavni",
-    "PasswordHash": "aGxhdm5pMTIz",
+    "Username": "Admin",
+    "PasswordHash": "YWRtaW4=",
     "Role": "HeadReferee",
     "TeamId": null,
     "CreatedAt": "2026-01-15T08:00:00Z"

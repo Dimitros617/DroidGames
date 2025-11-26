@@ -88,7 +88,7 @@
                         </div>
                     </div>
 
-                    @if (UserSession.HasRole(BlazorApp1.Models.UserRole.Admin))
+                    @if (UserSession.HasRole(BlazorApp1.Models.UserRole.HeadReferee))
                     {
                         <div class="map-admin-badge">
                             <span class="material-symbols-outlined">admin_panel_settings</span>
@@ -129,11 +129,11 @@
             <span class="material-symbols-outlined empty-icon">layers_clear</span>
             <h2>Zatím nejsou publikovány žádné mapy</h2>
             <p>Mapy budou zveřejněny před začátkem každého kola.</p>
-            @if (UserSession.HasRole(BlazorApp1.Models.UserRole.Admin))
+            @if (UserSession.HasRole(BlazorApp1.Models.UserRole.HeadReferee))
             {
                 <p class="admin-note">
                     <span class="material-symbols-outlined">info</span>
-                    Admin: Publikujte mapy v sekci Admin → Maps
+                    Hlavni rozhodci: Publikujte mapy v sekci Admin → Maps
                 </p>
             }
         </div>
@@ -165,11 +165,11 @@
             var allMaps = await MapService.GetAllMapsAsync();
             AddDebugLog($"Načteno {allMaps.Count} celkem map");
 
-            // Filter only published maps (unless admin)
-            if (UserSession.HasRole(BlazorApp1.Models.UserRole.Admin))
+            // Filter only published maps (unless head referee)
+            if (UserSession.HasRole(BlazorApp1.Models.UserRole.HeadReferee))
             {
                 _publishedMaps = allMaps;
-                AddDebugLog($"Admin: zobrazuji všechny mapy ({allMaps.Count})");
+                AddDebugLog($"HeadReferee: zobrazuji všechny mapy ({allMaps.Count})");
             }
             else
             {

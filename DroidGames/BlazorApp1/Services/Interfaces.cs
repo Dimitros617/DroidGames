@@ -63,6 +63,7 @@ public interface ITimerService
     Task StopAsync();
     Task ResetAsync();
     Task<int> GetRemainingSecondsAsync();
+    Task NotifyTickAsync(int remainingSeconds);
     TimerStatus GetStatus();
 }
 

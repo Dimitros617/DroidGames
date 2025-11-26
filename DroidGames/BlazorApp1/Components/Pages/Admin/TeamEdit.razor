@@ -7,19 +7,19 @@
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 
-<PageTitle>Upravit tým - Admin | Droid Games</PageTitle>
+<PageTitle>Upravit tým - Hlavní rozhodčí | Droid Games</PageTitle>
 
-<div class="team-edit-container">
+<div class="page-shell team-edit-container">
     @if (_loading)
     {
-        <div class="loading-spinner">
-            <div class="spinner"></div>
+        <div class="state-card">
+            <span class="material-symbols-outlined spinning">progress_activity</span>
             <p>Načítání týmu...</p>
         </div>
     }
     else if (_team == null)
     {
-        <div class="error-message">
+        <div class="state-card">
             <span class="material-symbols-outlined">error</span>
             <h3>Tým nenalezen</h3>
             <button class="btn btn-primary" @onclick="GoBack">
@@ -31,18 +31,24 @@
     else
     {
         <div class="page-header">
-            <button class="btn-back" @onclick="GoBack">
-                <span class="material-symbols-outlined">arrow_back</span>
-            </button>
-            <div class="header-content">
-                <h1>Upravit tým</h1>
-                <p class="header-subtitle">ID: @_team.Id</p>
+            <div>
+                <h1 class="page-title">
+                    <span class="material-symbols-outlined">edit_square</span>
+                    Upravit tým
+                </h1>
+                <p class="page-subtitle">ID: @_team.Id</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-secondary" @onclick="GoBack">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    Zpět na týmy
+                </button>
             </div>
         </div>
 
         <div class="edit-content">
             <div class="edit-form">
-                <div class="form-section">
+                <div class="section-card form-section">
                     <h2>
                         <span class="material-symbols-outlined">edit</span>
                         Základní informace
@@ -74,7 +80,7 @@
                     </div>
                 </div>
 
-                <div class="form-section">
+                <div class="section-card form-section">
                     <h2>
                         <span class="material-symbols-outlined">group</span>
                         Členové týmu
@@ -100,7 +106,7 @@
                     </button>
                 </div>
 
-                <div class="form-section">
+                <div class="section-card form-section">
                     <h2>
                         <span class="material-symbols-outlined">smart_toy</span>
                         Robot
@@ -123,7 +129,7 @@
                     </div>
                 </div>
 
-                <div class="form-actions">
+                <div class="form-actions inline-actions">
                     <button type="button" class="btn btn-secondary" @onclick="GoBack" disabled="@_saving">
                         <span class="material-symbols-outlined">cancel</span>
                         Zrušit
@@ -143,7 +149,7 @@
             </div>
 
             <div class="info-panel">
-                <div class="info-section">
+                <div class="section-card info-section">
                     <h2>
                         <span class="material-symbols-outlined">emoji_events</span>
                         Statistiky (pouze pro čtení)
@@ -220,7 +226,7 @@
                     </div>
                 </div>
 
-                <div class="quick-actions">
+                <div class="section-card quick-actions">
                     <h3>Rychlé akce</h3>
                     <button type="button" class="action-btn" @onclick="NavigateToRides">
                         <span class="material-symbols-outlined">list</span>

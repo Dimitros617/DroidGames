@@ -11,6 +11,7 @@
 @inject NavigationManager Navigation
 @implements IDisposable
 @rendermode InteractiveServer
+@using Microsoft.AspNetCore.SignalR.Client
 
 <PageTitle>DROID GAMES 2026 - LIVE VÝSLEDKY</PageTitle>
 
@@ -88,7 +89,7 @@
                     @if (_currentGameStatus == BlazorApp1.Models.GameStatus.RoundInProgress)
                     {
                         <!-- Zobrazit časovač když běží jízda -->
-                        <div class="timer-display timer-@(_timerStatus.ToString().ToLower())">
+                        <div class="timer-display timer-running-solid">
                             <div class="timer-value">@FormatTime(_timerRemaining)</div>
                             <div class="timer-status">
                                 <span class="status-dot running"></span>
@@ -98,11 +99,12 @@
                     }
                     else if (_currentGameStatus == BlazorApp1.Models.GameStatus.WaitingForScoring)
                     {
-                        <!-- Zobrazit "Čeká se na hodnocení" -->
-                        <div class="game-status-display waiting-scoring">
-                            <div class="status-icon">⏳</div>
-                            <div class="status-text-large">Čeká se na výsledky...</div>
-                            <div class="status-subtext">Rozhodčí právě vyhodnocují jízdu</div>
+                        <div class="timer-display timer-paused">
+                            <div class="timer-value">@FormatTime(_timerRemaining)</div>
+                            <div class="timer-status">
+                                <span class="status-dot paused"></span>
+                                <text>Pozastaveno</text>
+                            </div>
                         </div>
                     }
                     else if (_currentGameStatus == BlazorApp1.Models.GameStatus.PreparingNextRound)
@@ -264,13 +266,13 @@
         </div>
     }
     
-    <!-- Debug Log - Only for Admins -->
-    @if (UserSession.HasRole(BlazorApp1.Models.UserRole.Admin) && !string.IsNullOrEmpty(_debugLog))
+    <!-- Debug Log - Only for Head Referee -->
+    @if (UserSession.HasRole(BlazorApp1.Models.UserRole.HeadReferee) && !string.IsNullOrEmpty(_debugLog))
     {
         <div class="debug-section">
             <h3>
                 <span class="material-symbols-outlined">bug_report</span>
-                Admin Debug Log
+                Debug Log
             </h3>
             <pre class="debug-log">@_debugLog</pre>
         </div>
@@ -322,6 +324,8 @@
     private BlazorApp1.Models.TimerStatus _timerStatus = BlazorApp1.Models.TimerStatus.Stopped;
     private BlazorApp1.Models.GameStatus _currentGameStatus = BlazorApp1.Models.GameStatus.Preparation;
     private string _debugLog = "";
+    private HubConnection? _competitionHub;
+    private HubConnection? _timerHub;
     
     // Position tracking for animations
     private Dictionary<string, int> _previousPositions = new();
@@ -348,6 +352,8 @@
         CompetitionNotificationService.OnLeaderboardUpdated += HandleLeaderboardUpdated;
         CompetitionNotificationService.OnYourTurn += HandleYourTurn;
         
+        await SetupTimerHub();
+        await SetupCompetitionHub();
         await LoadData();
     }
     
@@ -511,6 +517,8 @@
     
     public void Dispose()
     {
+        _competitionHub?.DisposeAsync();
+        _timerHub?.DisposeAsync();
         // Unsubscribe from all events
         GameStatusService.OnGameStatusChanged -= HandleGameStatusChanged;
         ScoreNotificationService.OnRoundCompleted -= HandleRoundCompleted;
@@ -522,6 +530,107 @@
         CompetitionNotificationService.OnRoundOrderChanged -= HandleRoundOrderChanged;
         CompetitionNotificationService.OnLeaderboardUpdated -= HandleLeaderboardUpdated;
         CompetitionNotificationService.OnYourTurn -= HandleYourTurn;
+    }
+
+    private async Task SetupCompetitionHub()
+    {
+        try
+        {
+            _competitionHub = new HubConnectionBuilder()
+                .WithUrl(Navigation.ToAbsoluteUri("/hubs/competition"))
+                .WithAutomaticReconnect()
+                .Build();
+
+            _competitionHub.On<int>("OnRoundChanged", async round =>
+            {
+                await HandleRoundChanged(round);
+            });
+            _competitionHub.On<BlazorApp1.Models.CompetitionStatus>("OnCompetitionStatusChanged", async status =>
+            {
+                await HandleCompetitionStatusChanged(status);
+            });
+            _competitionHub.On<string?, string?>("OnCurrentTeamsChanged", async (a, b) =>
+            {
+                await HandleCurrentTeamsChanged(a, b);
+            });
+            _competitionHub.On<string?, string?>("OnNextTeamsChanged", async (a, b) =>
+            {
+                await HandleNextTeamsChanged(a, b);
+            });
+            _competitionHub.On<int>("OnRoundOrderChanged", async round =>
+            {
+                await HandleRoundOrderChanged(round);
+            });
+            _competitionHub.On("OnLeaderboardUpdated", async () =>
+            {
+                await HandleLeaderboardUpdated();
+            });
+            _competitionHub.On<string, string, int>("OnYourTurn", async (teamId, teamName, position) =>
+            {
+                await HandleYourTurn(teamId, teamName, position);
+            });
+
+            await _competitionHub.StartAsync();
+            AddDebugLog("CompetitionHub connected");
+        }
+        catch (Exception ex)
+        {
+            AddDebugLog($"CompetitionHub connection failed: {ex.Message}");
+        }
+    }
+
+    private async Task SetupTimerHub()
+    {
+        try
+        {
+            _timerHub = new HubConnectionBuilder()
+                .WithUrl(Navigation.ToAbsoluteUri("/hubs/timer"))
+                .WithAutomaticReconnect()
+                .Build();
+
+            _timerHub.On<int>("OnTimerTick", async remaining =>
+            {
+                await InvokeAsync(() =>
+                {
+                    _timerRemaining = remaining;
+                    StateHasChanged();
+                });
+            });
+            _timerHub.On<int>("OnTimerStarted", async remaining =>
+            {
+                await InvokeAsync(() =>
+                {
+                    _timerStatus = BlazorApp1.Models.TimerStatus.Running;
+                    _timerRemaining = remaining;
+                    StateHasChanged();
+                });
+            });
+            _timerHub.On<int>("OnTimerStopped", async remaining =>
+            {
+                await InvokeAsync(() =>
+                {
+                    _timerStatus = BlazorApp1.Models.TimerStatus.Stopped;
+                    _timerRemaining = remaining;
+                    StateHasChanged();
+                });
+            });
+            _timerHub.On<int>("OnTimerReset", async remaining =>
+            {
+                await InvokeAsync(() =>
+                {
+                    _timerStatus = BlazorApp1.Models.TimerStatus.Stopped;
+                    _timerRemaining = remaining;
+                    StateHasChanged();
+                });
+            });
+
+            await _timerHub.StartAsync();
+            AddDebugLog("TimerHub connected");
+        }
+        catch (Exception ex)
+        {
+            AddDebugLog($"TimerHub connection failed: {ex.Message}");
+        }
     }
     
     private void CloseYourTurnModal()

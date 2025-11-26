@@ -49,7 +49,7 @@
                                 <span class="material-symbols-outlined">flag</span>
                                 Aktuální stav soutěže
                             </label>
-                            <select class="form-control" @bind="_settings.Status">
+                            <select class="form-control" @bind="_settings.Status" @bind:after="OnStatusChanged">
                                 @foreach (CompetitionStatus status in Enum.GetValues(typeof(CompetitionStatus)))
                                 {
                                     <option value="@status">@GetCompetitionStatusText(status)</option>
@@ -80,7 +80,7 @@
                                 <button class="btn-number" @onclick="() => ChangeRound(-1)" disabled="@(_settings.CurrentRound <= 1)">
                                     <span class="material-symbols-outlined">remove</span>
                                 </button>
-                                <input type="number" class="form-control text-center" @bind="_settings.CurrentRound" min="1" max="@_settings.TotalRounds" />
+                                <input type="number" class="form-control text-center" @bind="_settings.CurrentRound" @bind:after="OnRoundChanged" min="1" max="@_settings.TotalRounds" />
                                 <button class="btn-number" @onclick="() => ChangeRound(1)" disabled="@(_settings.CurrentRound >= _settings.TotalRounds)">
                                     <span class="material-symbols-outlined">add</span>
                                 </button>
@@ -197,7 +197,7 @@
                                         <span class="material-symbols-outlined">workspace_premium</span>
                                         Tým A (stůl A)
                                     </label>
-                                    <select class="form-control team-dropdown" @bind="_settings.CurrentTeamAId">
+                                    <select class="form-control team-dropdown" @bind="_settings.CurrentTeamAId" @bind:after="OnCurrentTeamsChanged">
                                         <option value="">-- Vyberte tým --</option>
                                         @foreach (var team in _availableTeams)
                                         {
@@ -231,7 +231,7 @@
                                         <span class="material-symbols-outlined">workspace_premium</span>
                                         Tým B (stůl B)
                                     </label>
-                                    <select class="form-control team-dropdown" @bind="_settings.CurrentTeamBId">
+                                    <select class="form-control team-dropdown" @bind="_settings.CurrentTeamBId" @bind:after="OnCurrentTeamsChanged">
                                         <option value="">-- Vyberte tým --</option>
                                         @foreach (var team in _availableTeams)
                                         {
@@ -267,7 +267,7 @@
                             <div class="match-teams compact">
                                 <div class="team-select">
                                     <label>Tým A</label>
-                                    <select class="form-control" @bind="_settings.NextTeamAId">
+                                    <select class="form-control" @bind="_settings.NextTeamAId" @bind:after="OnNextTeamsChanged">
                                         <option value="">-- Vyberte tým --</option>
                                         @foreach (var team in _availableTeams)
                                         {
@@ -278,7 +278,7 @@
 
                                 <div class="team-select">
                                     <label>Tým B</label>
-                                    <select class="form-control" @bind="_settings.NextTeamBId">
+                                    <select class="form-control" @bind="_settings.NextTeamBId" @bind:after="OnNextTeamsChanged">
                                         <option value="">-- Vyberte tým --</option>
                                         @foreach (var team in _availableTeams)
                                         {
@@ -413,7 +413,32 @@
         if (newRound >= 1 && newRound <= _settings.TotalRounds)
         {
             _settings.CurrentRound = newRound;
+            _ = CompetitionNotificationService.NotifyRoundChangedAsync(_settings.CurrentRound);
         }
+    }
+
+    private async Task OnRoundChanged()
+    {
+        if (_settings == null) return;
+        await CompetitionNotificationService.NotifyRoundChangedAsync(_settings.CurrentRound);
+    }
+
+    private async Task OnStatusChanged()
+    {
+        if (_settings == null) return;
+        await CompetitionNotificationService.NotifyCompetitionStatusChangedAsync(_settings.Status);
+    }
+
+    private async Task OnCurrentTeamsChanged()
+    {
+        if (_settings == null) return;
+        await CompetitionNotificationService.NotifyCurrentTeamsChangedAsync(_settings.CurrentTeamAId, _settings.CurrentTeamBId);
+    }
+
+    private async Task OnNextTeamsChanged()
+    {
+        if (_settings == null) return;
+        await CompetitionNotificationService.NotifyNextTeamsChangedAsync(_settings.NextTeamAId, _settings.NextTeamBId);
     }
 
     private async Task SaveSettings()

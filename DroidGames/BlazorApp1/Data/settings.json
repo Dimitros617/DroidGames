@@ -1,5 +1,6 @@
 [
   {
+    "Id": "settings",
     "CurrentRound": 1,
     "Status": "NotStarted",
     "GameStatus": "Preparation",

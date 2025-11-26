@@ -9,48 +9,50 @@
 @inject IHubContext<CompetitionHub> CompetitionHubContext
 @rendermode InteractiveServer
 
-<PageTitle>Losování pořadí kola - Admin | Droid Games</PageTitle>
+<PageTitle>Losování pořadí kola - Hlavní rozhodčí | Droid Games</PageTitle>
 
-<div class="round-order-admin">
+<div class="page-shell round-order-admin">
     <div class="page-header">
-        <h1>
-            <span class="material-symbols-outlined">shuffle</span>
-            Losování pořadí kola
-        </h1>
+        <div>
+            <h1 class="page-title">
+                <span class="material-symbols-outlined">shuffle</span>
+                Losov?n? po?ad? kola
+            </h1>
+            <p class="page-subtitle">Spr?va po?ad? t?m? v aktu?ln?m kole a stavu uzam?en?.</p>
+        </div>
+        @if (_roundOrder != null && _roundOrder.Any())
+        {
+            <div class="page-actions">
+                <span class="pill @(_isConfirmed ? "pill-success" : "pill-warning")">
+                    <span class="material-symbols-outlined">@(_isConfirmed ? "lock" : "edit")</span>
+                    @(_isConfirmed ? "Po?ad? zam?eno a zve?ejn?no" : "Koncept - m??ete m?chat")
+                </span>
+            </div>
+        }
     </div>
 
     @if (_loading)
     {
-        <div class="loading-spinner">
-            <div class="spinner"></div>
-            <p>Načítání...</p>
+        <div class="state-card">
+            <span class="material-symbols-outlined spinning">progress_activity</span>
+            <p>Na??t?n?...</p>
         </div>
     }
     else
     {
-        <div class="admin-panel">
+        <div class="section-card admin-panel">
             <div class="round-selector">
                 <h3>Aktuální kolo: @_currentRound</h3>
                 @if (_roundOrder != null && _roundOrder.Any())
                 {
-                    @if (_isConfirmed)
-                    {
-                        <div class="status-badge confirmed">
-                            <span class="material-symbols-outlined">lock</span>
-                            Pořadí zamčeno a schváleno
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="status-badge draft">
-                            <span class="material-symbols-outlined">edit</span>
-                            Koncept - můžete míchát
-                        </div>
-                    }
+                    <span class="pill @(_isConfirmed ? "pill-success" : "pill-warning")">
+                        <span class="material-symbols-outlined">@(_isConfirmed ? "lock" : "edit")</span>
+                        @(_isConfirmed ? "Pořadí zamčeno a schváleno" : "Koncept - můžete míchat")
+                    </span>
                 }
             </div>
 
-            <div class="action-buttons">
+            <div class="action-buttons inline-actions">
                 @if (_roundOrder == null || !_roundOrder.Any())
                 {
                     <button class="btn btn-primary" @onclick="InitializeRound">
@@ -60,7 +62,7 @@
                 }
                 else if (!_isConfirmed)
                 {
-                    <button class="btn btn-warning" @onclick="ShuffleOrder">
+                    <button class="btn btn-secondary" @onclick="ShuffleOrder">
                         <span class="material-symbols-outlined">shuffle</span>
                         @if (_isShuffling)
                         {
@@ -89,35 +91,41 @@
         <!-- Pořadí týmů -->
         @if (_roundOrder != null && _roundOrder.Any())
         {
-            <div class="teams-order-list @(_isShuffling ? "shuffling" : "")">
-                @foreach (var order in _orderedTeams)
-                {
-                    var team = _teams.FirstOrDefault(t => t.Id == order.TeamId);
-                    if (team != null)
+            <div class="section-card order-card">
+                <h3 class="section-title">
+                    <span class="material-symbols-outlined">format_list_numbered</span>
+                    Pořadí týmů v kole @_currentRound
+                </h3>
+                <div class="teams-order-list @(_isShuffling ? "shuffling" : "")">
+                    @foreach (var order in _orderedTeams)
                     {
-                        <div class="team-order-row @GetRowClass(order)" 
-                             style="animation-delay: @(order.Position * 0.05)s">
-                            <div class="position-number">
-                                <span class="position-badge">@order.Position</span>
-                            </div>
-                            <div class="team-info">
-                                <div class="team-name">@team.Name</div>
-                                <div class="team-school">@team.School</div>
-                            </div>
-                            @if (_isConfirmed)
-                            {
-                                <div class="status-icon">
-                                    <span class="material-symbols-outlined">check_circle</span>
+                        var team = _teams.FirstOrDefault(t => t.Id == order.TeamId);
+                        if (team != null)
+                        {
+                            <div class="team-order-row @GetRowClass(order)" 
+                                 style="animation-delay: @(order.Position * 0.05)s">
+                                <div class="position-number">
+                                    <span class="position-badge">@order.Position</span>
                                 </div>
-                            }
-                        </div>
+                                <div class="team-info">
+                                    <div class="team-name">@team.Name</div>
+                                    <div class="team-school">@team.School</div>
+                                </div>
+                                @if (_isConfirmed)
+                                {
+                                    <div class="status-icon">
+                                        <span class="material-symbols-outlined">check_circle</span>
+                                    </div>
+                                }
+                            </div>
+                        }
                     }
-                }
+                </div>
             </div>
         }
         else
         {
-            <div class="empty-state">
+            <div class="state-card">
                 <span class="material-symbols-outlined">info</span>
                 <p>Kolo @_currentRound nemá zatím přiřazené pořadí týmů.</p>
                 <p>Klikněte na tlačítko "Vložit týmy do kola" pro inicializaci.</p>

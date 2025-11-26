@@ -40,7 +40,7 @@
             </li>
         }
 
-        @if (UserSession.HasRole(BlazorApp1.Models.UserRole.Referee) || UserSession.HasRole(BlazorApp1.Models.UserRole.Admin))
+        @if (UserSession.HasRole(BlazorApp1.Models.UserRole.Referee) || UserSession.HasRole(BlazorApp1.Models.UserRole.HeadReferee))
         {
             <li>
                 <NavLink href="referee/scoring">
@@ -49,7 +49,7 @@
             </li>
         }
 
-        @if (UserSession.HasRole(BlazorApp1.Models.UserRole.HeadReferee) || UserSession.HasRole(BlazorApp1.Models.UserRole.Admin))
+        @if (UserSession.HasRole(BlazorApp1.Models.UserRole.HeadReferee))
         {
             <li>
                 <NavLink href="headref/control">
@@ -63,11 +63,11 @@
             </li>
         }
 
-        @if (UserSession.HasRole(BlazorApp1.Models.UserRole.Admin))
+        @if (UserSession.HasRole(BlazorApp1.Models.UserRole.HeadReferee))
         {
             <li>
                 <NavLink href="admin/teams">
-                    Admin
+                    Hlavní rozhodčí
                 </NavLink>
             </li>
         }
@@ -147,7 +147,6 @@
             BlazorApp1.Models.UserRole.Referee => "Rozhodčí",
             BlazorApp1.Models.UserRole.HeadReferee => "Hlavní rozhodčí",
             BlazorApp1.Models.UserRole.Production => "Produkce",
-            BlazorApp1.Models.UserRole.Admin => "Administrátor",
             _ => "Návštěvník"
         };
     }

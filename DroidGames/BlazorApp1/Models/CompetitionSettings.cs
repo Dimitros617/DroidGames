@@ -2,6 +2,7 @@ namespace BlazorApp1.Models;
 
 public class CompetitionSettings
 {
+    public string Id { get; set; } = "settings";
     public int CurrentRound { get; set; } = 1;
     public CompetitionStatus Status { get; set; } = CompetitionStatus.NotStarted;
     

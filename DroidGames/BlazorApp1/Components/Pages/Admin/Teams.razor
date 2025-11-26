@@ -3,30 +3,33 @@
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 
-<PageTitle>Správa týmů - Admin</PageTitle>
+<PageTitle>Správa týmů - Hlavní rozhodčí</PageTitle>
 
-<BlazorApp1.Components.Shared.AuthGuard RequiredRole="BlazorApp1.Models.UserRole.Admin">
+<BlazorApp1.Components.Shared.AuthGuard RequiredRole="BlazorApp1.Models.UserRole.HeadReferee">
     <BlazorApp1.Components.Shared.AdminNav />
     
-    <div class="admin-teams">
+    <div class="page-shell admin-teams">
         <div class="page-header">
-            <h1>
-                <span class="material-symbols-outlined">groups</span>
-                Správa týmů
-            </h1>
+            <div>
+                <h1 class="page-title">
+                    <span class="material-symbols-outlined">groups</span>
+                    Správa týmů
+                </h1>
+                <p class="page-subtitle">Jednotný přehled týmů, PIN kódů a rychlých odkazů na detail jízd.</p>
+            </div>
         </div>
 
         @if (_isLoading)
         {
-            <div class="loading-state">
+            <div class="state-card">
                 <span class="material-symbols-outlined spinning">progress_activity</span>
                 <p>Načítání týmů...</p>
             </div>
         }
         else if (_teams != null && _teams.Any())
         {
-            <div class="teams-table">
-                <table>
+            <div class="table-card teams-table">
+                <table class="data-table">
                     <thead>
                         <tr>
                             <th>Název týmu</th>
@@ -67,7 +70,7 @@
         }
         else
         {
-            <div class="empty-state">
+            <div class="state-card">
                 <span class="material-symbols-outlined">groups</span>
                 <p>Žádné týmy ještě nebyly přidány</p>
             </div>

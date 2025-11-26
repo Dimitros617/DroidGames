@@ -96,14 +96,6 @@ else
     {
         _isChecking = true;
 
-        // Admin má vždy přístup všude
-        if (UserSession.IsAuthenticated && UserSession.Role == BlazorApp1.Models.UserRole.Admin)
-        {
-            _isAuthorized = true;
-            _isChecking = false;
-            return;
-        }
-
         // Pokud je RequiredRole zadán jako string, převeď ho na pole
         BlazorApp1.Models.UserRole[]? rolesToCheck = RequiredRoles;
         
@@ -146,7 +138,6 @@ else
                 BlazorApp1.Models.UserRole.Referee => "/referee/scoring",
                 BlazorApp1.Models.UserRole.HeadReferee => "/headref/control",
                 BlazorApp1.Models.UserRole.Production => "/production/director",
-                BlazorApp1.Models.UserRole.Admin => "/admin/teams",
                 _ => "/"
             };
             Navigation.NavigateTo(redirectUrl);

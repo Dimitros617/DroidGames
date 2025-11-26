@@ -6,6 +6,5 @@ public enum UserRole
     Team,
     Referee,
     HeadReferee,
-    Production,
-    Admin
+    Production
 }

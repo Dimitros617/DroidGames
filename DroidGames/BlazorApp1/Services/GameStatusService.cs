@@ -57,6 +57,10 @@ public class GameStatusService : IGameStatusService
         
         if (settingsEntity != null)
         {
+            if (string.IsNullOrEmpty(settingsEntity.Id))
+            {
+                settingsEntity.Id = "settings";
+            }
             settingsEntity.GameStatus = status;
             await _settingsRepository.UpdateAsync(settingsEntity);
         }

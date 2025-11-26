@@ -12,11 +12,12 @@
 @inject CompetitionSettings Settings
 @inject NavigationManager Navigation
 @inject UserSession UserSession
+@inject ITimerService TimerService
 @implements IDisposable
 
-<PageTitle>Schvalování hodnocení - Admin</PageTitle>
+<PageTitle>Schvalování hodnocení - Hlavní rozhodčí</PageTitle>
 
-<BlazorApp1.Components.Shared.AuthGuard RequiredRoles="@(new[] { UserRole.Admin })">
+<BlazorApp1.Components.Shared.AuthGuard RequiredRoles="@(new[] { UserRole.HeadReferee })">
     <div class="admin-approval-page">
         <div class="page-header">
             <h1>🎯 Schvalování hodnocení rozhodčích</h1>
@@ -370,7 +371,7 @@
     
     private async Task HandleRefereeScoreUpdated(string teamId, int roundNumber, string refereeId)
     {
-        Console.WriteLine($"[Admin] Referee {refereeId} score updated for team {teamId}, round {roundNumber}");
+        Console.WriteLine($"[HeadRef] Referee {refereeId} score updated for team {teamId}, round {roundNumber}");
         
         await InvokeAsync(async () =>
         {
@@ -381,7 +382,7 @@
     
     private async Task HandleScoreApprovalChanged(string teamId, string refereeId)
     {
-        Console.WriteLine($"[Admin] Score approval changed for team {teamId}, referee {refereeId}");
+        Console.WriteLine($"[HeadRef] Score approval changed for team {teamId}, referee {refereeId}");
         
         await InvokeAsync(async () =>
         {
@@ -834,23 +835,23 @@
 
     private async Task StartTimer()
     {
-        Settings.TimerStatus = TimerStatus.Running;
-        Settings.TimerStartedAt = DateTime.UtcNow;
-        await Task.CompletedTask;
+        await TimerService.StartAsync();
+        _remainingSeconds = await TimerService.GetRemainingSecondsAsync();
+        StartTimerUpdate();
     }
 
     private async Task StopTimer()
     {
-        Settings.TimerStatus = TimerStatus.Stopped;
-        await Task.CompletedTask;
+        await TimerService.StopAsync();
+        _timer?.Dispose();
+        _remainingSeconds = await TimerService.GetRemainingSecondsAsync();
     }
 
     private async Task ResetTimer()
     {
-        Settings.TimerStatus = TimerStatus.Stopped;
-        Settings.TimerRemainingSeconds = Settings.RoundDurationSeconds;
-        _remainingSeconds = Settings.RoundDurationSeconds;
-        await Task.CompletedTask;
+        await TimerService.ResetAsync();
+        _timer?.Dispose();
+        _remainingSeconds = await TimerService.GetRemainingSecondsAsync();
     }
 
     private string FormatTime(int seconds)
@@ -864,15 +865,17 @@
     {
         _timer = new System.Threading.Timer(_ =>
         {
-            if (Settings.TimerStatus == TimerStatus.Running && Settings.TimerStartedAt.HasValue)
+            try
             {
-                var elapsed = (int)(DateTime.UtcNow - Settings.TimerStartedAt.Value).TotalSeconds;
-                _remainingSeconds = Math.Max(0, Settings.RoundDurationSeconds - elapsed);
-                InvokeAsync(StateHasChanged);
+                if (Settings != null)
+                {
+                    _remainingSeconds = Settings.TimerRemainingSeconds;
+                    InvokeAsync(StateHasChanged);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                _remainingSeconds = Settings.TimerRemainingSeconds;
+                Console.WriteLine($"[RefereeApproval] Timer update error: {ex.Message}");
             }
         }, null, 0, 1000);
     }

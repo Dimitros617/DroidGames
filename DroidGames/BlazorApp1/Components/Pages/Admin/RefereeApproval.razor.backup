@@ -11,9 +11,9 @@
 @inject NavigationManager Navigation
 @implements IDisposable
 
-<PageTitle>Schvalování hodnocení - Admin</PageTitle>
+<PageTitle>Schvalování hodnocení - Hlavní rozhodčí</PageTitle>
 
-<BlazorApp1.Components.Shared.AuthGuard RequiredRoles="@(new[] { UserRole.Admin })">
+<BlazorApp1.Components.Shared.AuthGuard RequiredRoles="@(new[] { UserRole.HeadReferee })">
     <div class="admin-approval-page">
         <div class="page-header">
             <h1>🎯 Schvalování hodnocení rozhodčích</h1>
@@ -287,7 +287,7 @@
     
     private async Task HandleRefereeScoreUpdated(string teamId, int roundNumber, string refereeId)
     {
-        Console.WriteLine($"[Admin] Referee {refereeId} score updated for team {teamId}, round {roundNumber}");
+        Console.WriteLine($"[HeadRef] Referee {refereeId} score updated for team {teamId}, round {roundNumber}");
         
         await InvokeAsync(async () =>
         {
@@ -298,7 +298,7 @@
     
     private async Task HandleScoreApprovalChanged(string teamId, string refereeId)
     {
-        Console.WriteLine($"[Admin] Score approval changed for team {teamId}, referee {refereeId}");
+        Console.WriteLine($"[HeadRef] Score approval changed for team {teamId}, referee {refereeId}");
         
         await InvokeAsync(async () =>
         {

@@ -2,6 +2,7 @@ using System;
 using BlazorApp1.Data;
 using BlazorApp1.Models;
 using Microsoft.AspNetCore.SignalR;
+using BlazorApp1.Hubs;
 
 namespace BlazorApp1.Services;
 
@@ -531,40 +532,55 @@ public class TimerService : ITimerService
 {
     private readonly CompetitionSettings _settings;
     private readonly IGameStatusService _gameStatusService;
+    private readonly IHubContext<TimerHub> _timerHub;
     private DateTime? _startTime;
+    private int _startRemainingSeconds;
 
-    public TimerService(CompetitionSettings settings, IGameStatusService gameStatusService)
+    public TimerService(CompetitionSettings settings, IGameStatusService gameStatusService, IHubContext<TimerHub> timerHub)
     {
         Console.WriteLine("[DEBUG] TimerService created");
         _settings = settings;
         _gameStatusService = gameStatusService;
+        _timerHub = timerHub;
     }
 
     public async Task StartAsync()
     {
-        _settings.TimerStatus = TimerStatus.Running;
-        _settings.TimerStartedAt = DateTime.UtcNow;
+        var remaining = _settings.TimerRemainingSeconds <= 0
+            ? _settings.RoundDurationSeconds
+            : _settings.TimerRemainingSeconds;
+
+        _startRemainingSeconds = remaining;
         _startTime = DateTime.UtcNow;
-        
-        // Automaticky změnit stav hry na "Probíhá jízda"
+        _settings.TimerStartedAt = _startTime;
+        _settings.TimerStatus = TimerStatus.Running;
+        _settings.TimerRemainingSeconds = remaining;
+
         await _gameStatusService.SetGameStatusAsync(GameStatus.RoundInProgress);
+        await _timerHub.Clients.All.SendAsync("OnTimerStarted", remaining);
     }
 
     public async Task StopAsync()
     {
+        var remaining = await GetRemainingSecondsAsync();
         _settings.TimerStatus = TimerStatus.Stopped;
-        
-        // Automaticky změnit stav na "Čeká se na hodnocení"
-        await _gameStatusService.SetGameStatusAsync(GameStatus.WaitingForScoring);
-    }
-
-    public Task ResetAsync()
-    {
-        _settings.TimerStatus = TimerStatus.Stopped;
-        _settings.TimerRemainingSeconds = _settings.RoundDurationSeconds;
+        _settings.TimerRemainingSeconds = remaining;
         _settings.TimerStartedAt = null;
         _startTime = null;
-        return Task.CompletedTask;
+        _startRemainingSeconds = remaining;
+        await _gameStatusService.SetGameStatusAsync(GameStatus.WaitingForScoring);
+        await _timerHub.Clients.All.SendAsync("OnTimerStopped", remaining);
+    }
+
+    public async Task ResetAsync()
+    {
+        _startTime = null;
+        _startRemainingSeconds = _settings.RoundDurationSeconds;
+        _settings.TimerStatus = TimerStatus.Stopped;
+        _settings.TimerRemainingSeconds = _startRemainingSeconds;
+        _settings.TimerStartedAt = null;
+        await _gameStatusService.SetGameStatusAsync(GameStatus.Preparation);
+        await _timerHub.Clients.All.SendAsync("OnTimerReset", _settings.TimerRemainingSeconds);
     }
 
     public Task<int> GetRemainingSecondsAsync()
@@ -575,9 +591,14 @@ public class TimerService : ITimerService
         }
 
         var elapsed = (int)(DateTime.UtcNow - _startTime.Value).TotalSeconds;
-        var remaining = Math.Max(0, _settings.RoundDurationSeconds - elapsed);
+        var remaining = Math.Max(0, _startRemainingSeconds - elapsed);
         _settings.TimerRemainingSeconds = remaining;
         return Task.FromResult(remaining);
+    }
+
+    public async Task NotifyTickAsync(int remainingSeconds)
+    {
+        await _timerHub.Clients.All.SendAsync("OnTimerTick", remainingSeconds);
     }
 
     public TimerStatus GetStatus() => _settings.TimerStatus;
@@ -604,6 +625,7 @@ public class TimerBackgroundService : BackgroundService
                 if (_timerService.GetStatus() == TimerStatus.Running)
                 {
                     var remaining = await _timerService.GetRemainingSecondsAsync();
+                    await _timerService.NotifyTickAsync(remaining);
                     if (remaining <= 0)
                     {
                         await _timerService.StopAsync();
