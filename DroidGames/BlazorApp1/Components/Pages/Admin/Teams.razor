@@ -28,6 +28,49 @@
         }
         else if (_teams != null && _teams.Any())
         {
+            <!-- Summary Cards -->
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="summary-icon">
+                        <span class="material-symbols-outlined">groups</span>
+                    </div>
+                    <div class="summary-content">
+                        <div class="summary-label">Počet týmů</div>
+                        <div class="summary-value">@_teamCount</div>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="summary-icon">
+                        <span class="material-symbols-outlined">emoji_events</span>
+                    </div>
+                    <div class="summary-content">
+                        <div class="summary-label">Průměrné skóre</div>
+                        <div class="summary-value">@_avgScore.ToString("F1")</div>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="summary-icon">
+                        <span class="material-symbols-outlined">format_list_numbered</span>
+                    </div>
+                    <div class="summary-content">
+                        <div class="summary-label">Průměr kol</div>
+                        <div class="summary-value">@_avgRounds.ToString("F1")</div>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="summary-icon">
+                        <span class="material-symbols-outlined">military_tech</span>
+                    </div>
+                    <div class="summary-content">
+                        <div class="summary-label">Lídr</div>
+                        <div class="summary-value">@_leaderName</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="table-card teams-table">
                 <table class="data-table">
                     <thead>
@@ -81,6 +124,10 @@
 @code {
     private List<BlazorApp1.Models.Team>? _teams;
     private bool _isLoading = true;
+    private int _teamCount;
+    private double _avgScore;
+    private double _avgRounds;
+    private string _leaderName = "-";
 
     protected override async Task OnInitializedAsync()
     {
@@ -92,6 +139,14 @@
         _isLoading = true;
         _teams = await TeamService.GetLeaderboardAsync();
         _isLoading = false;
+        
+        if (_teams != null && _teams.Any())
+        {
+            _teamCount = _teams.Count;
+            _avgScore = _teams.Average(t => t.TotalScore);
+            _avgRounds = _teams.Average(t => t.Rides.Count);
+            _leaderName = _teams.OrderByDescending(t => t.TotalScore).FirstOrDefault()?.Name ?? "-";
+        }
         StateHasChanged();
     }
 

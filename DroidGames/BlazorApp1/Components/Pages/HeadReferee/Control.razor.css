@@ -1,74 +1,11 @@
-.control-panel {
-    max-width: 1600px;
-    margin: 0 auto;
-    padding: 2rem;
-}
-
-.page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 2px solid #e9ecef;
-}
-
-.page-header h1 {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin: 0;
-    color: #212529;
-    font-size: 2rem;
-}
-
-.page-header h1 .material-symbols-outlined {
-    color: #007bff;
-    font-size: 2.5rem;
-}
-
-.header-actions {
-    display: flex;
-    gap: 1rem;
-}
-
-.loading-spinner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 400px;
-    gap: 1rem;
-}
-
-.spinner {
-    width: 50px;
-    height: 50px;
-    border: 4px solid rgba(0, 123, 255, 0.1);
-    border-top-color: #007bff;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-.error-message {
-    text-align: center;
-    padding: 3rem;
-    color: #dc3545;
-}
-
-.error-message .material-symbols-outlined {
-    font-size: 4rem;
-    margin-bottom: 1rem;
-}
-
 .control-grid {
     display: grid;
     grid-template-columns: 450px 1fr;
-    gap: 2rem;
+    gap: 2.5rem;
+}
+
+.control-panel .section-card {
+    margin-bottom: var(--spacing-lg);
 }
 
 .settings-column,
@@ -78,38 +15,11 @@
     gap: 1.5rem;
 }
 
-.control-card {
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-}
-
-.control-card.teams-card {
-    height: fit-content;
-}
-
-.card-header {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+.card-body.spaced-body {
     padding: 1.25rem 1.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
-
-.card-header .material-symbols-outlined {
-    font-size: 28px;
-}
-
-.card-header h2 {
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: 600;
-}
-
-.card-body {
-    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
 }
 
 .form-group {
@@ -348,7 +258,7 @@ select.form-control {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    background: linear-gradient(135deg, #faba20 0%, #fdc71d 100%);
     color: white;
 }
 
@@ -386,10 +296,11 @@ select.form-control {
 
 .current-match,
 .next-match {
-    padding: 1.5rem;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 1.25rem;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
     border-radius: 12px;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
 }
 
 .match-header {

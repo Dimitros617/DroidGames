@@ -11,21 +11,24 @@
 
 <PageTitle>Losování pořadí kola - Hlavní rozhodčí | Droid Games</PageTitle>
 
-<div class="page-shell round-order-admin">
+<BlazorApp1.Components.Shared.AuthGuard RequiredRole="BlazorApp1.Models.UserRole.HeadReferee">
+    <BlazorApp1.Components.Shared.AdminNav />
+    
+    <div class="page-shell round-order-admin">
     <div class="page-header">
         <div>
             <h1 class="page-title">
                 <span class="material-symbols-outlined">shuffle</span>
-                Losov?n? po?ad? kola
+                Losování pořadí kola
             </h1>
-            <p class="page-subtitle">Spr?va po?ad? t?m? v aktu?ln?m kole a stavu uzam?en?.</p>
+            <p class="page-subtitle">Správa pořadí týmů v aktuálním kole a stavu uzamčení.</p>
         </div>
         @if (_roundOrder != null && _roundOrder.Any())
         {
             <div class="page-actions">
                 <span class="pill @(_isConfirmed ? "pill-success" : "pill-warning")">
                     <span class="material-symbols-outlined">@(_isConfirmed ? "lock" : "edit")</span>
-                    @(_isConfirmed ? "Po?ad? zam?eno a zve?ejn?no" : "Koncept - m??ete m?chat")
+                    @(_isConfirmed ? "Pořadí zamčeno a zveřejněno" : "Koncept - můžete míchat")
                 </span>
             </div>
         }
@@ -35,7 +38,7 @@
     {
         <div class="state-card">
             <span class="material-symbols-outlined spinning">progress_activity</span>
-            <p>Na??t?n?...</p>
+            <p>Načítání...</p>
         </div>
     }
     else
@@ -369,3 +372,4 @@
         });
     }
 }
+</BlazorApp1.Components.Shared.AuthGuard>

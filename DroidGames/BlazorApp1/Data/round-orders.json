@@ -3,34 +3,31 @@
     "Id": "4a558844-ea60-4bbc-b811-8064f15509c8",
     "RoundNumber": 1,
     "TeamId": "team-3",
-    "Position": 1,
-    "IsConfirmed": true,
-    "IsPublic": true,
+    "Position": 2,
+    "IsConfirmed": false,
+    "IsPublic": false,
     "CreatedAt": "2025-10-31T14:08:51.0878201+01:00",
-    "LastShuffledAt": "2025-11-26T20:12:10.9631934+01:00",
-    "ConfirmedAt": "2025-11-26T20:12:13.7958596+01:00"
+    "LastShuffledAt": "2025-11-26T21:56:54.1998902+01:00"
   },
   {
     "Id": "d91e15bc-148b-42e7-b446-5be9ef51e929",
     "RoundNumber": 1,
     "TeamId": "team-1",
-    "Position": 3,
-    "IsConfirmed": true,
-    "IsPublic": true,
+    "Position": 1,
+    "IsConfirmed": false,
+    "IsPublic": false,
     "CreatedAt": "2025-10-31T14:08:51.0931725+01:00",
-    "LastShuffledAt": "2025-11-26T20:12:10.9682162+01:00",
-    "ConfirmedAt": "2025-11-26T20:12:13.8048198+01:00"
+    "LastShuffledAt": "2025-11-26T21:56:54.1978639+01:00"
   },
   {
     "Id": "fb825a78-cbdf-4e78-b30a-199168aa0e38",
     "RoundNumber": 1,
     "TeamId": "team-2",
-    "Position": 2,
-    "IsConfirmed": true,
-    "IsPublic": true,
+    "Position": 3,
+    "IsConfirmed": false,
+    "IsPublic": false,
     "CreatedAt": "2025-10-31T14:08:51.0978949+01:00",
-    "LastShuffledAt": "2025-11-26T20:12:10.9666937+01:00",
-    "ConfirmedAt": "2025-11-26T20:12:13.8016241+01:00"
+    "LastShuffledAt": "2025-11-26T21:56:54.2015757+01:00"
   },
   {
     "Id": "25a283c1-9398-4b18-ab2b-4ddf1a1eead8",

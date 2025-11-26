@@ -118,6 +118,49 @@
                 "Timestamp": "2025-11-26T17:49:07.6589753+01:00"
               }
             ]
+          },
+          "headref-1": {
+            "RefereeId": "headref-1",
+            "ScoreBreakdown": {
+              "Dotyk krystal\u016F (1\u00D7)": 1,
+              "Validn\u00ED p\u0159esuny (1\u00D7)": 1,
+              "Naru\u0161en\u00ED s\u00EDry (1\u00D7)": -1
+            },
+            "TotalScore": 1,
+            "SubmittedAt": "2025-11-26T19:45:05.2089829Z",
+            "LastModifiedAt": "2025-11-26T19:45:05.2089832Z",
+            "IsSubmitted": false,
+            "IsApproved": false,
+            "IsRejected": false,
+            "Events": [
+              {
+                "Id": 1,
+                "X": 1,
+                "Y": 1,
+                "BlockType": "BlueCrystal",
+                "Description": "\uD83D\uDC8E Dotyk krystalu",
+                "Points": 1,
+                "Timestamp": "2025-11-26T20:45:02.9302052+01:00"
+              },
+              {
+                "Id": 2,
+                "X": 1,
+                "Y": 1,
+                "BlockType": "BlueCrystal",
+                "Description": "\uD83D\uDCCF Validn\u00ED p\u0159esun",
+                "Points": 1,
+                "Timestamp": "2025-11-26T20:45:02.9304931+01:00"
+              },
+              {
+                "Id": 3,
+                "X": 1,
+                "Y": 4,
+                "BlockType": "YellowSulfur",
+                "Description": "\uD83D\uDFE1 Naru\u0161en\u00ED s\u00EDry",
+                "Points": -1,
+                "Timestamp": "2025-11-26T20:45:05.2086235+01:00"
+              }
+            ]
           }
         },
         "IsApproved": false,

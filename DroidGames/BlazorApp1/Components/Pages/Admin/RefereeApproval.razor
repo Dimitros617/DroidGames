@@ -18,45 +18,69 @@
 <PageTitle>Schvalování hodnocení - Hlavní rozhodčí</PageTitle>
 
 <BlazorApp1.Components.Shared.AuthGuard RequiredRoles="@(new[] { UserRole.HeadReferee })">
-    <div class="admin-approval-page">
+    <div class="page-shell admin-approval-page">
         <div class="page-header">
-            <h1>🎯 Schvalování hodnocení rozhodčích</h1>
-            <p>Kontrola a schvalování bodování od rozhodčích</p>
+            <div>
+                <h1 class="page-title">
+                    <span class="material-symbols-outlined">done_all</span>
+                    Schvalování hodnocení
+                </h1>
+                <p class="page-subtitle">Kontrola a schválení bodování rozhodčích v aktuálním kole.</p>
+            </div>
+            <div class="page-actions">
+                <span class="pill pill-neutral">
+                    <span class="material-symbols-outlined">counter_1</span>
+                    Kolo @_currentRoundNumber
+                </span>
+            </div>
         </div>
 
         @if (!_isInitialized)
         {
-            <div class="loading">
-                <div class="spinner"></div>
+            <div class="state-card">
+                <span class="material-symbols-outlined spinning">progress_activity</span>
                 <p>Načítání...</p>
             </div>
         }
         else
         {
-            <!-- Ovládání soutěže -->
-            <div class="competition-controls">
-                <h2>⏱️ Řízení kola @_currentRoundNumber</h2>
-                <div class="timer-controls">
-                    <button class="btn btn-success" @onclick="StartTimer" disabled="@(Settings.TimerStatus == TimerStatus.Running)">
-                        ▶️ Start
-                    </button>
-                    <button class="btn btn-warning" @onclick="StopTimer" disabled="@(Settings.TimerStatus != TimerStatus.Running)">
-                        ⏸️ Stop
-                    </button>
-                    <button class="btn btn-danger" @onclick="ResetTimer">
-                        🔄 Reset
-                    </button>
+            <div class="section-card competition-controls">
+                <div class="section-title">
+                    <span class="material-symbols-outlined">timer</span>
+                    Řízení kola @_currentRoundNumber
+                </div>
+                <div class="timer-controls inline-actions">
+                    <div class="inline-actions">
+                        <button class="btn btn-success" @onclick="StartTimer" disabled="@(Settings.TimerStatus == TimerStatus.Running)">
+                            <span class="material-symbols-outlined">play_arrow</span>
+                            Start
+                        </button>
+                        <button class="btn btn-secondary" @onclick="StopTimer" disabled="@(Settings.TimerStatus != TimerStatus.Running)">
+                            <span class="material-symbols-outlined">pause</span>
+                            Stop
+                        </button>
+                        <button class="btn btn-danger" @onclick="ResetTimer">
+                            <span class="material-symbols-outlined">restart_alt</span>
+                            Reset
+                        </button>
+                    </div>
                     <div class="timer-display">
-                        <span class="timer-time">@FormatTime(_remainingSeconds)</span>
+                        <div class="timer-time">@FormatTime(_remainingSeconds)</div>
+                        <div class="pill @((Settings.TimerStatus == TimerStatus.Running) ? "pill-success" : "pill-neutral")">
+                            <span class="material-symbols-outlined">@((Settings.TimerStatus == TimerStatus.Running) ? "schedule" : "stop_circle")</span>
+                            @((Settings.TimerStatus == TimerStatus.Running) ? "Běží" : "Připraveno")
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Mapa -->
             @if (_selectedMap != null)
             {
-                <div class="map-preview">
-                    <h3>🗺️ Mapa: @_selectedMap.Name</h3>
+                <div class="section-card map-preview">
+                    <h3 class="section-title">
+                        <span class="material-symbols-outlined">map</span>
+                        Mapa: @_selectedMap.Name
+                    </h3>
                     <div class="map-grid-small">
                         @for (int y = 0; y < 6; y++)
                         {
@@ -77,29 +101,43 @@
                 </div>
             }
 
-            <!-- Tabulka hodnocení -->
-            <div class="scoring-table-section">
-                <h2>📊 Hodnocení týmů</h2>
+            <div class="section-card scoring-table-section">
+                <div class="section-title">
+                    <span class="material-symbols-outlined">groups</span>
+                    Hodnocení týmů
+                </div>
                 
                 @if (_currentTeamPair != null && _currentTeamPair.Count >= 2)
                 {
                     <div class="team-pair-info">
-                        <strong>Aktuální dvojice:</strong> @_currentTeamPair[0].Name vs @_currentTeamPair[1].Name
+                        <span class="pill pill-neutral">
+                            <span class="material-symbols-outlined">swap_horiz</span>
+                            Aktuální dvojice: @_currentTeamPair[0].Name vs @_currentTeamPair[1].Name
+                        </span>
                     </div>
 
                     @foreach (var team in _currentTeamPair)
                     {
                         <div class="team-scoring-block">
-                            <h3>🎯 @team.Name</h3>
+                            <div class="team-block-header">
+                                <div>
+                                    <h3>@team.Name</h3>
+                                    <p class="team-meta">@team.School</p>
+                                </div>
+                                <span class="pill pill-neutral">
+                                    <span class="material-symbols-outlined">format_list_numbered</span>
+                                    Jízd: @team.Rides.Count
+                                </span>
+                            </div>
                             
-                            <table class="scoring-table">
+                            <table class="data-table scoring-table">
                                 <thead>
                                     <tr>
                                         <th>Rozhodčí</th>
-                                        <th>💎 Krystaly</th>
-                                        <th>🟡 Síra</th>
-                                        <th>🎁 Bonusy</th>
-                                        <th>📊 Celkem</th>
+                                        <th>Krystaly</th>
+                                        <th>Síra</th>
+                                        <th>Bonusy</th>
+                                        <th>Celkem</th>
                                         <th>Status</th>
                                         <th>Akce</th>
                                     </tr>
@@ -114,8 +152,8 @@
                                         var isExpanded = IsRowExpanded(team.Id, referee.Id);
                                         
                                         <tr class="@GetRowClass(score) @(isExpanded ? "expanded" : "")" @onclick="() => ToggleRowExpansion(team.Id, referee.Id)">
-                                            <td>
-                                                <span class="expand-icon">@(isExpanded ? "▼" : "▶")</span>
+                                            <td class="referee-cell">
+                                                <span class="expand-icon material-symbols-outlined">@((isExpanded) ? "expand_more" : "chevron_right")</span>
                                                 <strong>@referee.Username</strong>
                                             </td>
                                             <td class="score-cell">@(hasScore ? breakdown.CrystalPoints : "-")</td>
@@ -125,30 +163,31 @@
                                             <td class="status-cell">
                                                 @if (!hasScore)
                                                 {
-                                                    <span class="badge badge-not-started">Nezadáno</span>
+                                                    <span class="status-pill status-muted">Nezadáno</span>
                                                 }
                                                 else if (score!.IsApproved)
                                                 {
-                                                    <span class="badge badge-approved">✅ Schváleno</span>
+                                                    <span class="status-pill status-approved">Schváleno</span>
                                                 }
                                                 else if (score.IsRejected)
                                                 {
-                                                    <span class="badge badge-rejected">↩️ Vráceno</span>
+                                                    <span class="status-pill status-rejected">Vráceno</span>
                                                 }
                                                 else if (score.IsSubmitted)
                                                 {
-                                                    <span class="badge badge-submitted">⏳ Čeká</span>
+                                                    <span class="status-pill status-submitted">Čeká</span>
                                                 }
                                                 else
                                                 {
-                                                    <span class="badge badge-editing">✏️ Hodnotí</span>
+                                                    <span class="status-pill status-editing">Hodnotí</span>
                                                 }
                                             </td>
                                             <td class="action-cell" @onclick:stopPropagation="true">
                                                 @if (hasScore && score!.IsSubmitted && !score.IsApproved && !score.IsRejected)
                                                 {
                                                     <button class="btn btn-sm btn-reject" @onclick="() => ShowRejectDialog(team.Id, referee.Id)">
-                                                        ↩️ Vrátit
+                                                        <span class="material-symbols-outlined">undo</span>
+                                                        Vrátit
                                                     </button>
                                                 }
                                                 else if (hasScore && score!.IsRejected)
@@ -157,7 +196,7 @@
                                                 }
                                                 else if (hasScore && score!.IsApproved)
                                                 {
-                                                    <span class="text-success">✓ Hotovo</span>
+                                                    <span class="text-success">Hotovo</span>
                                                 }
                                                 else
                                                 {
@@ -171,7 +210,7 @@
                                             <tr class="detail-row">
                                                 <td colspan="7">
                                                     <div class="events-detail">
-                                                        <h4>📋 Detail událostí rozhodčího @referee.Username</h4>
+                                                        <h4>Detail událostí rozhodčího @referee.Username</h4>
                                                         <table class="events-table-readonly">
                                                             <thead>
                                                                 <tr>
@@ -210,7 +249,6 @@
                                 </tbody>
                             </table>
                             
-                            <!-- Výsledek porovnání -->
                             @{
                                 var comparison = CompareTeamScores(team.Id);
                             }
@@ -220,19 +258,21 @@
                                     @if (comparison.AllMatch)
                                     {
                                         <div class="match-message">
-                                            ✅ <strong>Všechna hodnocení se shodují!</strong>
+                                            <span class="material-symbols-outlined">verified</span>
+                                            <strong>Všechna hodnocení se shodují</strong>
                                             <div class="match-details">
-                                                <span>💎 Krystaly: @comparison.CrystalPoints</span>
-                                                <span>🟡 Síra: @comparison.SulfurPenalty</span>
-                                                <span>🎁 Bonusy: @comparison.BonusPoints</span>
-                                                <span class="total">📊 Celkem: @comparison.TotalScore</span>
+                                                <span><span class="material-symbols-outlined">diamond</span> Krystaly: @comparison.CrystalPoints</span>
+                                                <span><span class="material-symbols-outlined">scatter_plot</span> Síra: @comparison.SulfurPenalty</span>
+                                                <span><span class="material-symbols-outlined">redeem</span> Bonusy: @comparison.BonusPoints</span>
+                                                <span class="total"><span class="material-symbols-outlined">sum</span> Celkem: @comparison.TotalScore</span>
                                             </div>
                                         </div>
                                     }
                                     else
                                     {
                                         <div class="mismatch-message">
-                                            ⚠️ <strong>Hodnocení se neshodují!</strong>
+                                            <span class="material-symbols-outlined">warning</span>
+                                            <strong>Hodnocení se neshodují</strong>
                                             <p>Zkontrolujte jednotlivá hodnocení a vraťte nesprávná k opravě.</p>
                                             @if (comparison.Differences.Any())
                                             {
@@ -250,42 +290,45 @@
                         </div>
                     }
                     
-                    <!-- Globální schválení pro celou dvojici -->
                     <div class="global-approval-section">
                         @{
                             var canApprove = CanApproveRound();
                         }
                         @if (canApprove)
                         {
-                            <button class="btn btn-lg btn-approve-all" @onclick="ApproveRound">
-                                ✅ Schválit kolo pro oba týmy
+                            <button class="btn btn-primary btn-lg" @onclick="ApproveRound">
+                                <span class="material-symbols-outlined">task_alt</span>
+                                Schválit kolo pro oba týmy
                             </button>
-                            <p class="help-text">✓ Všechna hodnocení jsou odeslaná a shodují se v bodech</p>
+                            <p class="help-text">Všechna hodnocení jsou odeslaná a shodují se v bodech.</p>
                         }
                         else
                         {
-                            <button class="btn btn-lg btn-approve-all" disabled>
-                                ✅ Schválit kolo pro oba týmy
+                            <button class="btn btn-primary btn-lg" disabled>
+                                <span class="material-symbols-outlined">task_alt</span>
+                                Schválit kolo pro oba týmy
                             </button>
-                            <p class="help-text error">⚠️ Nelze schválit - hodnocení se neshodují nebo nejsou všechna odeslaná</p>
+                            <p class="help-text error">Nelze schválit - hodnocení se neshodují nebo nejsou všechna odeslaná.</p>
                         }
                     </div>
                     
                     <div class="next-pair-section">
-                        <button class="btn btn-lg btn-next" 
+                        <button class="btn btn-secondary btn-lg" 
                                 @onclick="NextTeamPair"
                                 disabled="@(!AllScoresApproved())">
-                            ➡️ Další dvojice
+                            <span class="material-symbols-outlined">chevron_right</span>
+                            Další dvojice
                         </button>
                         @if (!AllScoresApproved())
                         {
-                            <p class="help-text">⚠️ Musíte schválit kolo před přechodem na další dvojici</p>
+                            <p class="help-text">Musíte schválit kolo před přechodem na další dvojici.</p>
                         }
                     </div>
                 }
                 else
                 {
-                    <div class="no-teams">
+                    <div class="state-card">
+                        <span class="material-symbols-outlined">groups</span>
                         <p>Žádné týmy k hodnocení</p>
                     </div>
                 }
@@ -303,7 +346,7 @@
         {
             <div class="dialog-overlay" @onclick="CancelReject">
                 <div class="dialog-box" @onclick:stopPropagation="true">
-                    <h3>↩️ Vrátit hodnocení</h3>
+                    <h3>Vrátit hodnocení</h3>
                     <p>Důvod vrácení (volitelné):</p>
                     <textarea class="form-control" @bind="_rejectionReason" rows="3" placeholder="Např: Chybné bodování krystalů..."></textarea>
                     <div class="dialog-actions">
@@ -941,4 +984,3 @@
         ScoreNotificationService.OnScoreApprovalChanged -= HandleScoreApprovalChanged;
     }
 }
-

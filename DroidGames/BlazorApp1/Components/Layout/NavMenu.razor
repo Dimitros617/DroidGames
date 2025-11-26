@@ -7,36 +7,48 @@
         <!-- Public Links -->
         <li>
             <NavLink href="" Match="NavLinkMatch.All">
-                Žebříček
+                <span class="material-symbols-outlined">leaderboard</span>
+                <span>Žebříček</span>
             </NavLink>
         </li>
         <li>
             <NavLink href="maps">
-                Mapy
+                <span class="material-symbols-outlined">map</span>
+                <span>Mapy</span>
             </NavLink>
         </li>
         <li>
             <NavLink href="round-order">
-                Pořadí kol
+                <span class="material-symbols-outlined">format_list_numbered</span>
+                <span>Pořadí kol</span>
             </NavLink>
         </li>
 
         @if (UserSession.HasRole(BlazorApp1.Models.UserRole.Team))
         {
-            <li>
-                <NavLink href="team/dashboard">
-                    Dashboard
-                </NavLink>
-            </li>
-            <li>
-                <NavLink href="team/statistics">
-                    Statistiky
-                </NavLink>
-            </li>
-            <li>
-                <NavLink href="team/achievements">
-                    Achievementy
-                </NavLink>
+            <li class="nav-dropdown">
+                <button class="nav-dropdown-toggle" @onclick="ToggleTeamDropdown">
+                    <span class="material-symbols-outlined">groups</span>
+                    <span>Tým</span>
+                    <span class="material-symbols-outlined dropdown-arrow">@(_teamDropdownOpen ? "expand_less" : "expand_more")</span>
+                </button>
+                @if (_teamDropdownOpen)
+                {
+                    <div class="nav-dropdown-menu">
+                        <NavLink href="team/dashboard">
+                            <span class="material-symbols-outlined">dashboard</span>
+                            <span>Dashboard</span>
+                        </NavLink>
+                        <NavLink href="team/statistics">
+                            <span class="material-symbols-outlined">bar_chart</span>
+                            <span>Statistiky</span>
+                        </NavLink>
+                        <NavLink href="team/achievements">
+                            <span class="material-symbols-outlined">emoji_events</span>
+                            <span>Achievementy</span>
+                        </NavLink>
+                    </div>
+                }
             </li>
         }
 
@@ -44,64 +56,78 @@
         {
             <li>
                 <NavLink href="referee/scoring">
-                    Bodování
+                    <span class="material-symbols-outlined">score</span>
+                    <span>Bodování</span>
                 </NavLink>
             </li>
         }
 
         @if (UserSession.HasRole(BlazorApp1.Models.UserRole.HeadReferee))
         {
-            <li>
-                <NavLink href="headref/control">
-                    Ovládání
-                </NavLink>
-            </li>
-            <li>
-                <NavLink href="admin/referee-approval">
-                    Schvalování
-                </NavLink>
+            <li class="nav-dropdown">
+                <button class="nav-dropdown-toggle" @onclick="ToggleAdminDropdown">
+                    <span class="material-symbols-outlined">admin_panel_settings</span>
+                    <span>Admin</span>
+                    <span class="material-symbols-outlined dropdown-arrow">@(_adminDropdownOpen ? "expand_less" : "expand_more")</span>
+                </button>
+                @if (_adminDropdownOpen)
+                {
+                    <div class="nav-dropdown-menu">
+                        <NavLink href="headref/control">
+                            <span class="material-symbols-outlined">settings</span>
+                            <span>Ovládání</span>
+                        </NavLink>
+                        <NavLink href="admin/teams">
+                            <span class="material-symbols-outlined">groups</span>
+                            <span>Správa týmů</span>
+                        </NavLink>
+                        <NavLink href="admin/diplomas">
+                            <span class="material-symbols-outlined">workspace_premium</span>
+                            <span>Diplomy</span>
+                        </NavLink>
+                        <NavLink href="admin/round-order">
+                            <span class="material-symbols-outlined">shuffle</span>
+                            <span>Los pořadí</span>
+                        </NavLink>
+                        <NavLink href="admin/referee-approval">
+                            <span class="material-symbols-outlined">fact_check</span>
+                            <span>Schvalování</span>
+                        </NavLink>
+                    </div>
+                }
             </li>
         }
+    </ul>
 
-        @if (UserSession.HasRole(BlazorApp1.Models.UserRole.HeadReferee))
-        {
-            <li>
-                <NavLink href="admin/teams">
-                    Hlavní rozhodčí
-                </NavLink>
-            </li>
-        }
-
-        <!-- Login / Logout -->
+    <div class="nav-right">
         @if (UserSession.IsAuthenticated)
         {
-            <li class="nav-user">
+            <div class="nav-user">
                 <span class="material-symbols-outlined user-icon">account_circle</span>
                 <div class="user-info">
                     <span class="user-name">@UserSession.Username</span>
                     <span class="user-role">@GetRoleName(UserSession.Role)</span>
                 </div>
-            </li>
-            <li>
-                <a href="/logout" class="nav-logout">
-                    <span class="material-symbols-outlined">logout</span>
-                    <span>Odhlásit</span>
-                </a>
-            </li>
+            </div>
+            <NavLink href="logout" class="nav-logout">
+                <span class="material-symbols-outlined">logout</span>
+                <span>Odhlásit</span>
+            </NavLink>
         }
         else
         {
-            <li>
-                <NavLink href="login">
-                    <span class="material-symbols-outlined">login</span>
-                    <span>Přihlásit se</span>
-                </NavLink>
-            </li>
+            <NavLink href="login" class="nav-login">
+                <span class="material-symbols-outlined">login</span>
+                <span>Přihlásit se</span>
+            </NavLink>
         }
-    </ul>
+    </div>
 </nav>
 
 @code {
+    private bool _teamDropdownOpen = false;
+    private bool _adminDropdownOpen = false;
+
     protected override void OnInitialized()
     {
         try
@@ -136,7 +162,22 @@
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
+        // Zavřít dropdown menu při změně stránky
+        _teamDropdownOpen = false;
+        _adminDropdownOpen = false;
         StateHasChanged();
+    }
+
+    private void ToggleTeamDropdown()
+    {
+        _teamDropdownOpen = !_teamDropdownOpen;
+        _adminDropdownOpen = false; // Zavřít druhé menu
+    }
+
+    private void ToggleAdminDropdown()
+    {
+        _adminDropdownOpen = !_adminDropdownOpen;
+        _teamDropdownOpen = false; // Zavřít druhé menu
     }
 
     private string GetRoleName(BlazorApp1.Models.UserRole role)

@@ -1,70 +1,220 @@
-﻿/* Horizontal Top Navigation */
+﻿/* Horizontal Top Navigation - Material Design Style */
 
 .horizontal-nav {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    padding: 0 32px;
 }
 
+/* Navigation Items */
 .nav-items {
     display: flex;
     align-items: center;
     list-style: none;
     margin: 0;
     padding: 0;
-    gap: 8px;
+    gap: 12px;
+    flex: 1;
 }
 
 .nav-items li {
     position: relative;
 }
 
-.nav-items a {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 16px 24px;
-    color: #000;
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 1.1rem;
-    transition: all 0.3s ease;
-    border-bottom: 3px solid transparent;
+/* NavLink komponenty - použití ::deep pro scoped styling */
+.nav-items li ::deep a {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 18px 24px !important;
+    color: #000 !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    font-size: 0.95rem !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border-radius: 8px !important;
+    position: relative !important;
+    background: transparent !important;
+}
+
+.nav-items li ::deep a .material-symbols-outlined {
+    font-size: 22px;
+    font-variation-settings: 'FILL' 0, 'wght' 400;
+    transition: all 0.2s ease;
+}
+
+.nav-items li ::deep a:hover {
+    background: rgba(0, 0, 0, 0.08) !important;
+    color: #000 !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+    padding: 18px 28px !important;
+}
+
+.nav-items li ::deep a:hover .material-symbols-outlined {
+    font-size: 24px;
+    font-variation-settings: 'FILL' 0, 'wght' 500;
+}
+
+.nav-items li ::deep a.active {
+    color: #000 !important;
+    background: rgba(253, 199, 29, 0.15) !important;
+    font-weight: 600 !important;
+}
+
+.nav-items li ::deep a.active .material-symbols-outlined {
+    font-variation-settings: 'FILL' 1, 'wght' 600;
+}
+
+/* Dropdown Menu - Material Design */
+.nav-dropdown {
     position: relative;
 }
 
-.nav-items a .material-symbols-outlined {
-    font-size: 1.3rem;
+.nav-dropdown-toggle {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 18px 24px !important;
+    background: transparent !important;
+    border: none !important;
+    color: #000 !important;
+    font-weight: 500 !important;
+    font-size: 0.95rem !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    font-family: inherit !important;
+    border-radius: 8px !important;
 }
 
-.nav-items a:hover {
-    border-bottom-color: #fdc71d;
+.nav-dropdown-toggle .material-symbols-outlined {
+    font-size: 22px;
+    font-variation-settings: 'FILL' 0, 'wght' 400;
+    transition: all 0.2s ease;
 }
 
-.nav-items a.active {
-    border-bottom-color: #000;
+.dropdown-arrow {
+    font-size: 20px !important;
+    margin-left: -2px;
+    transition: transform 0.2s ease;
+}
+
+.nav-dropdown-toggle:hover {
+    background: rgba(0, 0, 0, 0.08) !important;
+    color: #000 !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+    padding: 18px 28px !important;
+}
+
+.nav-dropdown-toggle:hover .material-symbols-outlined {
+    font-size: 24px;
+    font-variation-settings: 'FILL' 0, 'wght' 500;
+}
+
+.nav-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 0;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    min-width: 240px;
+    padding: 12px 8px;
+    z-index: 1000;
+    animation: dropdownFadeIn 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* NavLink komponenty v dropdown menu */
+.nav-dropdown-menu ::deep a {
+    display: flex !important;
+    align-items: center !important;
+    gap: 18px !important;
+    padding: 18px 24px !important;
+    color: #202124 !important;
+    text-decoration: none !important;
+    font-weight: 400 !important;
+    font-size: 0.9rem !important;
+    transition: all 0.2s ease !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+}
+
+.nav-dropdown-menu ::deep a .material-symbols-outlined {
+    font-size: 20px;
+    color: #5f6368;
+    font-variation-settings: 'FILL' 0, 'wght' 400;
+    transition: all 0.2s ease;
+}
+
+.nav-dropdown-menu ::deep a:hover {
+    background: rgba(0, 0, 0, 0.08) !important;
+    color: #000 !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    padding: 18px 28px !important;
+}
+
+.nav-dropdown-menu ::deep a:hover .material-symbols-outlined {
+    font-size: 22px;
+    color: #000 !important;
+    font-variation-settings: 'FILL' 0, 'wght' 500;
+}
+
+.nav-dropdown-menu ::deep a.active {
+    background: rgba(253, 199, 29, 0.15) !important;
+    color: #000 !important;
+    font-weight: 600 !important;
+}
+
+.nav-dropdown-menu ::deep a.active .material-symbols-outlined {
+    color: #000 !important;
+    font-variation-settings: 'FILL' 1, 'wght' 600;
+}
+
+/* Right Section */
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
 }
 
 .nav-user {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 8px 16px;
-    background: linear-gradient(135deg, rgba(253, 199, 29, 0.15) 0%, rgba(250, 186, 32, 0.15) 100%);
-    border-radius: 25px;
-    margin-left: 20px;
-    border: 2px solid rgba(253, 199, 29, 0.3);
-    transition: all 0.3s ease;
+    gap: 10px;
+    padding: 6px 12px;
+    background: #f1f3f4;
+    border-radius: 24px;
+    transition: background 0.2s ease;
+    cursor: default;
 }
 
 .nav-user:hover {
-    background: linear-gradient(135deg, rgba(253, 199, 29, 0.25) 0%, rgba(250, 186, 32, 0.25) 100%);
-    border-color: rgba(253, 199, 29, 0.5);
-    transform: translateY(-1px);
+    background: #e8eaed;
 }
 
 .nav-user .user-icon {
     font-size: 32px;
-    color: #fdc71d;
+    color: #5f6368;
 }
 
 .user-info {
@@ -74,31 +224,102 @@
 }
 
 .user-name {
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: #000;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: #202124;
     line-height: 1.2;
 }
 
 .user-role {
     font-weight: 400;
-    font-size: 0.75rem;
-    color: #666;
+    font-size: 0.7rem;
+    color: #5f6368;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
 }
 
-.nav-logout {
-    color: #dc3545 !important;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+/* Logout a Login NavLink komponenty */
+.nav-right ::deep .nav-logout,
+.nav-right ::deep .nav-login {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 8px 16px !important;
+    border-radius: 24px !important;
+    font-weight: 500 !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+    font-size: 0.9rem !important;
+    border: none !important;
 }
 
-.nav-logout:hover {
-    border-bottom-color: #dc3545 !important;
-    background: rgba(220, 53, 69, 0.05);
+.nav-right ::deep .nav-logout {
+    background: transparent !important;
+    color: #5f6368 !important;
 }
+
+.nav-right ::deep .nav-logout:hover {
+    background: rgba(0, 0, 0, 0.04) !important;
+    color: #d93025 !important;
+}
+
+.nav-right ::deep .nav-logout .material-symbols-outlined {
+    font-size: 20px;
+}
+
+.nav-right ::deep .nav-login {
+    background: linear-gradient(135deg, #fdc71d 0%, #faba20 100%) !important;
+    color: #000 !important;
+}
+
+.nav-right ::deep .nav-login:hover {
+    background: linear-gradient(135deg, #faba20 0%, #f0a800 100%) !important;
+    color: #000 !important;
+    box-shadow: 0 2px 6px rgba(253, 199, 29, 0.4);
+}
+
+.nav-right ::deep .nav-login .material-symbols-outlined {
+    font-size: 20px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .nav-items a span:not(.material-symbols-outlined),
+    .nav-dropdown-toggle span:not(.material-symbols-outlined),
+    .nav-logout span:not(.material-symbols-outlined),
+    .nav-login span:not(.material-symbols-outlined) {
+        display: none;
+    }
+
+    .horizontal-nav {
+        gap: 12px;
+        padding: 0 16px;
+    }
+
+    .nav-items {
+        gap: 4px;
+    }
+
+    .nav-items a,
+    .nav-dropdown-toggle {
+        padding: 16px 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    .user-info {
+        display: none;
+    }
+    
+    .nav-user {
+        padding: 6px;
+    }
+
+    .horizontal-nav {
+        padding: 0 12px;
+    }
+}
+
 
 @media (max-width: 992px) {
     .nav-items {

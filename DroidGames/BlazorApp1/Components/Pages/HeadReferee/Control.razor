@@ -10,24 +10,27 @@
 
 <PageTitle>Ovládání soutěže - Hlavní rozhodčí | Droid Games</PageTitle>
 
-<div class="control-panel">
+<div class="page-shell control-panel">
     <div class="page-header">
-        <h1>
-            <span class="material-symbols-outlined">settings</span>
-            Ovládání soutěže
-        </h1>
+        <div>
+            <h1 class="page-title">
+                <span class="material-symbols-outlined">settings</span>
+                Ovládání soutěže
+            </h1>
+            <p class="page-subtitle">Přehledně nastavte stav soutěže, kola a přiřaďte týmy do aktuální jízdy.</p>
+        </div>
     </div>
 
     @if (_loading)
     {
-        <div class="loading-spinner">
-            <div class="spinner"></div>
+        <div class="state-card">
+            <span class="material-symbols-outlined spinning">progress_activity</span>
             <p>Načítání nastavení...</p>
         </div>
     }
     else if (_settings == null)
     {
-        <div class="error-message">
+        <div class="state-card">
             <span class="material-symbols-outlined">error</span>
             <h3>Chyba načítání nastavení</h3>
         </div>
@@ -38,12 +41,12 @@
             <!-- Levý sloupec - Nastavení -->
             <div class="settings-column">
                 <!-- Globální stav soutěže -->
-                <div class="control-card">
-                    <div class="card-header">
+                <div class="section-card">
+                    <div class="section-title">
                         <span class="material-symbols-outlined">sports_score</span>
-                        <h2>Stav soutěže</h2>
+                        Stav soutěže
                     </div>
-                    <div class="card-body">
+                    <div class="card-body spaced-body">
                         <div class="form-group">
                             <label>
                                 <span class="material-symbols-outlined">flag</span>
@@ -65,12 +68,12 @@
                 </div>
 
                 <!-- Nastavení kola -->
-                <div class="control-card">
-                    <div class="card-header">
+                <div class="section-card">
+                    <div class="section-title">
                         <span class="material-symbols-outlined">repeat</span>
-                        <h2>Nastavení kola</h2>
+                        Nastavení kola
                     </div>
-                    <div class="card-body">
+                    <div class="card-body spaced-body">
                         <div class="form-group">
                             <label>
                                 <span class="material-symbols-outlined">123</span>
@@ -105,12 +108,12 @@
                 </div>
 
                 <!-- Časové nastavení -->
-                <div class="control-card">
-                    <div class="card-header">
+                <div class="section-card">
+                    <div class="section-title">
                         <span class="material-symbols-outlined">timer</span>
-                        <h2>Časové nastavení</h2>
+                        Časové nastavení
                     </div>
-                    <div class="card-body">
+                    <div class="card-body spaced-body">
                         <div class="form-group">
                             <label>
                                 <span class="material-symbols-outlined">directions_run</span>
@@ -136,12 +139,12 @@
                 </div>
 
                 <!-- Limity soutěže -->
-                <div class="control-card">
-                    <div class="card-header">
+                <div class="section-card">
+                    <div class="section-title">
                         <span class="material-symbols-outlined">group</span>
-                        <h2>Limity</h2>
+                        Limity
                     </div>
-                    <div class="card-body">
+                    <div class="card-body spaced-body">
                         <div class="form-group">
                             <label>
                                 <span class="material-symbols-outlined">groups</span>
@@ -178,12 +181,12 @@
 
             <!-- Pravý sloupec - Výběr týmů -->
             <div class="teams-column">
-                <div class="control-card teams-card">
-                    <div class="card-header">
+                <div class="section-card teams-card">
+                    <div class="section-title">
                         <span class="material-symbols-outlined">groups</span>
-                        <h2>Výběr týmů pro kolo @_settings.CurrentRound</h2>
+                        Výběr týmů pro kolo @_settings.CurrentRound
                     </div>
-                    <div class="card-body">
+                    <div class="card-body spaced-body">
                         <!-- Aktuální zápas -->
                         <div class="current-match">
                             <div class="match-header">
@@ -605,7 +608,7 @@
             CompetitionStatus.InProgress => "status-inprogress",
             CompetitionStatus.Paused => "status-break",
             CompetitionStatus.Finished => "status-finished",
-            _ => ""
+            _ => string.Empty
         };
     }
 }

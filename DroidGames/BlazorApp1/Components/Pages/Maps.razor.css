@@ -1,219 +1,102 @@
-/* Maps Page - Public View *//* Maps Page */
+/* Maps Page */
 
-
-
-.maps-container {.maps-page {
-
-    max-width: 1400px;    padding: 40px;
-
-    margin: 0 auto;    max-width: 1400px;
-
-    padding: 60px 20px;    margin: 0 auto;
-
-}}
-
-
-
-.maps-header {.page-header {
-
-    text-align: center;    text-align: center;
-
-    margin-bottom: 50px;    margin-bottom: 50px;
-
-    animation: fadeIn 0.5s ease-out;}
-
+.maps-container {
+    padding: 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+    margin-bottom: 60px;
 }
 
-.page-header h1 {
+.maps-header {
+    margin-bottom: 40px;
+}
 
-@keyframes fadeIn {    display: inline-flex;
-
-    from { opacity: 0; transform: translateY(-20px); }    align-items: center;
-
-    to { opacity: 1; transform: translateY(0); }    gap: 15px;
-
-}    font-size: 2.5em;
-
-    color: #000;
-
-.page-title {    margin-bottom: 10px;
-
-    display: flex;}
-
+.maps-header h1 {
+    display: flex;
     align-items: center;
-
-    justify-content: center;.page-header h1 .material-symbols-outlined {
-
-    gap: 15px;    color: #fdc71d;
-
-    font-size: 2.8em;    font-size: 1.2em;
-
-    font-weight: 800;}
-
+    gap: 15px;
+    font-size: 2.5em;
     color: #000;
+    margin-bottom: 10px;
+}
 
-    margin-bottom: 15px;.subtitle {
-
-}    font-size: 1.2em;
-
-    color: #666;
-
-.page-title .material-symbols-outlined {}
-
+.maps-header h1 .material-symbols-outlined {
     color: #fdc71d;
+    font-size: 1.2em;
+}
 
-    font-size: 1.1em;.maps-grid {
-
-}    display: grid;
-
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-
-.page-subtitle {    gap: 30px;
-
-    font-size: 1.2em;}
-
+.subtitle {
+    font-size: 1.1em;
     color: #666;
+}
 
-}.map-card {
-
-    background: white;
-
-/* Loading Grid */    border-radius: 16px;
-
-.loading-grid {    padding: 40px 30px;
-
-    display: grid;    text-align: center;
-
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-
-    gap: 30px;    transition: all 0.3s ease;
-
-}    border-top: 5px solid #fdc71d;
-
+/* Loading Grid */
+.loading-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 30px;
 }
 
 .skeleton-map-card {
+    height: 450px;
+    background: linear-gradient(90deg, #e0e0e0 0%, #f0f0f0 50%, #e0e0e0 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 16px;
+}
 
-    height: 450px;.map-card:hover {
-
-    background: linear-gradient(90deg, #e0e0e0 0%, #f0f0f0 50%, #e0e0e0 100%);    transform: translateY(-8px);
-
-    background-size: 200% 100%;    box-shadow: 0 8px 24px rgba(253, 199, 29, 0.2);
-
-    animation: shimmer 1.5s infinite;}
-
-    border-radius: 20px;
-
-}.map-icon {
-
-    margin-bottom: 20px;
-
-@keyframes shimmer {}
-
+@keyframes shimmer {
     0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
 
-    100% { background-position: -200% 0; }.map-icon .material-symbols-outlined {
-
-}    font-size: 80px;
-
-    color: #fdc71d;
-
-/* Error Card */}
-
+/* Error Card */
 .error-card {
-
-    background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);.map-card h3 {
-
-    border-left: 4px solid #dc3545;    font-size: 1.8em;
-
-    padding: 40px;    color: #000;
-
-    border-radius: 16px;    margin-bottom: 10px;
-
-    margin-bottom: 30px;}
-
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+    border-left: 4px solid #dc3545;
+    padding: 40px;
+    border-radius: 16px;
+    margin-bottom: 30px;
 }
 
-.map-card p {
-
-.error-card h2 {    color: #666;
-
-    display: flex;    margin-bottom: 20px;
-
-    align-items: center;}
-
+.error-card h2 {
+    display: flex;
+    align-items: center;
     gap: 10px;
-
-    color: #dc3545;.map-difficulty {
-
-    margin-bottom: 15px;    display: inline-block;
-
-}    padding: 8px 20px;
-
-    border-radius: 20px;
-
-.error-message {    font-weight: 600;
-
-    font-family: 'Courier New', monospace;    font-size: 0.9em;
-
-    background: rgba(0,0,0,0.05);}
-
-    padding: 15px;
-
-    border-radius: 8px;.easy {
-
-    font-size: 0.9em;    background: #d4edda;
-
-    color: #666;    color: #155724;
-
-    overflow-x: auto;}
-
+    color: #dc3545;
+    margin-bottom: 15px;
 }
 
-.medium {
-
-.btn-retry {    background: #fff3cd;
-
-    display: inline-flex;    color: #856404;
-
-    align-items: center;}
-
-    gap: 8px;
-
-    background: #dc3545;.hard {
-
-    color: white;    background: #f8d7da;
-
-    padding: 12px 24px;    color: #721c24;
-
-    border: none;}
-
+.error-message {
+    font-family: 'Courier New', monospace;
+    background: rgba(0,0,0,0.05);
+    padding: 15px;
     border-radius: 8px;
+    font-size: 0.9em;
+    color: #666;
+    overflow-x: auto;
+}
 
-    cursor: pointer;@media (max-width: 768px) {
-
-    font-size: 1em;    .maps-page {
-
-    font-weight: 600;        padding: 20px;
-
-    margin-top: 15px;    }
-
+.btn-retry {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #dc3545;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 600;
+    margin-top: 15px;
     transition: all 0.3s ease;
+}
 
-}    .page-header h1 {
-
-        font-size: 2em;
-
-.btn-retry:hover {    }
-
+.btn-retry:hover {
     background: #c82333;
-
-    transform: translateY(-2px);    .maps-grid {
-
-    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);        grid-template-columns: 1fr;
-
-}    }
-
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
 }
 
 /* Maps Grid */
@@ -221,16 +104,15 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 30px;
-    margin-bottom: 50px;
+    margin-bottom: 40px;
 }
 
 .map-card {
     background: white;
-    border-radius: 20px;
+    border-radius: 16px;
     padding: 30px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    border-top: 5px solid #fdc71d;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
     animation: cardFadeIn 0.6s ease-out backwards;
 }
 
@@ -246,8 +128,8 @@
 }
 
 .map-card:hover {
-    transform: translateY(-10px) scale(1.02);
-    box-shadow: 0 12px 30px rgba(253, 199, 29, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
 }
 
 .map-header {
@@ -378,27 +260,35 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 25px;
-    margin-top: 50px;
+    margin-top: 40px;
 }
 
 .summary-card {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     display: flex;
     align-items: center;
     gap: 20px;
-    background: linear-gradient(135deg, #fdc71d 0%, #faba20 100%);
-    padding: 30px;
-    border-radius: 20px;
-    box-shadow: 0 5px 20px rgba(253, 199, 29, 0.3);
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .summary-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
 }
 
 .summary-icon {
-    font-size: 3em;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #fdc71d 0%, #faba20 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 2.5em;
 }
 
 .summary-content {
@@ -406,14 +296,15 @@
 }
 
 .summary-title {
-    font-size: 0.95em;
-    color: rgba(0,0,0,0.7);
-    margin-bottom: 5px;
-    font-weight: 600;
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .summary-value {
-    font-size: 2em;
+    font-size: 2.2em;
     font-weight: 900;
     color: #000;
 }
@@ -461,14 +352,15 @@
 /* Responsive */
 @media (max-width: 768px) {
     .maps-container {
-        padding: 40px 15px;
+        padding: 20px 15px;
+        margin-bottom: 40px;
     }
 
-    .page-title {
+    .maps-header h1 {
         font-size: 2em;
     }
 
-    .page-subtitle {
+    .subtitle {
         font-size: 1em;
     }
 
